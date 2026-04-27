@@ -173,7 +173,7 @@ a {
 }
 
 .section-title {
-  font-size: clamp(32px, 4vw, 52px);
+  font-size: clamp(48px, 6vw, 80px);
   font-weight: 700;
   line-height: 1.1;
   color: var(--text-primary);
@@ -356,7 +356,7 @@ a {
   }
 
   .section-title {
-    font-size: clamp(26px, 7vw, 40px);
+    font-size: clamp(36px, 8vw, 56px);
   }
 
   .section-sub {
