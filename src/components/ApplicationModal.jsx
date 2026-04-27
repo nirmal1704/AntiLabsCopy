@@ -486,7 +486,7 @@ function AutocompleteInput({ name, value, onChange, placeholder, required, sugge
 
 /* ─── Main component ──────────────────────────────────────── */
 export default function ApplicationModal({ role, onClose }) {
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
@@ -621,6 +621,10 @@ export default function ApplicationModal({ role, onClose }) {
             if (dbError) {
                 if (dbError.code === '23505')
                     throw new Error('You have already registered for this training program.');
+                if (dbError.code === '23503' && dbError.message?.includes('transactions_user_id_fkey')) {
+                    if (logout) logout();
+                    throw new Error('Your session is invalid or has expired. Please sign out and sign in again.');
+                }
                 throw dbError;
             }
 
