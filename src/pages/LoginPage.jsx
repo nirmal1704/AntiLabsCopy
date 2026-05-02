@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import Navbar from '../components/Navbar';
@@ -15,7 +15,14 @@ export default function LoginPage() {
     const [errorMsg, setErrorMsg] = useState('');
     const [successMsg, setSuccessMsg] = useState('');
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const { user, login } = useAuth();
+
+    // Redirect to home if already logged in
+    useEffect(() => {
+        if (user) {
+            navigate('/');
+        }
+    }, [user, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -23,27 +30,24 @@ export default function LoginPage() {
         setLoading(true);
 
         try {
-            const { data, error } = await supabase
-                .from('users')
-                .select('*')
-                .eq('email', email)
-                .single();
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password
+            });
 
-            if (error || !data) {
-                setErrorMsg('Invalid email or password.');
+            if (error || !data.user) {
+                setErrorMsg(error?.message || 'Invalid email or password.');
                 setLoading(false);
                 return;
             }
 
-            if (data.password !== password) {
-                setErrorMsg('Invalid email or password.');
-                setLoading(false);
-                return;
-            }
-
+            // Note: AuthContext handles fetching the user profile from public.users
+            // and sets the state automatically when auth state changes.
+            // We just need to show success and redirect.
+            
             // Login successful
-            login(data);
-            setSuccessMsg(`Welcome back, ${data.name}!`);
+            login({}); // Fallback logic (AuthContext manages actual user state)
+            setSuccessMsg(`Welcome back, ${data.user.user_metadata?.name || 'User'}!`);
             setTimeout(() => {
                 navigate('/');
             }, 1500);

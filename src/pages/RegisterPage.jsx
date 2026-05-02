@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { useAuth } from '../context/AuthContext';
 import SEO from '../components/SEO';
 import './Auth.css';
 
@@ -22,7 +23,57 @@ export default function RegisterPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [successMsg, setSuccessMsg] = useState('');
+    
+    // OTP State
+    const [showOtpStep, setShowOtpStep] = useState(false);
+    const [otp, setOtp] = useState('');
+    const [verifyingOtp, setVerifyingOtp] = useState(false);
+    const [timer, setTimer] = useState(120);
+    
     const navigate = useNavigate();
+    const { user } = useAuth();
+
+    // Redirect to home if already logged in
+    useEffect(() => {
+        if (user) {
+            navigate('/');
+        }
+    }, [user, navigate]);
+
+    useEffect(() => {
+        let interval;
+        if (showOtpStep && timer > 0) {
+            interval = setInterval(() => {
+                setTimer((prevTimer) => prevTimer - 1);
+            }, 1000);
+        } else if (timer === 0) {
+            clearInterval(interval);
+        }
+        return () => clearInterval(interval);
+    }, [showOtpStep, timer]);
+
+    const formatTime = (seconds) => {
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        return `${m}:${s < 10 ? '0' : ''}${s}`;
+    };
+
+    const handleResendOtp = async () => {
+        setErrorMsg('');
+        setSuccessMsg('');
+        try {
+            const { error } = await supabase.auth.resend({
+                type: 'signup',
+                email: formData.email,
+            });
+            if (error) throw error;
+            setSuccessMsg('Confirmation code resent! Please check your email.');
+            setTimer(120); // Reset timer to 2 minutes
+        } catch (error) {
+            console.error('Error resending OTP:', error);
+            setErrorMsg(error.message || 'Failed to resend confirmation code.');
+        }
+    };
 
     const handleChange = (e) => {
         setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -40,36 +91,60 @@ export default function RegisterPage() {
         setLoading(true);
 
         try {
-            const { data, error } = await supabase
-                .from('users')
-                .insert([
-                    {
+            const { data, error } = await supabase.auth.signUp({
+                email: formData.email,
+                password: formData.password,
+                options: {
+                    data: {
                         name: formData.name,
-                        email: formData.email,
+                        phone: formData.phone,
                         age: parseInt(formData.age) || null,
-                        phone_number: formData.phone,
-                        residential_address: formData.address,
                         profession: formData.profession,
-                        password: formData.password
+                        address: formData.address
                     }
-                ]);
+                }
+            });
 
             if (error) {
                 // Check if it's a unique constraint error for the phone_number
-                if (error.code === '23505' && error.message?.includes('phone_number')) {
+                if (error.message?.includes('phone_number')) {
                     throw new Error('This phone number is already registered. Please log in or use a different number.');
                 }
                 throw error;
             }
 
-            setSuccessMsg('Registration successful! Redirecting to login...');
-            setTimeout(() => {
-                navigate('/login');
-            }, 2000);
+            setSuccessMsg('Registration successful! Please check your email for the 6-digit confirmation code.');
+            setShowOtpStep(true);
+            setLoading(false);
         } catch (error) {
             console.error('Error during registration:', error);
             setErrorMsg(error.message || 'An error occurred during registration.');
             setLoading(false);
+        }
+    };
+
+    const handleVerifyOtp = async (e) => {
+        e.preventDefault();
+        setErrorMsg('');
+        setVerifyingOtp(true);
+
+        try {
+            const { data, error } = await supabase.auth.verifyOtp({
+                email: formData.email,
+                token: otp,
+                type: 'signup'
+            });
+
+            if (error) throw error;
+
+            setSuccessMsg('Email verified successfully! Taking you to the dashboard...');
+            setTimeout(() => {
+                navigate('/');
+            }, 2000);
+        } catch (error) {
+            console.error('Error verifying OTP:', error);
+            setErrorMsg(error.message || 'Invalid or expired confirmation code.');
+            setVerifyingOtp(false);
         }
     };
 
@@ -96,158 +171,214 @@ export default function RegisterPage() {
                         </div>
                     )}
 
-                    <form className="auth-form auth-form-grid" onSubmit={handleSubmit}>
-                        <div className="auth-group">
-                            <label htmlFor="name">Full Name</label>
-                            <input
-                                type="text"
-                                id="name"
-                                name="name"
-                                className="auth-input"
-                                placeholder="John Doe"
-                                value={formData.name}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-
-                        <div className="auth-group">
-                            <label htmlFor="email">Email Address</label>
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                className="auth-input"
-                                placeholder="john@example.com"
-                                value={formData.email}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-
-                        <div className="auth-group">
-                            <label htmlFor="age">Age</label>
-                            <input
-                                type="number"
-                                id="age"
-                                name="age"
-                                className="auth-input"
-                                placeholder="25"
-                                value={formData.age}
-                                onChange={handleChange}
-                                required
-                                min="1"
-                                max="120"
-                            />
-                        </div>
-
-                        <div className="auth-group">
-                            <label htmlFor="phone">Phone Number</label>
-                            <input
-                                type="tel"
-                                id="phone"
-                                name="phone"
-                                className="auth-input"
-                                placeholder="+91 9876543210"
-                                value={formData.phone}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-
-                        <div className="auth-group auth-group--full">
-                            <label htmlFor="profession">Profession</label>
-                            <input
-                                type="text"
-                                id="profession"
-                                name="profession"
-                                className="auth-input"
-                                placeholder="Software Engineer / Student / Designer"
-                                value={formData.profession}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-
-                        <div className="auth-group auth-group--full">
-                            <label htmlFor="address">Residential Address</label>
-                            <textarea
-                                id="address"
-                                name="address"
-                                className="auth-input"
-                                placeholder="Enter your full residential address"
-                                value={formData.address}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-
-                        <div className="auth-group">
-                            <label htmlFor="password">Password</label>
-                            <div className="auth-password-wrapper">
+                    {!showOtpStep ? (
+                        <form className="auth-form auth-form-grid" onSubmit={handleSubmit}>
+                            <div className="auth-group">
+                                <label htmlFor="name">Full Name</label>
                                 <input
-                                    type={showPassword ? "text" : "password"}
-                                    id="password"
-                                    name="password"
+                                    type="text"
+                                    id="name"
+                                    name="name"
                                     className="auth-input"
-                                    placeholder="••••••••"
-                                    value={formData.password}
+                                    placeholder="John Doe"
+                                    value={formData.name}
                                     onChange={handleChange}
                                     required
-                                    minLength="6"
                                 />
-                                <button type="button" className="auth-password-toggle" onClick={() => setShowPassword(!showPassword)}>
-                                    {showPassword ? (
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                                            <line x1="1" y1="1" x2="23" y2="23"></line>
-                                        </svg>
-                                    ) : (
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                            <circle cx="12" cy="12" r="3"></circle>
-                                        </svg>
-                                    )}
-                                </button>
                             </div>
-                        </div>
 
-                        <div className="auth-group">
-                            <label htmlFor="confirmPassword">Confirm Password</label>
-                            <div className="auth-password-wrapper">
+                            <div className="auth-group">
+                                <label htmlFor="email">Email Address</label>
                                 <input
-                                    type={showConfirmPassword ? "text" : "password"}
-                                    id="confirmPassword"
-                                    name="confirmPassword"
+                                    type="email"
+                                    id="email"
+                                    name="email"
                                     className="auth-input"
-                                    placeholder="••••••••"
-                                    value={formData.confirmPassword}
+                                    placeholder="john@example.com"
+                                    value={formData.email}
                                     onChange={handleChange}
                                     required
-                                    minLength="6"
                                 />
-                                <button type="button" className="auth-password-toggle" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                                    {showConfirmPassword ? (
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                                            <line x1="1" y1="1" x2="23" y2="23"></line>
-                                        </svg>
-                                    ) : (
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                            <circle cx="12" cy="12" r="3"></circle>
-                                        </svg>
-                                    )}
+                            </div>
+
+                            <div className="auth-group">
+                                <label htmlFor="age">Age</label>
+                                <input
+                                    type="number"
+                                    id="age"
+                                    name="age"
+                                    className="auth-input"
+                                    placeholder="25"
+                                    value={formData.age}
+                                    onChange={handleChange}
+                                    required
+                                    min="1"
+                                    max="120"
+                                />
+                            </div>
+
+                            <div className="auth-group">
+                                <label htmlFor="phone">Phone Number</label>
+                                <input
+                                    type="tel"
+                                    id="phone"
+                                    name="phone"
+                                    className="auth-input"
+                                    placeholder="+91 9876543210"
+                                    value={formData.phone}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="auth-group auth-group--full">
+                                <label htmlFor="profession">Profession</label>
+                                <input
+                                    type="text"
+                                    id="profession"
+                                    name="profession"
+                                    className="auth-input"
+                                    placeholder="Software Engineer / Student / Designer"
+                                    value={formData.profession}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="auth-group auth-group--full">
+                                <label htmlFor="address">Residential Address</label>
+                                <textarea
+                                    id="address"
+                                    name="address"
+                                    className="auth-input"
+                                    placeholder="Enter your full residential address"
+                                    value={formData.address}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="auth-group">
+                                <label htmlFor="password">Password</label>
+                                <div className="auth-password-wrapper">
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        id="password"
+                                        name="password"
+                                        className="auth-input"
+                                        placeholder="••••••••"
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        required
+                                        minLength="6"
+                                    />
+                                    <button type="button" className="auth-password-toggle" onClick={() => setShowPassword(!showPassword)}>
+                                        {showPassword ? (
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                                <line x1="1" y1="1" x2="23" y2="23"></line>
+                                            </svg>
+                                        ) : (
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                <circle cx="12" cy="12" r="3"></circle>
+                                            </svg>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="auth-group">
+                                <label htmlFor="confirmPassword">Confirm Password</label>
+                                <div className="auth-password-wrapper">
+                                    <input
+                                        type={showConfirmPassword ? "text" : "password"}
+                                        id="confirmPassword"
+                                        name="confirmPassword"
+                                        className="auth-input"
+                                        placeholder="••••••••"
+                                        value={formData.confirmPassword}
+                                        onChange={handleChange}
+                                        required
+                                        minLength="6"
+                                    />
+                                    <button type="button" className="auth-password-toggle" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                                        {showConfirmPassword ? (
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                                <line x1="1" y1="1" x2="23" y2="23"></line>
+                                            </svg>
+                                        ) : (
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                <circle cx="12" cy="12" r="3"></circle>
+                                            </svg>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="auth-group auth-group--full">
+                                <button type="submit" className="btn btn-primary auth-btn" disabled={loading}>
+                                    {loading ? 'Registering...' : 'Complete Registration'}
                                 </button>
                             </div>
-                        </div>
+                        </form>
+                    ) : (
+                        <form className="auth-form" onSubmit={handleVerifyOtp} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <div className="auth-group" style={{ width: '100%' }}>
+                                <label htmlFor="otp" style={{ textAlign: 'center', marginBottom: '15px', display: 'block', color: '#4b5563' }}>
+                                    We sent an 8-digit confirmation code to <strong>{formData.email}</strong>
+                                </label>
+                                <input
+                                    type="text"
+                                    id="otp"
+                                    name="otp"
+                                    className="auth-input"
+                                    placeholder="Enter 8-digit code"
+                                    value={otp}
+                                    onChange={(e) => setOtp(e.target.value)}
+                                    required
+                                    maxLength="8"
+                                    style={{ textAlign: 'center', fontSize: '24px', letterSpacing: '8px', padding: '15px' }}
+                                />
+                            </div>
 
-                        <div className="auth-group auth-group--full">
-                            <button type="submit" className="btn btn-primary auth-btn" disabled={loading}>
-                                {loading ? 'Registering...' : 'Complete Registration'}
+                            <button type="submit" className="btn btn-primary auth-btn" disabled={verifyingOtp || otp.length < 8} style={{ marginTop: '20px', width: '100%' }}>
+                                {verifyingOtp ? 'Verifying...' : 'Verify Email'}
                             </button>
-                        </div>
-                    </form>
+                            
+                            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: '15px' }}>
+                                <button 
+                                    type="button" 
+                                    onClick={handleResendOtp}
+                                    disabled={timer > 0}
+                                    style={{ 
+                                        background: 'none', 
+                                        border: 'none', 
+                                        color: timer > 0 ? '#9ca3af' : '#6c63ff', 
+                                        textDecoration: timer > 0 ? 'none' : 'underline', 
+                                        cursor: timer > 0 ? 'not-allowed' : 'pointer',
+                                        fontWeight: '500'
+                                    }}
+                                >
+                                    {timer > 0 ? `Resend Code (${formatTime(timer)})` : 'Resend Code'}
+                                </button>
+
+                                <button 
+                                    type="button" 
+                                    onClick={() => {
+                                        setShowOtpStep(false);
+                                        setOtp('');
+                                        setTimer(120);
+                                    }}
+                                    style={{ background: 'none', border: 'none', color: '#6b7280', textDecoration: 'underline', cursor: 'pointer' }}
+                                >
+                                    Back to registration
+                                </button>
+                            </div>
+                        </form>
+                    )}
 
                     <div className="auth-footer">
                         Already have an account? <Link to="/login" className="auth-link">Log in here</Link>

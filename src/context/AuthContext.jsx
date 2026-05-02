@@ -1,46 +1,73 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
+import { supabase } from '../supabase';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const token = localStorage.getItem('authToken');
-        const storedUser = localStorage.getItem('authUser');
-
-        if (token && storedUser) {
-            try {
-                setUser(JSON.parse(storedUser));
-            } catch (e) {
-                console.error("Failed to parse stored user", e);
-                localStorage.removeItem('authToken');
-                localStorage.removeItem('authUser');
+        // Fetch the user profile from public.users using the auth.users id
+        const fetchProfile = async (session) => {
+            if (!session) {
+                setUser(null);
+                setLoading(false);
+                return;
             }
-        }
+
+            try {
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('auth_id', session.user.id)
+                    .single();
+
+                if (error) {
+                    if (error.code === 'PGRST116') {
+                        // Profile missing (0 rows) - probably wiped from db. Clear the ghost session.
+                        console.warn("Profile not found in database. Signing out ghost session.");
+                        await supabase.auth.signOut();
+                    } else {
+                        throw error;
+                    }
+                } else {
+                    setUser(data);
+                }
+            } catch (err) {
+                console.error("Error fetching user profile:", err);
+                setUser(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        // Check active session on mount
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            fetchProfile(session);
+        });
+
+        // Listen for auth changes (login, logout, token refresh)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            fetchProfile(session);
+        });
+
+        return () => subscription.unsubscribe();
     }, []);
 
+    // We keep login and logout wrappers for components that still expect them
     const login = (userData) => {
-        // Generate a 16-digit hexadecimal token
-        const token = [...Array(16)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
-
-        // Store in localStorage
-        localStorage.setItem('authToken', token);
-        localStorage.setItem('authUser', JSON.stringify(userData));
-
-        // Update state
         setUser(userData);
     };
 
-    const logout = () => {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('authUser');
+    const logout = async () => {
+        await supabase.auth.signOut();
         setUser(null);
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout }}>
-            {children}
+        <AuthContext.Provider value={{ user, login, logout, loading }}>
+            {!loading && children}
         </AuthContext.Provider>
     );
 };

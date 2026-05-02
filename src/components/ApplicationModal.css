@@ -243,6 +243,18 @@
     box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
+.am__input-group input.am__input--readonly {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-muted);
+    cursor: not-allowed;
+    border-color: var(--border);
+}
+
+.am__input-group input.am__input--readonly:focus {
+    box-shadow: none;
+    border-color: var(--border);
+}
+
 .am__input-wrap:focus-within .am__input-icon {
     color: var(--accent);
 }

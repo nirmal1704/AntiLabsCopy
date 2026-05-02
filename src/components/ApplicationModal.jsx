@@ -727,6 +727,8 @@ export default function ApplicationModal({ role, onClose }) {
                                 type="text" name="full_name" required
                                 placeholder="e.g. Arya Sharma"
                                 value={formData.full_name} onChange={handleChange}
+                                readOnly
+                                className="am__input--readonly"
                             />
                             <span className="am__input-icon">{Icon.user}</span>
                         </div>
@@ -740,6 +742,8 @@ export default function ApplicationModal({ role, onClose }) {
                                     type="tel" name="mobile_number" required
                                     placeholder="+91 XXXXX XXXXX"
                                     value={formData.mobile_number} onChange={handleChange}
+                                    readOnly
+                                    className="am__input--readonly"
                                 />
                                 <span className="am__input-icon">{Icon.phone}</span>
                             </div>
@@ -751,6 +755,8 @@ export default function ApplicationModal({ role, onClose }) {
                                     type="email" name="email" required
                                     placeholder="you@example.com"
                                     value={formData.email} onChange={handleChange}
+                                    readOnly
+                                    className="am__input--readonly"
                                 />
                                 <span className="am__input-icon">{Icon.mail}</span>
                             </div>
