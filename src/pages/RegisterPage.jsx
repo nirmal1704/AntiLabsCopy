@@ -54,7 +54,13 @@ export default function RegisterPage() {
                     }
                 ]);
 
-            if (error) throw error;
+            if (error) {
+                // Check if it's a unique constraint error for the phone_number
+                if (error.code === '23505' && error.message?.includes('phone_number')) {
+                    throw new Error('This phone number is already registered. Please log in or use a different number.');
+                }
+                throw error;
+            }
 
             setSuccessMsg('Registration successful! Redirecting to login...');
             setTimeout(() => {

@@ -496,9 +496,16 @@ export default function StudentDashboard() {
                     </div>
                     <h3>{course.Careers?.title || course.position || 'Training Program'}</h3>
                     <p style={{ marginBottom: '8px', color: '#64748b' }}>Enrolled on {new Date(course.created_at).toLocaleDateString('en-GB')}</p>
-                    <p style={{ color: '#0ea5e9', fontSize: '0.85rem', fontWeight: 600, marginBottom: '24px', flex: 1 }}>
-                        {getExpirationDate(course.created_at, course.Careers?.duration)}
-                    </p>
+                    <div style={{ flex: 1 }}>
+                        <p style={{ color: '#0ea5e9', fontSize: '0.85rem', fontWeight: 600, marginBottom: '8px' }}>
+                            {getExpirationDate(course.created_at, course.Careers?.duration)}
+                        </p>
+                        {course.roll_number && (
+                            <p style={{ color: '#0f172a', fontSize: '0.9rem', fontWeight: 700, backgroundColor: '#f1f5f9', display: 'inline-block', padding: '4px 8px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                                Roll No: {course.roll_number}
+                            </p>
+                        )}
+                    </div>
                     
                     <div className="course-progress">
                       <div className="course-progress-bar">

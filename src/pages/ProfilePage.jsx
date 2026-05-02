@@ -72,21 +72,29 @@ export default function ProfilePage() {
                                 .update({ payment_status: 'paid' })
                                 .eq('transaction_id', txId);
 
-                            // 3. Ensure no duplicate in training_registrations
-                            const { data: existingReg } = await supabase
-                                .from('training_registrations')
-                                .select('registration_id')
-                                .eq('email', txData.email)
-                                .eq('role_id', txData.role_id)
-                                .maybeSingle();
+                            // 3. Assign batch and roll number (which also handles training_registrations insertion)
+                            const { data: rollNumber, error: rpcError } = await supabase.rpc('assign_batch_and_roll_number', {
+                                p_transaction_id: parseInt(txId)
+                            });
 
-                            if (!existingReg) {
-                                // 4. Insert into training_registrations
-                                const { transaction_id, ...txDataWithoutId } = txData;
-                                txDataWithoutId.payment_status = 'paid'; // force it to paid
-                                await supabase
+                            if (rpcError) {
+                                console.error('RPC assign_batch_and_roll_number failed (maybe SQL not run yet?), falling back to legacy insert:', rpcError);
+                                // Fallback: Ensure no duplicate in training_registrations
+                                const { data: existingReg } = await supabase
                                     .from('training_registrations')
-                                    .insert([txDataWithoutId]);
+                                    .select('registration_id')
+                                    .eq('email', txData.email)
+                                    .eq('role_id', txData.role_id)
+                                    .maybeSingle();
+
+                                if (!existingReg) {
+                                    // Insert into training_registrations
+                                    const { transaction_id, ...txDataWithoutId } = txData;
+                                    txDataWithoutId.payment_status = 'paid'; // force it to paid
+                                    await supabase
+                                        .from('training_registrations')
+                                        .insert([txDataWithoutId]);
+                                }
                             }
                         }
 
@@ -345,7 +353,7 @@ export default function ProfilePage() {
                                     </div>
                                     <div className="auth-group">
                                         <label>Phone Number</label>
-                                        <input type="tel" name="phone_number" className="auth-input" value={formData.phone_number} onChange={handleChange} required />
+                                        <input type="tel" name="phone_number" className="auth-input" value={formData.phone_number} onChange={handleChange} disabled style={{ backgroundColor: '#f1f5f9', color: '#94a3b8', cursor: 'not-allowed' }} title="Phone number cannot be changed." />
                                     </div>
                                     <div className="auth-group">
                                         <label>Age</label>
@@ -416,6 +424,12 @@ export default function ProfilePage() {
                                                         <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>
                                                         Class of {t.graduation_year}
                                                     </span>
+                                                    {t.roll_number && (
+                                                        <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#0ea5e9', fontWeight: 'bold' }}>
+                                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h8"/><path d="M8 11h8"/></svg>
+                                                            Roll No: {t.roll_number}
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </div>
                                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
