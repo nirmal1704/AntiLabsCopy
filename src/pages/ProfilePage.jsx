@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -10,6 +10,9 @@ import './Auth.css';
 export default function ProfilePage() {
     const { user, login, logout } = useAuth();
     const navigate = useNavigate();
+
+    // Prevent React StrictMode from double-firing the payment check
+    const paymentChecked = useRef(false);
 
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -27,95 +30,201 @@ export default function ProfilePage() {
         age: ''
     });
 
+    // Support ticket state
+    const [ticketData, setTicketData] = useState({ subject: '', description: '' });
+    const [ticketLoading, setTicketLoading] = useState(false);
+    const [ticketMsg, setTicketMsg] = useState({ text: '', type: '' });
+
+    const handleTicketSubmit = async (e) => {
+        e.preventDefault();
+        if (!ticketData.subject.trim() || !ticketData.description.trim()) return;
+        setTicketLoading(true);
+        setTicketMsg({ text: '', type: '' });
+        try {
+            const { error } = await supabase.from('Student_Queries').insert([{
+                user_id: user.user_id,
+                name: user.name,
+                email: user.email,
+                subject: ticketData.subject,
+                description: ticketData.description,
+                status: 'open'
+            }]);
+            if (error) throw error;
+            setTicketMsg({ text: 'Support ticket raised successfully. We will get back to you soon!', type: 'success' });
+            setTicketData({ subject: '', description: '' });
+            setTimeout(() => setTicketMsg({ text: '', type: '' }), 5000);
+        } catch (err) {
+            console.error('Error submitting ticket:', err);
+            setTicketMsg({ text: 'Failed to submit ticket. Please try again.', type: 'error' });
+        } finally {
+            setTicketLoading(false);
+        }
+    };
+
     // Payment confirmation from Cashfree
     useEffect(() => {
+        // StrictMode guard — only run once
+        if (paymentChecked.current) return;
+        paymentChecked.current = true;
+
         const checkPayment = async () => {
             const queryParams = new URLSearchParams(window.location.search);
-            // Check for tx_id instead of reg_id (new architecture)
-            // Fallback to reg_id just in case of any cached redirects
-            const txId = queryParams.get('tx_id') || queryParams.get('reg_id');
+            const txId    = queryParams.get('tx_id') || queryParams.get('reg_id');
             const orderId = queryParams.get('order_id');
 
-            if (txId && orderId) {
-                const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-                try {
-                    const verifyRes = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-cashfree-order`, {
+            if (!txId || !orderId) return;
+
+            const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            try {
+                // ── Step 1: Verify payment with Cashfree ──────────────
+                const verifyRes = await fetch(
+                    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-cashfree-order`,
+                    {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+                            'apikey':        import.meta.env.VITE_SUPABASE_ANON_KEY,
                             'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
                         },
-                        body: JSON.stringify({ action: 'verify', order_id: orderId, is_dev: isDev })
-                    });
-                    
-                    const orderData = await verifyRes.json();
-                    
-                    if (orderData.order_status === 'PAID') {
-                        // 1. Fetch transaction details to check its current status
-                        const { data: txData, error: txError } = await supabase
-                            .from('transactions')
-                            .select('*')
-                            .eq('transaction_id', txId)
-                            .single();
+                        body: JSON.stringify({ action: 'verify', order_id: orderId, is_dev: isDev }),
+                    }
+                );
+                const orderData = await verifyRes.json();
 
-                        if (txData && !txError) {
-                            // If already processed (e.g. by React StrictMode double-fire), skip to reload
-                            if (txData.payment_status === 'paid') {
-                                window.location.href = window.location.pathname;
-                                return;
-                            }
+                if (orderData.order_status === 'PAID') {
+                    // ── Step 2: Fetch transaction ─────────────────────
+                    const { data: txData, error: txError } = await supabase
+                        .from('transactions')
+                        .select('*')
+                        .eq('transaction_id', txId)
+                        .single();
 
-                            // 2. Update transactions table
+                    if (txData && !txError) {
+                        if (txData.payment_status !== 'paid') {
+                            // ── Step 3: Mark as paid (triggers DB sync) ──
                             await supabase
                                 .from('transactions')
                                 .update({ payment_status: 'paid' })
                                 .eq('transaction_id', txId);
 
-                            // 3. Assign batch and roll number (which also handles training_registrations insertion)
-                            const { data: rollNumber, error: rpcError } = await supabase.rpc('assign_batch_and_roll_number', {
-                                p_transaction_id: parseInt(txId)
-                            });
+                            // ── Step 4: Try RPC for batch/roll assignment ──
+                            let finalRollNumber = null;
+                            let finalBatchName  = null;
+
+                            const { data: rollNumber, error: rpcError } = await supabase.rpc(
+                                'assign_batch_and_roll_number',
+                                { p_transaction_id: parseInt(txId) }
+                            );
 
                             if (rpcError) {
-                                console.error('RPC assign_batch_and_roll_number failed (maybe SQL not run yet?), falling back to legacy insert:', rpcError);
-                                // Fallback: Ensure no duplicate in training_registrations
+                                console.error('RPC failed, using JS fallback insert:', rpcError);
+                                // Fallback: direct insert with explicit columns
                                 const { data: existingReg } = await supabase
                                     .from('training_registrations')
                                     .select('registration_id')
                                     .eq('email', txData.email)
-                                    .eq('role_id', txData.role_id)
                                     .maybeSingle();
 
                                 if (!existingReg) {
-                                    // Insert into training_registrations
-                                    const { transaction_id, ...txDataWithoutId } = txData;
-                                    txDataWithoutId.payment_status = 'paid'; // force it to paid
-                                    await supabase
+                                    const { error: regErr } = await supabase
                                         .from('training_registrations')
-                                        .insert([txDataWithoutId]);
+                                        .insert([{
+                                            user_id:           txData.user_id,
+                                            role_id:           txData.role_id,
+                                            position:          txData.position,
+                                            full_name:         txData.full_name,
+                                            university_name:   txData.university_name,
+                                            college_name:      txData.college_name,
+                                            current_year:      txData.current_year,
+                                            degree_pursuing:   txData.degree_pursuing,
+                                            branch:            txData.branch,
+                                            graduation_year:   txData.graduation_year,
+                                            mobile_number:     txData.mobile_number,
+                                            email:             txData.email,
+                                            college_proof_url: txData.college_proof_url,
+                                            resume_url:        txData.resume_url,
+                                            fees_amount:       txData.fees_amount,
+                                            payment_status:    'paid',
+                                        }]);
+                                    if (regErr) console.error('Fallback insert failed:', regErr);
                                 }
+                            } else {
+                                finalRollNumber = rollNumber || null;
+                            }
+
+                            // ── Step 5: Send enrollment email (non-fatal) ──
+                            try {
+                                if (!finalRollNumber) {
+                                    const { data: regData } = await supabase
+                                        .from('training_registrations')
+                                        .select('roll_number, batch_id')
+                                        .eq('email', txData.email)
+                                        .maybeSingle();
+                                    if (regData) {
+                                        finalRollNumber = regData.roll_number || null;
+                                        if (regData.batch_id) {
+                                            const { data: batchData } = await supabase
+                                                .from('batches')
+                                                .select('batch_name')
+                                                .eq('id', regData.batch_id)
+                                                .maybeSingle();
+                                            finalBatchName = batchData?.batch_name || null;
+                                        }
+                                    }
+                                }
+                                await fetch(
+                                    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-enrollment-email`,
+                                    {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'apikey':        import.meta.env.VITE_SUPABASE_ANON_KEY,
+                                            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+                                        },
+                                        body: JSON.stringify({
+                                            student_name:    txData.full_name,
+                                            student_email:   txData.email,
+                                            student_phone:   txData.mobile_number,
+                                            student_address: txData.university_name
+                                                ? `${txData.college_name}, ${txData.university_name}, India`
+                                                : `${txData.college_name}, India`,
+                                            program_name:    txData.position,
+                                            transaction_id:  txId,
+                                            fees_amount:     txData.fees_amount,
+                                            roll_number:     finalRollNumber,
+                                            batch_name:      finalBatchName,
+                                            payment_method:  'Online (Cashfree)',
+                                        }),
+                                    }
+                                );
+                            } catch (emailErr) {
+                                console.error('Email send failed (non-fatal):', emailErr);
                             }
                         }
 
-                        setSuccessMsg('Payment Successful! Registration confirmed.');
-                    } else {
-                        // Mark transaction as failed or cancelled
-                        const status = orderData.order_status === 'ACTIVE' ? 'pending' : 'failed';
-                        await supabase
-                            .from('transactions')
-                            .update({ payment_status: status })
-                            .eq('transaction_id', txId);
-                            
-                        setErrorMsg(`Payment was not completed. Status: ${orderData.order_status || 'UNKNOWN'}`);
+                        // ── Show success screen, then reload after 3s ──
+                        setSuccessMsg('🎉 Payment Successful! Enrollment confirmed. Redirecting...');
+                        setTimeout(() => {
+                            window.location.href = window.location.pathname;
+                        }, 3000);
+                        return; // Don't fall through
                     }
-                } catch (err) {
-                    console.error('Failed to verify payment status', err);
-                    setErrorMsg('An error occurred while verifying your payment.');
+                } else {
+                    // Payment not completed
+                    const status = orderData.order_status === 'ACTIVE' ? 'pending' : 'failed';
+                    await supabase
+                        .from('transactions')
+                        .update({ payment_status: status })
+                        .eq('transaction_id', txId);
+                    setErrorMsg(`Payment was not completed. Status: ${orderData.order_status || 'UNKNOWN'}`);
                 }
-                // Clean up URL and auto-refresh the page once to fetch the latest data
-                window.location.href = window.location.pathname;
+            } catch (err) {
+                console.error('Failed to verify payment status', err);
+                setErrorMsg('An error occurred while verifying your payment.');
             }
+
+            // Clean URL after failed/cancelled payment
+            window.history.replaceState({}, '', window.location.pathname);
         };
         checkPayment();
     }, []);
@@ -232,32 +341,35 @@ export default function ProfilePage() {
             <main className="auth-container" style={{ padding: '120px 24px 80px', width: '100%' }}>
                 <div style={layoutStyle}>
 
-                    {/* LEFT SIDEBAR */}
-                    <div style={{ flex: '1 1 280px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', minWidth: '280px', backgroundColor: '#ffffff', borderRadius: '24px', padding: '40px 24px', boxShadow: '0 10px 40px rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.05)' }}>
+                    {/* LEFT COLUMN */}
+                    <div style={{ flex: '1 1 280px', display: 'flex', flexDirection: 'column', gap: '32px', minWidth: '280px' }}>
+                        
+                        {/* PROFILE CARD */}
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', backgroundColor: '#ffffff', borderRadius: '16px', padding: '32px 24px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05)', border: '1px solid #e2e8f0' }}>
                         <div style={{
-                            width: '120px',
-                            height: '120px',
-                            background: 'linear-gradient(135deg, #0ea5e9, #3b82f6)',
-                            color: '#fff',
+                            width: '96px',
+                            height: '96px',
+                            backgroundColor: '#f8fafc',
+                            color: '#0f172a',
                             borderRadius: '50%',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            fontSize: '3.5rem',
-                            fontWeight: 'bold',
+                            fontSize: '2.5rem',
+                            fontWeight: '700',
                             marginBottom: '20px',
-                            boxShadow: '0 10px 25px rgba(14, 165, 233, 0.4)',
-                            border: '4px solid #f0f9ff'
+                            border: '1px solid #e2e8f0',
+                            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)'
                         }}>
                             {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                         </div>
-                        <h1 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '6px', color: '#0f172a', letterSpacing: '-0.02em' }}>{user.name}</h1>
-                        <p style={{ color: '#64748b', marginBottom: '32px', fontSize: '1rem', fontWeight: '500' }}>{user.profession || 'Member'}</p>
+                        <h1 style={{ fontSize: '1.125rem', fontWeight: '700', color: '#0f172a', marginBottom: '4px', letterSpacing: '-0.02em' }}>{user.name}</h1>
+                        <p style={{ color: '#64748b', marginBottom: '32px', fontSize: '0.75rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{user.profession || 'Member'}</p>
 
-                        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                             {!isEditing ? (
-                                <button onClick={() => setIsEditing(true)} style={{ width: '100%', padding: '12px', borderRadius: '12px', backgroundColor: '#f1f5f9', color: '#0f172a', fontWeight: '600', border: 'none', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#e2e8f0'; e.currentTarget.style.color = '#0ea5e9'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#f1f5f9'; e.currentTarget.style.color = '#0f172a'; }}>
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                <button onClick={() => setIsEditing(true)} style={{ width: '100%', padding: '10px 16px', borderRadius: '8px', backgroundColor: '#ffffff', color: '#0f172a', fontWeight: '600', fontSize: '0.875rem', border: '1px solid #e2e8f0', cursor: 'pointer', transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#f8fafc'; e.currentTarget.style.borderColor = '#cbd5e1'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#ffffff'; e.currentTarget.style.borderColor = '#e2e8f0'; }}>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                                     Edit Profile
                                 </button>
                             ) : (
@@ -267,23 +379,91 @@ export default function ProfilePage() {
                                     setFormData({
                                         name: user.name || '', email: user.email || '', phone_number: user.phone_number || '', profession: user.profession || '', residential_address: user.residential_address || '', age: user.age || ''
                                     });
-                                }} style={{ width: '100%', padding: '12px', borderRadius: '12px', backgroundColor: '#f1f5f9', color: '#64748b', fontWeight: '600', border: 'none', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#e2e8f0'; e.currentTarget.style.color = '#0f172a'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#f1f5f9'; e.currentTarget.style.color = '#64748b'; }}>
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                                    Cancel Editing
+                                }} style={{ width: '100%', padding: '10px 16px', borderRadius: '8px', backgroundColor: '#ffffff', color: '#64748b', fontWeight: '600', fontSize: '0.875rem', border: '1px solid #e2e8f0', cursor: 'pointer', transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#f8fafc'; e.currentTarget.style.color = '#0f172a'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#ffffff'; e.currentTarget.style.color = '#64748b'; }}>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                    Cancel
                                 </button>
                             )}
 
                             {!loadingTrainings && trainings.length > 0 && (
-                                <button onClick={() => navigate('/student-dashboard')} style={{ width: '100%', padding: '12px', borderRadius: '12px', backgroundColor: '#10b981', color: '#ffffff', fontWeight: '600', border: 'none', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)' }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(16, 185, 129, 0.3)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.2)'; }}>
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
-                                    Student Dashboard
+                                <button onClick={() => navigate('/student-dashboard')} style={{ width: '100%', padding: '10px 16px', borderRadius: '8px', backgroundColor: '#0f172a', color: '#ffffff', fontWeight: '600', fontSize: '0.875rem', border: '1px solid #0f172a', cursor: 'pointer', transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 2px 4px rgba(15, 23, 42, 0.1)' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#1e293b'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#0f172a'; }}>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                                    Dashboard
                                 </button>
                             )}
 
-                            <button onClick={handleLogout} style={{ width: '100%', padding: '12px', borderRadius: '12px', backgroundColor: 'transparent', color: '#ef4444', fontWeight: '600', border: '1px solid #fecaca', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '16px' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#fef2f2'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}>
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                            <div style={{ height: '1px', backgroundColor: '#e2e8f0', margin: '8px 0' }} />
+
+                            <button onClick={handleLogout} style={{ width: '100%', padding: '10px 16px', borderRadius: '8px', backgroundColor: 'transparent', color: '#64748b', fontWeight: '600', fontSize: '0.875rem', border: 'none', cursor: 'pointer', transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onMouseEnter={(e) => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.backgroundColor = '#fef2f2'; }} onMouseLeave={(e) => { e.currentTarget.style.color = '#64748b'; e.currentTarget.style.backgroundColor = 'transparent'; }}>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                                 Sign Out
                             </button>
+                        </div>
+                        </div>
+
+                        {/* SUPPORT TICKET CARD */}
+                        <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', padding: '24px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', border: '1px solid #e2e8f0' }}>
+                            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#0f172a', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                                Support / Help
+                            </h3>
+                            <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '20px' }}>Need assistance? Raise a ticket and our team will resolve it quickly.</p>
+
+                            {ticketMsg.text && (
+                                <div style={{ 
+                                    padding: '10px', 
+                                    borderRadius: '8px', 
+                                    marginBottom: '16px', 
+                                    fontSize: '0.85rem', 
+                                    fontWeight: '500', 
+                                    backgroundColor: ticketMsg.type === 'success' ? '#dcfce7' : '#fee2e2', 
+                                    color: ticketMsg.type === 'success' ? '#166534' : '#b91c1c' 
+                                }}>
+                                    {ticketMsg.text}
+                                </div>
+                            )}
+
+                            <form onSubmit={handleTicketSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', color: '#475569', marginBottom: '4px' }}>Subject</label>
+                                    <input 
+                                        type="text" 
+                                        required
+                                        value={ticketData.subject}
+                                        onChange={(e) => setTicketData({...ticketData, subject: e.target.value})}
+                                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none' }}
+                                        placeholder="Brief issue title"
+                                        onFocus={(e) => e.target.style.borderColor = '#0ea5e9'}
+                                        onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', color: '#475569', marginBottom: '4px' }}>Description</label>
+                                    <textarea 
+                                        required
+                                        value={ticketData.description}
+                                        onChange={(e) => setTicketData({...ticketData, description: e.target.value})}
+                                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none', minHeight: '80px', resize: 'vertical' }}
+                                        placeholder="Describe your issue in detail..."
+                                        onFocus={(e) => e.target.style.borderColor = '#0ea5e9'}
+                                        onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
+                                    />
+                                </div>
+                                <button 
+                                    type="submit" 
+                                    disabled={ticketLoading}
+                                    style={{ 
+                                        width: '100%', padding: '10px', borderRadius: '8px', 
+                                        backgroundColor: '#0f172a', color: '#ffffff', fontWeight: '600', 
+                                        fontSize: '0.9rem', border: '1px solid #0f172a', cursor: ticketLoading ? 'not-allowed' : 'pointer', 
+                                        opacity: ticketLoading ? 0.7 : 1, transition: 'all 0.2s ease', marginTop: '4px' 
+                                    }}
+                                    onMouseEnter={(e) => { if(!ticketLoading) e.currentTarget.style.backgroundColor = '#1e293b' }}
+                                    onMouseLeave={(e) => { if(!ticketLoading) e.currentTarget.style.backgroundColor = '#0f172a' }}
+                                >
+                                    {ticketLoading ? 'Submitting...' : 'Raise Ticket'}
+                                </button>
+                            </form>
                         </div>
                     </div>
 
@@ -376,7 +556,7 @@ export default function ProfilePage() {
                         <div style={{ backgroundColor: '#ffffff', borderRadius: '24px', padding: '40px', boxShadow: '0 10px 40px rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.05)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', borderBottom: '1px solid #f1f5f9', paddingBottom: '16px' }}>
                                 <h2 style={{ fontSize: '1.4rem', fontWeight: '700', color: '#0f172a', letterSpacing: '-0.01em', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
                                     My Enrolled Programs
                                 </h2>
                             </div>

@@ -599,19 +599,24 @@ export default function ApplicationModal({ role, onClose }) {
 
             const fees = !isNaN(rawFee) && rawFee > 0 ? rawFee : 999;
 
+            const sanitizeInput = (str) => {
+                if (typeof str !== 'string') return str;
+                return str.replace(/<[^>]*>?/gm, '').trim();
+            };
+
             const { data: insertedData, error: dbError } = await supabase.from('transactions').insert([{
                 user_id: user?.user_id || null,
                 position: role.title,
                 role_id: role.id || role.posting_id || null,
-                full_name: formData.full_name,
-                university_name: formData.university_name,
-                college_name: formData.college_name,
+                full_name: sanitizeInput(formData.full_name),
+                university_name: sanitizeInput(formData.university_name),
+                college_name: sanitizeInput(formData.college_name),
                 current_year: formData.current_year ? parseInt(formData.current_year, 10) : null,
-                degree_pursuing: formData.degree_pursuing,
-                branch: formData.branch,
+                degree_pursuing: sanitizeInput(formData.degree_pursuing),
+                branch: sanitizeInput(formData.branch),
                 graduation_year: formData.graduation_year ? parseInt(formData.graduation_year) : null,
-                mobile_number: formData.mobile_number,
-                email: formData.email,
+                mobile_number: sanitizeInput(formData.mobile_number),
+                email: sanitizeInput(formData.email),
                 college_proof_url: proofUrl,
                 resume_url: resumeUrl,
                 fees_amount: fees,
