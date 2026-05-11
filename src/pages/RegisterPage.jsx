@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import Navbar from '../components/Navbar';
@@ -29,6 +29,14 @@ export default function RegisterPage() {
     const [otp, setOtp] = useState('');
     const [verifyingOtp, setVerifyingOtp] = useState(false);
     const [timer, setTimer] = useState(120);
+    const errorRef = useRef(null);
+
+    // Auto-scroll to error message
+    useEffect(() => {
+        if (errorMsg && errorRef.current) {
+            errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, [errorMsg]);
     
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -71,7 +79,7 @@ export default function RegisterPage() {
             setTimer(120); // Reset timer to 2 minutes
         } catch (error) {
             console.error('Error resending OTP:', error);
-            setErrorMsg(error.message || 'Failed to resend confirmation code.');
+            setErrorMsg('Failed to resend confirmation code. Please try again later.');
         }
     };
 
@@ -88,6 +96,13 @@ export default function RegisterPage() {
             return;
         }
 
+        let digitsOnly = formData.phone.replace(/\D/g, '');
+        if (digitsOnly.length > 10 && digitsOnly.startsWith('91')) {
+            digitsOnly = digitsOnly.substring(2);
+        }
+        digitsOnly = digitsOnly.replace(/^0+/, '');
+        const formattedPhone = `+91${digitsOnly}`;
+
         setLoading(true);
 
         try {
@@ -97,7 +112,7 @@ export default function RegisterPage() {
                 options: {
                     data: {
                         name: formData.name,
-                        phone: formData.phone,
+                        phone: formattedPhone,
                         age: parseInt(formData.age) || null,
                         profession: formData.profession,
                         address: formData.address
@@ -118,7 +133,7 @@ export default function RegisterPage() {
             setLoading(false);
         } catch (error) {
             console.error('Error during registration:', error);
-            setErrorMsg(error.message || 'An error occurred during registration.');
+            setErrorMsg('An error occurred during registration. Please check your details and try again.');
             setLoading(false);
         }
     };
@@ -143,7 +158,7 @@ export default function RegisterPage() {
             }, 2000);
         } catch (error) {
             console.error('Error verifying OTP:', error);
-            setErrorMsg(error.message || 'Invalid or expired confirmation code.');
+            setErrorMsg('Invalid or expired confirmation code. Please check your email and try again.');
             setVerifyingOtp(false);
         }
     };
@@ -160,7 +175,7 @@ export default function RegisterPage() {
                     </div>
 
                     {errorMsg && (
-                        <div style={{ backgroundColor: '#fee2e2', color: '#b91c1c', padding: '12px', borderRadius: '8px', marginBottom: '20px', textAlign: 'center', fontWeight: '500', fontSize: '0.95rem' }}>
+                        <div ref={errorRef} style={{ backgroundColor: '#fee2e2', color: '#b91c1c', padding: '12px', borderRadius: '8px', marginBottom: '20px', textAlign: 'center', fontWeight: '500', fontSize: '0.95rem' }}>
                             {errorMsg}
                         </div>
                     )}
@@ -219,16 +234,33 @@ export default function RegisterPage() {
 
                             <div className="auth-group">
                                 <label htmlFor="phone">Phone Number</label>
-                                <input
-                                    type="tel"
-                                    id="phone"
-                                    name="phone"
-                                    className="auth-input"
-                                    placeholder="+91 9876543210"
-                                    value={formData.phone}
-                                    onChange={handleChange}
-                                    required
-                                />
+                                <div style={{ display: 'flex', alignItems: 'stretch' }}>
+                                    <div style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        padding: '0 1rem',
+                                        backgroundColor: '#f9fafb',
+                                        border: '1px solid #e5e7eb',
+                                        borderRight: 'none',
+                                        borderRadius: '0.5rem 0 0 0.5rem',
+                                        color: '#6b7280',
+                                        fontWeight: '500'
+                                    }}>
+                                        +91
+                                    </div>
+                                    <input
+                                        type="tel"
+                                        id="phone"
+                                        name="phone"
+                                        className="auth-input"
+                                        style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+                                        placeholder="9876543210"
+                                        value={formData.phone}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                </div>
                             </div>
 
                             <div className="auth-group auth-group--full">

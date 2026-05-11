@@ -66,6 +66,13 @@ export default function StudentDashboard() {
   const [capstoneAck, setCapstoneAck] = useState(false);
   const [submittingCapstone, setSubmittingCapstone] = useState(false);
   const [capstoneError, setCapstoneError] = useState(null);
+  const capstoneErrorRef = useRef(null);
+
+  useEffect(() => {
+      if (capstoneError && capstoneErrorRef.current) {
+          capstoneErrorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+  }, [capstoneError]);
 
   const videoRef = useRef(null);
 
@@ -295,6 +302,7 @@ export default function StudentDashboard() {
       setCurrentQuizAnswers({});
       setQuizResult(null);
       setCapstoneError(null);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [activeItem]);
 
   const toggleSection = (sectionId) => {
@@ -383,8 +391,8 @@ export default function StudentDashboard() {
           percentage: parseFloat(percentage.toFixed(2)),
           passed
       };
-
       setQuizResult(resultData);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
 
       try {
           // Submit to DB
@@ -442,7 +450,7 @@ export default function StudentDashboard() {
           
           if (error) {
               console.error('Error submitting capstone:', error);
-              setCapstoneError('Failed to submit: ' + error.message);
+              setCapstoneError('Failed to submit. Please try again later.');
           } else {
               setCapstoneSubmission({ status: 'Pending Review' });
           }
@@ -849,7 +857,7 @@ export default function StudentDashboard() {
                         ) : (
                             <div className="capstone-form animate-fade-in">
                                 {capstoneError && (
-                                    <div style={{
+                                    <div ref={capstoneErrorRef} style={{
                                         background: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626',
                                         padding: '12px 16px', borderRadius: '8px', marginBottom: '24px',
                                         fontSize: '0.9rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px'

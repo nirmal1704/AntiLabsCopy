@@ -79,7 +79,6 @@ function generateEmail(d: {
           ${[
             "Check the attached <strong>Instructions PDF</strong> for program details &amp; timelines.",
             "Log in to <strong>antilabs.in/profile</strong> to access your Student Dashboard.",
-            "Your mentor will contact you within <strong>2&#8211;3 working days</strong>.",
             "Watch your email for batch schedules &amp; resources.",
           ].map((s, i) => `<tr>
             <td width="28" valign="top" style="padding-bottom:10px;"><div style="width:22px;height:22px;background:#0d5bd7;border-radius:50%;text-align:center;font-family:Arial,sans-serif;font-size:11px;font-weight:700;color:#fff;line-height:22px;">${i + 1}</div></td>

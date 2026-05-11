@@ -21,6 +21,9 @@ export default function ProfilePage() {
     const [trainings, setTrainings] = useState([]);
     const [loadingTrainings, setLoadingTrainings] = useState(true);
 
+    const [invoices, setInvoices] = useState([]);
+    const [loadingInvoices, setLoadingInvoices] = useState(true);
+
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -34,6 +37,22 @@ export default function ProfilePage() {
     const [ticketData, setTicketData] = useState({ subject: '', description: '' });
     const [ticketLoading, setTicketLoading] = useState(false);
     const [ticketMsg, setTicketMsg] = useState({ text: '', type: '' });
+
+    const profileErrorRef = useRef(null);
+    const ticketErrorRef = useRef(null);
+
+    // Auto-scroll to error messages
+    useEffect(() => {
+        if (errorMsg && profileErrorRef.current) {
+            profileErrorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, [errorMsg]);
+
+    useEffect(() => {
+        if (ticketMsg.text && ticketErrorRef.current) {
+            ticketErrorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, [ticketMsg]);
 
     const handleTicketSubmit = async (e) => {
         e.preventDefault();
@@ -216,7 +235,7 @@ export default function ProfilePage() {
                         .from('transactions')
                         .update({ payment_status: status })
                         .eq('transaction_id', txId);
-                    setErrorMsg(`Payment was not completed. Status: ${orderData.order_status || 'UNKNOWN'}`);
+                    setErrorMsg('Payment was not completed.');
                 }
             } catch (err) {
                 console.error('Failed to verify payment status', err);
@@ -258,7 +277,27 @@ export default function ProfilePage() {
                     setLoadingTrainings(false);
                 }
             };
+
+            const fetchInvoices = async () => {
+                try {
+                    const { data, error } = await supabase
+                        .from('invoices')
+                        .select('*')
+                        .eq('student_email', user.email)
+                        .order('created_at', { ascending: false });
+
+                    if (!error && data) {
+                        setInvoices(data);
+                    }
+                } catch (err) {
+                    console.error("Error fetching invoices", err);
+                } finally {
+                    setLoadingInvoices(false);
+                }
+            };
+
             fetchTrainings();
+            fetchInvoices();
         }
     }, [user]);
 
@@ -319,7 +358,7 @@ export default function ProfilePage() {
             setTimeout(() => setSuccessMsg(''), 3000);
         } catch (err) {
             console.error('Update error:', err);
-            setErrorMsg(err.message || 'Failed to update profile.');
+            setErrorMsg('Failed to update profile. Please try again later.');
         } finally {
             setLoading(false);
         }
@@ -410,7 +449,7 @@ export default function ProfilePage() {
                             <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '20px' }}>Need assistance? Raise a ticket and our team will resolve it quickly.</p>
 
                             {ticketMsg.text && (
-                                <div style={{ 
+                                <div ref={ticketErrorRef} style={{ 
                                     padding: '10px', 
                                     borderRadius: '8px', 
                                     marginBottom: '16px', 
@@ -465,6 +504,33 @@ export default function ProfilePage() {
                                 </button>
                             </form>
                         </div>
+
+                        {/* INVOICES CARD */}
+                        <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', padding: '24px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', border: '1px solid #e2e8f0' }}>
+                            <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#0f172a', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                Invoices History
+                            </h3>
+                            {loadingInvoices ? (
+                                <p style={{ fontSize: '0.85rem', color: '#64748b' }}>Loading invoices...</p>
+                            ) : invoices.length === 0 ? (
+                                <p style={{ fontSize: '0.85rem', color: '#64748b' }}>No invoices found.</p>
+                            ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    {invoices.map((inv) => (
+                                        <div key={inv.invoice_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', backgroundColor: '#f8fafc' }}>
+                                            <div>
+                                                <div style={{ fontSize: '0.85rem', fontWeight: '600', color: '#0f172a' }}>{inv.invoice_number}</div>
+                                                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{new Date(inv.created_at).toLocaleDateString()}</div>
+                                            </div>
+                                            <div style={{ fontSize: '0.9rem', fontWeight: '700', color: '#10b981' }}>
+                                                ₹{inv.grand_total}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     {/* RIGHT CONTENT */}
@@ -480,7 +546,7 @@ export default function ProfilePage() {
                             </div>
 
                             {errorMsg && (
-                                <div style={{ backgroundColor: '#fee2e2', color: '#b91c1c', padding: '12px', borderRadius: '8px', marginBottom: '24px', textAlign: 'center', fontWeight: '500', fontSize: '0.95rem' }}>
+                                <div ref={profileErrorRef} style={{ backgroundColor: '#fee2e2', color: '#b91c1c', padding: '12px', borderRadius: '8px', marginBottom: '24px', textAlign: 'center', fontWeight: '500', fontSize: '0.95rem' }}>
                                     {errorMsg}
                                 </div>
                             )}

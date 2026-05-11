@@ -524,6 +524,14 @@ export default function ApplicationModal({ role, onClose }) {
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const errorRef = useRef(null);
+
+    // Auto-scroll to error message
+    useEffect(() => {
+        if (error && errorRef.current) {
+            errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, [error]);
 
     useEffect(() => {
         document.body.style.overflow = 'hidden';
@@ -630,7 +638,7 @@ export default function ApplicationModal({ role, onClose }) {
                     if (logout) logout();
                     throw new Error('Your session is invalid or has expired. Please sign out and sign in again.');
                 }
-                throw dbError;
+                throw new Error('An unexpected database error occurred. Please try again later.');
             }
 
             const applicationId = insertedData?.[0]?.transaction_id;
@@ -717,7 +725,7 @@ export default function ApplicationModal({ role, onClose }) {
                 <form id="am-form" className="am__form" onSubmit={handleSubmit}>
 
                     {error && (
-                        <div className="am__error">
+                        <div ref={errorRef} className="am__error">
                             {Icon.error}&nbsp;{error}
                         </div>
                     )}

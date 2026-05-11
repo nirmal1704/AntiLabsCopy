@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import Navbar from '../components/Navbar';
@@ -16,6 +16,14 @@ export default function LoginPage() {
     const [successMsg, setSuccessMsg] = useState('');
     const navigate = useNavigate();
     const { user, login } = useAuth();
+    const errorRef = useRef(null);
+
+    // Auto-scroll to error message
+    useEffect(() => {
+        if (errorMsg && errorRef.current) {
+            errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, [errorMsg]);
 
     // Redirect to home if already logged in
     useEffect(() => {
@@ -36,7 +44,7 @@ export default function LoginPage() {
             });
 
             if (error || !data.user) {
-                setErrorMsg(error?.message || 'Invalid email or password.');
+                setErrorMsg('Invalid email or password. Please try again.');
                 setLoading(false);
                 return;
             }
@@ -70,7 +78,7 @@ export default function LoginPage() {
                     </div>
 
                     {errorMsg && (
-                        <div style={{ backgroundColor: '#fee2e2', color: '#b91c1c', padding: '12px', borderRadius: '8px', marginBottom: '20px', textAlign: 'center', fontWeight: '500', fontSize: '0.95rem' }}>
+                        <div ref={errorRef} style={{ backgroundColor: '#fee2e2', color: '#b91c1c', padding: '12px', borderRadius: '8px', marginBottom: '20px', textAlign: 'center', fontWeight: '500', fontSize: '0.95rem' }}>
                             {errorMsg}
                         </div>
                     )}
