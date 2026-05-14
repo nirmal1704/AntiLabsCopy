@@ -55,7 +55,7 @@ export default function Footer() {
                         <Logo />
                         <p className="footer__tagline">Engineering the digital infrastructure of tomorrow, today.</p>
                         <p className="footer__brand-desc">
-                            <Link to="/" style={{color: 'inherit', fontWeight: 'bold'}}>AntiLabs</Link> is a premium IT services firm specializing in enterprise cybersecurity, cloud architecture, and custom <Link to="/services?tab=software" style={{color: 'inherit', textDecoration: 'underline'}}>AntiLabs Web Development</Link>. Explore our comprehensive <Link to="/services" style={{color: 'inherit', textDecoration: 'underline'}}>AntiLabs Services</Link> designed to scale with your ambitions.
+                            <Link to="/" style={{ color: 'inherit', fontWeight: 'bold' }}>AntiLabs</Link> is a premium IT services firm specializing in enterprise cybersecurity, cloud architecture, and custom <Link to="/services?tab=software" style={{ color: 'inherit', textDecoration: 'underline' }}>AntiLabs Web Development</Link>. Explore our comprehensive <Link to="/services" style={{ color: 'inherit', textDecoration: 'underline' }}>AntiLabs Services</Link> designed to scale with your ambitions.
                         </p>
                         <div className="footer__socials">
                             <SocialIcon href="https://www.linkedin.com/company/antilabs/" label="LinkedIn">
@@ -133,7 +133,7 @@ export default function Footer() {
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" />
                                 </svg>
-                                <span>287 B Block, Silicon City, Rau, Indore</span>
+                                <span>BITS Pilani, K K Birla Goa Campus NH 17B, Bypass Road, Zuarinagar, Sancoale, South Goa - 403726, Goa, India</span>
                             </div>
                             <div className="footer__contact-item">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
