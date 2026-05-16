@@ -904,58 +904,7 @@ export default function ApplicationModal({ role, onClose }) {
                         </label>
                     </div>
 
-                    {/* Program Acknowledgment */}
-                    <div className="am__section-label">Program Acknowledgment</div>
 
-                    <div className="am__acknowledge-box">
-                        <div className="am__acknowledge-header">
-                            <span className="am__acknowledge-icon">⚠</span>
-                            <span>Please read carefully before proceeding to payment</span>
-                        </div>
-                        <p className="am__acknowledge-intro">
-                            By continuing and completing payment for the <strong>{role.title}</strong> Training &amp; Internship Program, you explicitly acknowledge and agree to all of the following:
-                        </p>
-                        <ul className="am__acknowledge-list">
-                            <li>
-                                <span className="am__ack-bullet">01</span>
-                                <span>You agree to abide by all company rules, code of conduct, and guidelines as specified in your <strong>Offer Letter</strong>. Violation of any clause may result in immediate termination from the program without a refund.</span>
-                            </li>
-                            <li>
-                                <span className="am__ack-bullet">02</span>
-                                <span>You have thoroughly read, understood, and accepted AntiLabs'{' '}
-                                    <a href="/terms" target="_blank" rel="noreferrer">Terms &amp; Conditions</a>,{' '}
-                                    <a href="/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>, and{' '}
-                                    <a href="/refund" target="_blank" rel="noreferrer">Refund Policy</a>, and acknowledge that disputes will be governed by these documents.
-                                </span>
-                            </li>
-                            <li>
-                                <span className="am__ack-bullet am__ack-bullet--warn">03</span>
-                                <span><strong>This payment is NOT a guarantee of employment.</strong> The fee is solely a <em>Lecturer &amp; Training Program Fee</em> for structured skill development. Internship conversion, if applicable, is merit-based and subject to performance evaluation.</span>
-                            </li>
-                            <li>
-                                <span className="am__ack-bullet">04</span>
-                                <span>Your <strong>Certificate of Completion</strong> will be issued only upon successful completion of the full Training Program <em>and</em> the mandatory Capstone Project, as evaluated by AntiLabs mentors.</span>
-                            </li>
-                            <li>
-                                <span className="am__ack-bullet am__ack-bullet--warn">05</span>
-                                <span>
-                                    This program has a fixed validity of{' '}
-                                    <strong className="am__ack-highlight">
-                                        {role.duration ? role.duration : 'the duration specified in your Offer Letter'}
-                                    </strong>{' '}
-                                    from the date of purchase. All course access, resources, mentor support, and platform features will be permanently revoked upon expiry.
-                                </span>
-                            </li>
-                            <li>
-                                <span className="am__ack-bullet am__ack-bullet--warn">06</span>
-                                <span><strong>Failure to complete the program within the validity period</strong> will result in the permanent loss of access to all learning resources, recorded sessions, and project submissions. No extensions will be granted unless explicitly approved in writing by AntiLabs.</span>
-                            </li>
-                            <li>
-                                <span className="am__ack-bullet">07</span>
-                                <span>All other terms, deliverables, timelines, mentorship structure, and program-specific conditions are as detailed in the <strong>Offer Letter</strong> issued to you upon registration approval.</span>
-                            </li>
-                        </ul>
-                    </div>
 
                     {/* Manual Math Captcha */}
                     <div className="am__captcha">

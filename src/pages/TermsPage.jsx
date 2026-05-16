@@ -40,11 +40,17 @@ const policies = [
             {
                 heading: '4. Training & Internship Programs',
                 content: (
-                    <ul>
-                        <li>Enrollment does not guarantee employment.</li>
-                        <li>Certificates and Letters of Recommendation are issued upon successful completion and evaluation.</li>
-                        <li>Interview opportunities may be provided based on performance and availability.</li>
-                    </ul>
+                    <>
+                        <p>By enrolling and completing payment for any Training & Internship Program, you explicitly acknowledge and agree to the following:</p>
+                        <ul>
+                            <li><strong>Offer Letter Compliance:</strong> You agree to abide by all company rules, code of conduct, and guidelines as specified in your Offer Letter. Violation of any clause may result in immediate termination from the program without a refund.</li>
+                            <li><strong>No Guarantee of Employment:</strong> This payment is NOT a guarantee of employment. The fee is solely a Lecturer & Training Program Fee for structured skill development. Internship conversion, if applicable, is merit-based and subject to performance evaluation.</li>
+                            <li><strong>Certification:</strong> Your Certificate of Completion will be issued only upon successful completion of the full Training Program and the mandatory Capstone Project, as evaluated by AntiLabs mentors.</li>
+                            <li><strong>Program Validity:</strong> Programs have a fixed validity of the duration specified in your Offer Letter from the date of purchase. All course access, resources, mentor support, and platform features will be permanently revoked upon expiry.</li>
+                            <li><strong>Failure to Complete:</strong> Failure to complete the program within the validity period will result in the permanent loss of access to all learning resources, recorded sessions, and project submissions. No extensions will be granted unless explicitly approved in writing by AntiLabs.</li>
+                            <li><strong>Other Terms:</strong> All other terms, deliverables, timelines, mentorship structure, and program-specific conditions are as detailed in the Offer Letter issued to you upon registration approval.</li>
+                        </ul>
+                    </>
                 ),
             },
             {
