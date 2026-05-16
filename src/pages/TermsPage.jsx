@@ -389,7 +389,8 @@ const policies = [
                 heading: '10. Termination of Employment',
                 content: (
                     <>
-                        <p>Employment may be terminated:</p>
+                        <p><strong>AntiLabs reserves the right to terminate any job, internship, or employment role at any time if the individual's performance is not up to the mark.</strong></p>
+                        <p>Employment may also be terminated:</p>
                         <ul>
                             <li>By employee through written notice</li>
                             <li>By company for policy violation</li>
