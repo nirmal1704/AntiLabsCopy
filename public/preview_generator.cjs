@@ -1,35 +1,25 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+const fs = require('fs');
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
-function generateEmail(d: {
-  student_name: string; program_name: string; roll_number?: string; batch_name?: string;
-  invoice_number: string; fees_amount: number; base_amount: number; tax_amount: number;
-  enrollment_date: string; invoice_date: string; student_phone: string; student_address: string;
-  transaction_id: string | number; payment_method: string;
-}): string {
-  const fmt = (n: number) => `&#8377;${n.toLocaleString("en-IN")}`;
+function generateEmail(d) {
+  const fmt = (n) => '&#8377;' + n.toLocaleString('en-IN');
   const fees = fmt(d.fees_amount), base = fmt(d.base_amount), tax = fmt(d.tax_amount);
 
   const FONT = `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif`;
 
-  const card = (label: string, value: string) =>
+  const card = (label, value) =>
     `<table width="100%" cellpadding="0" cellspacing="0"><tr><td style="border:1px solid #e2e8f0;background:#f8fafc;border-radius:6px;padding:16px;">
       <div style="font-family:${FONT};font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">${label}</div>
       <div style="font-family:${FONT};font-size:16px;font-weight:700;color:#0f172a;">${value}</div>
     </td></tr></table>`;
 
-  const rollCard  = d.roll_number ? card("Roll Number", d.roll_number) : "";
-  const batchCard = d.batch_name  ? card("Batch", d.batch_name) : "";
+  const rollCard  = d.roll_number ? card('Roll Number', d.roll_number) : '';
+  const batchCard = d.batch_name  ? card('Batch', d.batch_name) : '';
 
   const topRow = (rollCard || batchCard) ? `
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;"><tr>
       <td width="50%" style="padding-right:8px;vertical-align:top;">${rollCard}</td>
       <td width="50%" style="padding-left:8px;vertical-align:top;">${batchCard}</td>
-    </tr></table>` : "";
+    </tr></table>` : '';
 
   return `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
@@ -58,10 +48,10 @@ function generateEmail(d: {
     <!-- Amount + Date cards -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;"><tr>
       <td width="50%" style="padding-right:8px;vertical-align:top;">
-        ${card("Amount Paid", fees)}
+        ${card('Amount Paid', fees)}
       </td>
       <td width="50%" style="padding-left:8px;vertical-align:top;">
-        ${card("Enrolled On", d.enrollment_date)}
+        ${card('Enrolled On', d.enrollment_date)}
       </td>
     </tr></table>
 
@@ -71,13 +61,13 @@ function generateEmail(d: {
         <div style="font-family:${FONT};font-size:14px;font-weight:600;color:#0f172a;margin-bottom:16px;">Next Steps</div>
         <table cellpadding="0" cellspacing="0" border="0" width="100%">
           ${[
-            "Please review the attached <strong>Instructions PDF</strong> for details and timelines.",
-            "Log in to <strong>antilabs.in/profile</strong> to access your Student Dashboard.",
-            "You will receive an email regarding batch schedules and resources shortly.",
+            'Please review the attached <strong>Instructions PDF</strong> for details and timelines.',
+            'Log in to <strong>antilabs.in/profile</strong> to access your Student Dashboard.',
+            'You will receive an email regarding batch schedules and resources shortly.',
           ].map((s) => `<tr>
             <td width="16" valign="top" style="padding-bottom:12px;"><div style="width:6px;height:6px;background:#2563eb;border-radius:50%;margin-top:7px;"></div></td>
             <td style="font-family:${FONT};font-size:14px;color:#475569;line-height:1.6;padding-bottom:12px;">${s}</td>
-          </tr>`).join("")}
+          </tr>`).join('')}
         </table>
       </td>
     </tr></table>
@@ -194,118 +184,21 @@ function generateEmail(d: {
 </body></html>`;
 }
 
-/* ─── Main Handler ───────────────────────────────────────── */
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
+const mockData = {
+  student_name: 'John Doe',
+  program_name: 'Full Stack Development',
+  roll_number: 'AL-FSD-001',
+  batch_name: 'Jan 2025',
+  invoice_number: 'ANTL-2025-01234',
+  fees_amount: 5000,
+  base_amount: 4237,
+  tax_amount: 763,
+  enrollment_date: 'May 17, 2026',
+  invoice_date: 'May 17, 2026',
+  student_phone: '+91-9876543210',
+  student_address: '123 Tech Street, Bangalore, India',
+  transaction_id: '123456789',
+  payment_method: 'Online (Cashfree)'
+};
 
-  try {
-    const body = await req.json();
-    const {
-      student_name, student_email, student_phone, student_address,
-      program_name, transaction_id, fees_amount, roll_number, batch_name, payment_method,
-    } = body;
-
-    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-    const SUPABASE_URL   = Deno.env.get("SUPABASE_URL");
-    const SUPABASE_KEY   = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-    if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY not configured.");
-
-    // ── Idempotency: skip if already sent ──────────────────
-    if (SUPABASE_URL && SUPABASE_KEY) {
-      const checkRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/invoices?transaction_id=eq.${transaction_id}&email_sent=eq.true&select=invoice_id`,
-        { headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` } }
-      );
-      const existing = await checkRes.json();
-      if (Array.isArray(existing) && existing.length > 0) {
-        console.log(`Invoice already sent for transaction ${transaction_id}. Skipping.`);
-        return new Response(
-          JSON.stringify({ success: true, skipped: true, reason: "already_sent" }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
-        );
-      }
-    }
-
-    // ── Build invoice data ──────────────────────────────────
-    const now           = new Date();
-    const invoiceDate   = now.toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" });
-    const enrollDate    = now.toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" });
-    const invoiceNumber = `ANTL-${now.getFullYear()}-${String(transaction_id).padStart(5, "0")}`;
-    const feesNum       = Number(fees_amount) || 0;
-    const baseAmount    = Math.round(feesNum / 1.18);
-    const taxAmount     = feesNum - baseAmount;
-
-    const emailHTML = generateEmail({
-      student_name, program_name, roll_number, batch_name,
-      invoice_number: invoiceNumber, fees_amount: feesNum,
-      base_amount: baseAmount, tax_amount: taxAmount,
-      enrollment_date: enrollDate, invoice_date: invoiceDate,
-      student_phone: student_phone || "N/A",
-      student_address: student_address || "India",
-      transaction_id, payment_method: payment_method || "Online (Cashfree)",
-    });
-
-    // ── Fetch Instructions PDF ──────────────────────────────
-    const attachments: Array<{ filename: string; content: string; type?: string }> = [];
-    try {
-      const pdfRes = await fetch("https://antilabs.in/AntiLabs_Training_Program_Instructions.pdf");
-      if (pdfRes.ok) {
-        const buf = await pdfRes.arrayBuffer();
-        const bytes = new Uint8Array(buf);
-        let bin = "";
-        for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-        attachments.push({ filename: "Antilabs_Training_Program_Instructions.pdf", content: btoa(bin), type: "application/pdf" });
-      }
-    } catch (e) { console.warn("PDF fetch failed:", e); }
-
-    // ── Send via Resend ─────────────────────────────────────
-    const resendRes = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { "Authorization": `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        from: "Antilabs <onboarding@antilabs.in>",
-        to: [student_email],
-        subject: `🎉 Welcome to Antilabs! Enrollment for "${program_name}" Confirmed`,
-        html: emailHTML,
-        attachments,
-      }),
-    });
-
-    const resendData = await resendRes.json();
-    if (!resendRes.ok) throw new Error(resendData.message || "Resend error");
-
-    // ── Store invoice record ────────────────────────────────
-    if (SUPABASE_URL && SUPABASE_KEY) {
-      await fetch(`${SUPABASE_URL}/rest/v1/invoices`, {
-        method: "POST",
-        headers: {
-          "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}`,
-          "Content-Type": "application/json", "Prefer": "return=minimal",
-        },
-        body: JSON.stringify({
-          invoice_number: invoiceNumber, transaction_id: Number(transaction_id),
-          student_name, student_email, program_name,
-          fees_amount: feesNum, subtotal: baseAmount, tax_amount: taxAmount, grand_total: feesNum,
-          payment_method: payment_method || "Online (Cashfree)",
-          roll_number: roll_number || null, batch_name: batch_name || null,
-          email_sent: true, email_sent_at: new Date().toISOString(),
-        }),
-      });
-    }
-
-    return new Response(
-      JSON.stringify({ success: true, email_id: resendData.id, invoice_number: invoiceNumber }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
-    );
-
-  } catch (error) {
-    console.error("send-enrollment-email error:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
-    );
-  }
-});
+fs.writeFileSync('public/email_preview.html', generateEmail(mockData));
