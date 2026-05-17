@@ -70,20 +70,27 @@ const Icon = {
 };
 
 /* ─── File Upload Zone component ──────────────────────────── */
-function FileZone({ label, hint, accept, maxSizeMB, file, onChange }) {
+function FileZone({ label, hint, accept, maxSizeMB, file, onChange, isUploading }) {
     return (
         <div className="am__file-group">
             <label>{label}</label>
-            <div className={`am__file-zone${file ? ' has-file' : ''}`}>
+            <div className={`am__file-zone${file ? ' has-file' : ''}${isUploading ? ' is-uploading' : ''}`} style={isUploading ? { opacity: 0.7, pointerEvents: 'none' } : {}}>
                 <input
                     type="file"
                     accept={accept}
-                    required
+                    required={!file}
                     onChange={onChange}
+                    disabled={isUploading}
                     title=""
                 />
-                <span className={`am__file-icon${file ? " has-file" : ""}`}>{file ? Icon.check : Icon.upload}</span>
-                {file ? (
+                <span className={`am__file-icon${file && !isUploading ? " has-file" : ""}`}>
+                    {isUploading ? <span className="am__spinner" style={{ width: '18px', height: '18px', borderTopColor: '#0ea5e9', margin: 0 }} /> : (file ? Icon.check : Icon.upload)}
+                </span>
+                {isUploading ? (
+                    <p className="am__file-zone-text" style={{ color: '#0ea5e9', fontWeight: 600 }}>
+                        Uploading file...
+                    </p>
+                ) : file ? (
                     <>
                         <p className="am__file-zone-text am__file-zone-text--attached">
                             File attached
@@ -501,9 +508,11 @@ export default function ApplicationModal({ role, onClose }) {
         email: user?.email || '',
     });
 
-    const [collegeProof, setCollegeProof] = useState(null);
-    const [resume, setResume] = useState(null);
+    const [collegeProof, setCollegeProof] = useState(null); // Now stores { name, url } or null
+    const [resume, setResume] = useState(null); // Now stores { name, url } or null
+    const [uploadingType, setUploadingType] = useState(null); // 'proof' or 'resume' or null
     const [termsAccepted, setTermsAccepted] = useState(false);
+    const [draftId, setDraftId] = useState(null);
 
     // Manual Math Captcha
     const generateMathProblem = () => {
@@ -535,13 +544,74 @@ export default function ApplicationModal({ role, onClose }) {
 
     useEffect(() => {
         document.body.style.overflow = 'hidden';
+        
+        // Fetch draft on mount
+        const fetchDraft = async () => {
+            if (!user) return;
+            try {
+                const { data, error } = await supabase
+                    .from('application_drafts')
+                    .select('*')
+                    .eq('user_id', user.auth_id)
+                    .eq('role_id', role.id || role.posting_id)
+                    .maybeSingle();
+                
+                if (data) {
+                    setDraftId(data.id);
+                    if (data.form_data) {
+                        setFormData(prev => ({ ...prev, ...data.form_data }));
+                    }
+                    if (data.college_proof_url) {
+                        setCollegeProof({ name: 'Previously Uploaded Proof', url: data.college_proof_url });
+                    }
+                    if (data.resume_url) {
+                        setResume({ name: 'Previously Uploaded Resume', url: data.resume_url });
+                    }
+                }
+            } catch (err) {
+                console.error('Error fetching draft:', err);
+            }
+        };
+        fetchDraft();
+
         return () => { document.body.style.overflow = 'auto'; };
-    }, []);
+    }, [user, role]);
+
+    const saveDraft = async (updates) => {
+        if (!user) return;
+        const roleId = role.id || role.posting_id;
+        
+        try {
+            const payload = {
+                user_id: user.auth_id,
+                role_id: roleId,
+                ...updates
+            };
+
+            const { data, error } = await supabase
+                .from('application_drafts')
+                .upsert(payload, { onConflict: 'user_id, role_id' })
+                .select()
+                .single();
+                
+            if (data && !draftId) setDraftId(data.id);
+        } catch (err) {
+            console.error('Error saving draft:', err);
+        }
+    };
+
+    // Debounce saving form text data
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            saveDraft({ form_data: formData });
+        }, 1000);
+        return () => clearTimeout(timer);
+    }, [formData]);
 
     const handleChange = (e) =>
         setFormData({ ...formData, [e.target.name]: e.target.value });
 
-    const handleFileChange = (e, setter, maxSizeMB) => {
+    const handleFileChange = async (e, setter, maxSizeMB, type) => {
         const file = e.target.files[0];
         if (!file) { setter(null); return; }
         if (file.size > maxSizeMB * 1024 * 1024) {
@@ -551,7 +621,24 @@ export default function ApplicationModal({ role, onClose }) {
             return;
         }
         setError('');
-        setter(file);
+        
+        // Upload immediately to Cloudinary to save progress
+        setUploadingType(type);
+        try {
+            const url = await uploadToCloudinary(file);
+            setter({ name: file.name, url });
+            
+            if (type === 'proof') {
+                saveDraft({ college_proof_url: url });
+            } else if (type === 'resume') {
+                saveDraft({ resume_url: url });
+            }
+        } catch (err) {
+            setError(err.message || 'Failed to upload file.');
+            setter(null);
+        } finally {
+            setUploadingType(null);
+        }
     };
 
     const uploadToCloudinary = async (file) => {
@@ -591,11 +678,9 @@ export default function ApplicationModal({ role, onClose }) {
 
         setLoading(true);
         try {
-            // ── Step 1: Upload files to Cloudinary ────────────
-            const [proofUrl, resumeUrl] = await Promise.all([
-                uploadToCloudinary(collegeProof),
-                uploadToCloudinary(resume),
-            ]);
+            // Files are already uploaded to Cloudinary, just use the saved URLs
+            const proofUrl = collegeProof.url;
+            const resumeUrl = resume.url;
 
             // ── Step 3: Save to Supabase ──────────────────────
 
@@ -693,6 +778,13 @@ export default function ApplicationModal({ role, onClose }) {
                 paymentSessionId: orderData.payment_session_id,
                 redirectTarget: "_self"
             });
+
+            // Clean up the draft now that they are checking out
+            if (user && user.auth_id) {
+                await supabase.from('application_drafts').delete()
+                    .eq('user_id', user.auth_id)
+                    .eq('role_id', role.id || role.posting_id);
+            }
 
         } catch (err) {
             console.error('Submission error:', err);
@@ -875,7 +967,8 @@ export default function ApplicationModal({ role, onClose }) {
                         accept="application/pdf,image/*"
                         maxSizeMB={5}
                         file={collegeProof}
-                        onChange={(e) => handleFileChange(e, setCollegeProof, 5)}
+                        onChange={(e) => handleFileChange(e, setCollegeProof, 5, 'proof')}
+                        isUploading={uploadingType === 'proof'}
                     />
 
                     <FileZone
@@ -884,7 +977,8 @@ export default function ApplicationModal({ role, onClose }) {
                         accept="application/pdf"
                         maxSizeMB={7}
                         file={resume}
-                        onChange={(e) => handleFileChange(e, setResume, 7)}
+                        onChange={(e) => handleFileChange(e, setResume, 7, 'resume')}
+                        isUploading={uploadingType === 'resume'}
                     />
 
                     {/* Terms */}

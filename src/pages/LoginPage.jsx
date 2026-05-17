@@ -104,8 +104,11 @@ export default function LoginPage() {
                         </div>
 
                         <div className="auth-group">
-                            <label htmlFor="password">Password</label>
-                            <div className="auth-password-wrapper">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <label htmlFor="password" style={{ marginBottom: 0 }}>Password</label>
+                                <Link to="/forgot-password" style={{ fontSize: '0.875rem', color: '#0ea5e9', textDecoration: 'none', fontWeight: '500' }}>Forgot password?</Link>
+                            </div>
+                            <div className="auth-password-wrapper" style={{ marginTop: '0.5rem' }}>
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     id="password"

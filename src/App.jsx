@@ -25,6 +25,7 @@ const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const StudentDashboard = lazy(() => import('./pages/StudentDashboard'));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 import './App.css';
@@ -78,6 +79,7 @@ export default function App() {
           <Route path="/employment" element={<TermsPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/student-dashboard" element={<StudentDashboard />} />
           <Route path="*" element={<NotFoundPage />} />

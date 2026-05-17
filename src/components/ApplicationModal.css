@@ -616,6 +616,7 @@
 }
 
 .am__spinner {
+    display: inline-block;
     width: 15px;
     height: 15px;
     border: 2px solid rgba(0, 200, 255, 0.3);
