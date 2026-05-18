@@ -27,6 +27,8 @@ const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const StudentDashboard = lazy(() => import('./pages/StudentDashboard'));
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+const BlogsPage = lazy(() => import('./pages/BlogsPage'));
+const BlogSinglePage = lazy(() => import('./pages/BlogSinglePage'));
 
 import './App.css';
 
@@ -82,6 +84,8 @@ export default function App() {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/student-dashboard" element={<StudentDashboard />} />
+          <Route path="/blogs" element={<BlogsPage />} />
+          <Route path="/blogs/:slug" element={<BlogSinglePage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
