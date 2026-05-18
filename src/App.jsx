@@ -13,6 +13,7 @@ import Testimonials from './components/Testimonials';
 import CTABanner from './components/CTABanner';
 import Footer from './components/Footer';
 import ErrorBoundary from './components/ErrorBoundary';
+import CookieBanner from './components/CookieBanner';
 
 // Lazy loaded pages
 const ServicesPage = lazy(() => import('./pages/ServicesPage'));
@@ -67,6 +68,7 @@ export default function App() {
   return (
     <ErrorBoundary>
       <ScrollToTop />
+      <CookieBanner />
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<HomePage />} />
