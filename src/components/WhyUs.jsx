@@ -117,7 +117,7 @@ export default function WhyUs() {
                             <span className="gradient-text">AntiLabs</span>
                         </h2>
                         <p className={`section-sub ${visible ? 'animate-fade-up' : ''}`} style={{ animationDelay: '0.1s' }}>
-                            We\'re not an IT agency. We\'re an engineering partner that embeds into your business, understands your constraints, and ships infrastructure that outlasts the engagement.
+                            We're not an IT agency. We're an engineering partner that embeds into your business, understands your constraints, and ships infrastructure that outlasts the engagement.
                         </p>
                         <div className="why__list">
                             {differentiators.map((d, i) => (

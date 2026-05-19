@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import './CTABanner.css';
 
@@ -48,8 +49,8 @@ export default function CTABanner() {
                         Join 40+ enterprises who trust AntiLabs to architect, secure, and operate their digital backbone. No long sales cycles — let's talk this week.
                     </p>
                     <div className="cta-banner__ctas">
-                        <a href="#" className="btn btn-primary btn-lg">Book a Free Discovery Call</a>
-                        <a href="#services" className="btn btn-secondary btn-lg">Explore Services</a>
+                        <Link to="/contact" className="btn btn-primary btn-lg">Book a Free Discovery Call</Link>
+                        <Link to="/services" className="btn btn-secondary btn-lg">Explore Services</Link>
                     </div>
                     <div className="cta-banner__trust">
                         <div className="cta-banner__trust-item">

@@ -123,15 +123,29 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     text-decoration: none;
     color: inherit;
     position: relative;
     box-shadow: var(--shadow-sm);
 }
 
-.blog__card:hover {
-    transform: translateY(-10px);
+.blog__card.reveal-hidden {
+    opacity: 0;
+    transform: translateY(50px) scale(0.96);
+    pointer-events: none;
+}
+
+.blog__card.animate-reveal {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.3s ease,
+                box-shadow 0.3s ease;
+}
+
+.blog__card.animate-reveal:hover {
+    transform: translateY(-8px) scale(1.02);
     border-color: var(--border-cyan);
     box-shadow: var(--shadow-md);
 }
