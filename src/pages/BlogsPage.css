@@ -95,6 +95,7 @@
     justify-content: center;
     min-width: 100px;
     line-height: 1.2;
+    flex-shrink: 0;
 }
 
 .blogs__filter-btn:hover {
@@ -301,6 +302,20 @@
 @media (max-width: 768px) {
     .blogs__hero {
         padding: 8rem 1.5rem 4rem;
+    }
+    .blogs__filters {
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 0.5rem 2rem;
+        margin-left: -2rem;
+        margin-right: -2rem;
+        margin-bottom: 2.5rem;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; /* Firefox */
+    }
+    .blogs__filters::-webkit-scrollbar {
+        display: none; /* Safari and Chrome */
     }
     .blogs__grid {
         grid-template-columns: 1fr;
