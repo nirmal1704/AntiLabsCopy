@@ -105,7 +105,7 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <h4 className="cp__info-label">Email Us</h4>
-                                        <a href="mailto:hello.antilabs@gmail.com" className="cp__info-link">hello.antilabs@gmail.com</a>
+                                        <a href="mailto:contact@antilabs.in" className="cp__info-link">contact@antilabs.in</a>
                                     </div>
                                 </div>
 

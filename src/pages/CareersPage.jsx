@@ -272,7 +272,7 @@ export default function CareersPage() {
                 <section className="cp__cta-strip">
                     <div className="container cp__cta-inner">
                         <h2 className="cp__cta-h2">Questions about working at AntiLabs?</h2>
-                        <p className="cp__cta-sub">Reach us at <a href="mailto:careers.antilabs@gmail.com" className="cp__cta-link">careers.antilabs@gmail.com</a> — we reply to every message.</p>
+                        <p className="cp__cta-sub">Reach us at <a href="mailto:careers@antilabs.in" className="cp__cta-link">careers@antilabs.in</a> — we reply to every message.</p>
                         <Link to="/about" className="btn btn-primary btn-lg" style={{ background: '#fff', color: 'var(--primary)', borderColor: '#fff' }}>
                             Learn More About Us →
                         </Link>
