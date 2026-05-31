@@ -80,8 +80,37 @@ const services = [
     },
 ];
 
+function ServiceCard({ s, index }) {
+    // Individual observer per card for row-by-row / card-by-card trigger
+    const { ref, visible } = useScrollReveal({
+        threshold: 0.08,
+        rootMargin: '0px 0px -60px 0px'
+    });
+
+    // Stagger layout calculation for column delay sequences (left-to-right staggered pop)
+    const delay = visible ? `${(index % 3) * 0.12}s` : '0s';
+
+    return (
+        <div
+            ref={ref}
+            className={`glass-card services__card ${visible ? 'services__card--revealed' : 'services__card--hidden'}`}
+            style={{ transitionDelay: delay }}
+        >
+            <div className="services__card-icon">{s.icon}</div>
+            <h3 className="services__card-title">{s.title}</h3>
+            <p className="services__card-desc">{s.desc}</p>
+            <Link
+                to={`/services?tab=${s.tab}`}
+                className="services__card-link"
+            >
+                Learn more <span className="services__card-arrow">→</span>
+            </Link>
+        </div>
+    );
+}
+
 export default function Services() {
-    const { ref, visible } = useScrollReveal();
+    const { ref: headerRef, visible: headerVisible } = useScrollReveal({ threshold: 0.1 });
 
     return (
         <section id="services" className="services section-py">
@@ -89,34 +118,23 @@ export default function Services() {
                 <span>OUR SERVICES</span>
             </div>
 
-            <div className="container" ref={ref}>
-                <div className="services__header">
-                    <h2 className={`section-title ${visible ? 'animate-fade-up' : ''}`}>
+            <div className="container">
+                <div className="services__header" ref={headerRef}>
+                    <h2 className={`section-title ${headerVisible ? 'animate-fade-up' : 'reveal-hidden'}`}>
                         Built for Complexity.<br />
                         <span className="gradient-text">Delivered with Precision.</span>
                     </h2>
-                    <p className={`section-sub services__sub ${visible ? 'animate-fade-up' : ''}`} style={{ animationDelay: '0.15s' }}>
+                    <p 
+                        className={`section-sub services__sub ${headerVisible ? 'animate-fade-up' : 'reveal-hidden'}`} 
+                        style={{ animationDelay: '0.15s' }}
+                    >
                         Every engagement is backed by deep domain expertise, agile execution, and an obsession with measurable outcomes.
                     </p>
                 </div>
 
                 <div className="services__grid">
                     {services.map((s, i) => (
-                        <div
-                            key={s.title}
-                            className={`glass-card services__card ${visible ? 'animate-fade-up' : ''}`}
-                            style={{ animationDelay: `${0.1 + i * 0.08}s` }}
-                        >
-                            <div className="services__card-icon">{s.icon}</div>
-                            <h3 className="services__card-title">{s.title}</h3>
-                            <p className="services__card-desc">{s.desc}</p>
-                            <Link
-                                to={`/services?tab=${s.tab}`}
-                                className="services__card-link"
-                            >
-                                Learn more <span className="services__card-arrow">→</span>
-                            </Link>
-                        </div>
+                        <ServiceCard key={s.title} s={s} index={i} />
                     ))}
                 </div>
             </div>

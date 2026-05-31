@@ -493,7 +493,7 @@ export default function StudentDashboard() {
           </svg>
           <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: '#0f172a' }}>Dashboard Locked</h1>
           <p style={{ fontSize: '1.25rem', color: '#64748b', maxWidth: '600px', lineHeight: '1.6' }}>
-            Batch starting from 1 June 2026 for everycourse.
+            Batch starting from 5 June 2026 for everycourse.
           </p>
         </div>
       </main>

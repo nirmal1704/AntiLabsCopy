@@ -1,3 +1,7 @@
+/* ============================================================
+   AntiLabs — Services Grid Stylesheet (Scroll Reveal Redesign)
+   ============================================================ */
+
 .services {
     background: var(--surface);
     position: relative;
@@ -39,14 +43,23 @@
     margin: 0 auto;
 }
 
-/* Grid */
+/* Scroll reveal utility classes for header text */
+.reveal-hidden {
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+/* Grid layout */
 .services__grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 24px;
 }
 
-/* Card — white with subtle shadow */
+/* ============================================================
+   Services Card Redesign: Sequential Scroll Reveal & Hover
+   ============================================================ */
+
 .services__card {
     padding: 36px 32px 28px;
     display: flex;
@@ -59,13 +72,31 @@
     border: 1px solid var(--border);
     box-shadow: var(--shadow-sm);
     border-radius: var(--radius-card);
-    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Pristine Hidden State: Grid is empty before scroll */
+    opacity: 0;
+    transform: translateY(50px) scale(0.98);
+    
+    /* High-fidelity custom decelerating curves for reveal transitions */
+    transition: 
+        opacity 1.2s cubic-bezier(0.215, 0.61, 0.355, 1), 
+        transform 1.2s cubic-bezier(0.215, 0.61, 0.355, 1),
+        background-color 0.35s ease,
+        border-color 0.35s ease,
+        box-shadow 0.35s ease;
 }
 
-.services__card:hover {
+/* Revealed active state when crossing Intersection threshold */
+.services__card--revealed {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* Seamless hover integration that overrides reveal state cleanly */
+.services__card--revealed:hover {
     border-color: var(--border-cyan);
     box-shadow: var(--shadow-md);
-    transform: translateY(-6px);
+    transform: translateY(-8px) scale(1.005);
 }
 
 .services__card::before {
@@ -81,7 +112,7 @@
     transition: transform 0.4s ease;
 }
 
-.services__card:hover::before {
+.services__card--revealed:hover::before {
     transform: scaleX(1);
 }
 
@@ -137,10 +168,11 @@
     transform: translateX(4px);
 }
 
-/* Responsive */
+/* Responsive grid modifications */
 @media (max-width: 1024px) {
     .services__grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
     }
 
     .services__label {
@@ -151,9 +183,12 @@
 @media (max-width: 640px) {
     .services__grid {
         grid-template-columns: 1fr;
+        gap: 20px;
     }
 
     .services__card {
         padding: 28px 24px;
+        /* Trigger slide-in faster on narrow viewports */
+        transform: translateY(35px) scale(1);
     }
 }
