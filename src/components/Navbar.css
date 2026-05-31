@@ -28,7 +28,7 @@
     max-width: 1320px;
     margin: 0 auto;
     padding: 0 48px;
-    height: 72px;
+    height: 92px; /* Increased from 72px */
     display: flex;
     align-items: center;
     gap: 32px;
@@ -43,7 +43,7 @@
 }
 
 .navbar__logo-img {
-    height: 64px;
+    height: 80px; /* Increased from 64px */
     width: auto;
     display: block;
     /* No mix-blend-mode needed — light navabr bg, logo has white bg, matches perfectly */
@@ -61,18 +61,18 @@
 .navbar__links {
     display: flex;
     list-style: none;
-    gap: 4px;
+    gap: 6px;
     align-items: center;
     margin: 0 auto;
 }
 
 .navbar__link {
     font-family: var(--font-heading);
-    font-size: 14.5px;
-    font-weight: 500;
+    font-size: 16.5px; /* Increased from 14.5px */
+    font-weight: 600; /* Increased font-weight for visibility */
     color: var(--text-secondary);
-    padding: 8px 14px;
-    border-radius: 4px;
+    padding: 10px 16px; /* Increased from 8px 14px */
+    border-radius: 6px;
     transition: color 0.2s, background 0.2s;
     position: relative;
 }
@@ -81,9 +81,9 @@
     content: '';
     position: absolute;
     bottom: 4px;
-    left: 14px;
-    right: 14px;
-    height: 2px;
+    left: 16px;
+    right: 16px;
+    height: 2.5px; /* Increased thickness */
     background: var(--accent);
     transform: scaleX(0);
     transform-origin: left;
@@ -112,18 +112,18 @@
 .navbar__actions {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
     flex-shrink: 0;
 }
 
 .navbar__btn-contact {
-    padding: 10px 20px;
-    font-size: 14px;
+    padding: 12px 24px; /* Increased padding */
+    font-size: 15.5px; /* Increased from 14px */
 }
 
 .navbar__btn-cta {
-    padding: 10px 22px;
-    font-size: 14px;
+    padding: 12px 26px; /* Increased padding */
+    font-size: 15.5px; /* Increased from 14px */
 }
 
 /* Chevron arrow on desktop — hidden */
@@ -196,7 +196,7 @@
         display: flex;
         flex-direction: column;
         position: absolute;
-        top: 72px;
+        top: 92px; /* Updated from 72px to match new desktop inner height */
         left: 0;
         right: 0;
         background: #fff;

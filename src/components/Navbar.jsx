@@ -4,12 +4,11 @@ import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
 
 const navItems = [
-    { label: 'Home', route: '/' },
-    { label: 'About', route: '/about' },
-    { label: 'Services', route: '/services' },
-    { label: 'Blogs', route: '/blogs' },
+    { label: 'Who we are', route: '/about' },
+    { label: 'What we do', route: '/services' },
+    { label: 'Insights', route: '/blogs' },
     { label: 'Careers', route: '/careers' },
-    { label: 'Testimonials', route: '/testimonials' },
+    { label: 'customer stories', route: '/testimonials' },
 ];
 
 const Logo = () => (
