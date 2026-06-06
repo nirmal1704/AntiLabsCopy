@@ -1,5 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { ReactLenis } from 'lenis/react';
+import 'lenis/dist/lenis.css';
 import SEO from './components/SEO';
 import ScrollToTop from './components/ScrollToTop';
 import Navbar from './components/Navbar';
@@ -66,31 +68,33 @@ const PageLoader = () => (
 
 export default function App() {
   return (
-    <ErrorBoundary>
-      <ScrollToTop />
-      <CookieBanner />
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/services" element={<ServicesPage />} />
-          <Route path="/careers" element={<CareersPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/testimonials" element={<TestimonialsPage />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/privacy" element={<TermsPage />} />
-          <Route path="/refund" element={<TermsPage />} />
-          <Route path="/employment" element={<TermsPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/student-dashboard" element={<StudentDashboard />} />
-          <Route path="/blogs" element={<BlogsPage />} />
-          <Route path="/blogs/:slug" element={<BlogSinglePage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </Suspense>
-    </ErrorBoundary>
+    <ReactLenis root>
+      <ErrorBoundary>
+        <ScrollToTop />
+        <CookieBanner />
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/services" element={<ServicesPage />} />
+            <Route path="/careers" element={<CareersPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/testimonials" element={<TestimonialsPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<TermsPage />} />
+            <Route path="/refund" element={<TermsPage />} />
+            <Route path="/employment" element={<TermsPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/student-dashboard" element={<StudentDashboard />} />
+            <Route path="/blogs" element={<BlogsPage />} />
+            <Route path="/blogs/:slug" element={<BlogSinglePage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </Suspense>
+      </ErrorBoundary>
+    </ReactLenis>
   );
 }
