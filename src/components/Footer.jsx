@@ -24,7 +24,6 @@ const links = {
     ],
     company: [
         { name: 'About Us', href: '/about' },
-        { name: 'Team', href: '/about#team' },
         { name: 'Careers', href: '/careers' },
         { name: 'Contact', href: '/contact' },
         { name: 'Testimonials', href: '/testimonials' },
