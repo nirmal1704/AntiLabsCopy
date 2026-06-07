@@ -7,7 +7,7 @@ import { useLenis } from 'lenis/react';
  * Place this once inside <BrowserRouter>, above all routes.
  */
 export default function ScrollToTop() {
-    const { pathname } = useLocation();
+    const { pathname, search } = useLocation();
     const lenis = useLenis();
 
     useEffect(() => {
@@ -16,7 +16,7 @@ export default function ScrollToTop() {
         } else {
             window.scrollTo({ top: 0, behavior: 'instant' });
         }
-    }, [pathname, lenis]);
+    }, [pathname, search, lenis]);
 
     return null;
 }
