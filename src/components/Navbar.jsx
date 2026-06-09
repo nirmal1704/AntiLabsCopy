@@ -8,7 +8,7 @@ const navItems = [
     { label: 'What we do', route: '/services' },
     { label: 'Insights', route: '/blogs' },
     { label: 'Careers', route: '/careers' },
-    { label: 'customer stories', route: '/testimonials' },
+    { label: 'Customer stories', route: '/testimonials' },
 ];
 
 const Logo = () => (
