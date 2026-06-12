@@ -61,18 +61,21 @@ function RoleCard({ role, onApply }) {
                             {role.compensation}
                         </div>
                     )}
+                    <button
+                        className="btn btn-primary cp__role-enroll-btn"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onApply(role);
+                        }}
+                    >
+                        Enroll Now
+                    </button>
                     <div className="cp__role-chevron">{open ? '−' : '+'}</div>
                 </div>
             </div>
             {open && (
                 <div className="cp__role-body">
                     <FormattedDescription text={role.description} />
-                    <button
-                        onClick={() => onApply(role)}
-                        className="btn btn-primary"
-                    >
-                        Apply for this role →
-                    </button>
                 </div>
             )}
         </div>
@@ -159,11 +162,7 @@ export default function CareersPage() {
     const navigate = useNavigate();
 
     const handleApplyClick = (role) => {
-        if (!user) {
-            navigate('/login');
-        } else {
-            setApplyingRole(role);
-        }
+        setApplyingRole(role);
     };
 
     useEffect(() => {

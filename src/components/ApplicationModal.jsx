@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 import { supabase } from '../supabase';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import './ApplicationModal.css';
 
 /* ─── tiny inline SVG icons (no extra dep needed) ─────────── */
@@ -494,7 +493,6 @@ function AutocompleteInput({ name, value, onChange, placeholder, required, sugge
 /* ─── Main component ──────────────────────────────────────── */
 export default function ApplicationModal({ role, onClose }) {
     const { user, logout } = useAuth();
-    const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
         full_name: user?.name || '',
@@ -513,6 +511,88 @@ export default function ApplicationModal({ role, onClose }) {
     const [uploadingType, setUploadingType] = useState(null); // 'proof' or 'resume' or null
     const [termsAccepted, setTermsAccepted] = useState(false);
     const [draftId, setDraftId] = useState(null);
+
+    // Parse the initial fee from role.registration_fees on mount
+    const getInitialFee = () => {
+        const rawFee = role.registration_fees
+            ? parseInt(String(role.registration_fees).replace(/\D/g, ''), 10)
+            : NaN;
+        return !isNaN(rawFee) && rawFee > 0 ? rawFee : 999;
+    };
+
+    const initialFee = getInitialFee();
+    const [currentFee, setCurrentFee] = useState(initialFee);
+    const originalFee = initialFee;
+    const [promoCode, setPromoCode] = useState('');
+    const [promoLoading, setPromoLoading] = useState(false);
+    const [promoApplied, setPromoApplied] = useState(false);
+    const [promoMessage, setPromoMessage] = useState('');
+    const [discountApplied, setDiscountApplied] = useState(false);
+    const [priceSparkle, setPriceSparkle] = useState(false);
+
+    const animatePrice = (start, end) => {
+        const duration = 800; // ms
+        const startTime = performance.now();
+
+        const step = (now) => {
+            const progress = Math.min((now - startTime) / duration, 1);
+            // Ease out quad
+            const easeProgress = progress * (2 - progress);
+            const value = Math.round(start - (start - end) * easeProgress);
+            setCurrentFee(value);
+
+            if (progress < 1) {
+                requestAnimationFrame(step);
+            }
+        };
+        requestAnimationFrame(step);
+    };
+
+    const handleApplyPromo = async () => {
+        if (!promoCode) return;
+        setPromoLoading(true);
+        setPromoMessage('');
+
+        try {
+            const { data, error } = await supabase
+                .from('referral_codes')
+                .select('*')
+                .eq('code', promoCode.trim().toUpperCase())
+                .eq('is_active', true)
+                .maybeSingle();
+
+            if (error) throw error;
+
+            if (!data) {
+                setPromoMessage('❌ Invalid or inactive promo code.');
+                return;
+            }
+
+            const discount = parseFloat(data.discount_percentage);
+            if (isNaN(discount) || discount <= 0 || discount > 100) {
+                setPromoMessage('❌ Invalid discount percentage configured.');
+                return;
+            }
+
+            // Valid code! Apply the discount
+            const targetFee = Math.round(initialFee * (1 - discount / 100));
+            setPromoApplied(true);
+            setDiscountApplied(true);
+            setPromoMessage(`🎉 Code applied! ${discount}% discount applied.`);
+            
+            // Trigger sparkle pulse animation
+            setPriceSparkle(true);
+            setTimeout(() => setPriceSparkle(false), 1000);
+
+            // Animate price counting down
+            animatePrice(initialFee, targetFee);
+        } catch (err) {
+            console.error('Error verifying promo code:', err);
+            setPromoMessage('❌ Failed to verify code. Please try again.');
+        } finally {
+            setPromoLoading(false);
+        }
+    };
 
     // Manual Math Captcha
     const generateMathProblem = () => {
@@ -544,12 +624,18 @@ export default function ApplicationModal({ role, onClose }) {
 
     useEffect(() => {
         document.body.style.overflow = 'hidden';
-        
+
+        return () => {
+            document.body.style.overflow = 'auto';
+        };
+    }, []);
+
+    useEffect(() => {
         // Fetch draft on mount
         const fetchDraft = async () => {
             if (!user) return;
             try {
-                const { data, error } = await supabase
+                const { data } = await supabase
                     .from('application_drafts')
                     .select('*')
                     .eq('user_id', user.auth_id)
@@ -573,11 +659,9 @@ export default function ApplicationModal({ role, onClose }) {
             }
         };
         fetchDraft();
-
-        return () => { document.body.style.overflow = 'auto'; };
     }, [user, role]);
 
-    const saveDraft = async (updates) => {
+    const saveDraft = useCallback(async (updates) => {
         if (!user) return;
         const roleId = role.id || role.posting_id;
         
@@ -588,7 +672,7 @@ export default function ApplicationModal({ role, onClose }) {
                 ...updates
             };
 
-            const { data, error } = await supabase
+            const { data } = await supabase
                 .from('application_drafts')
                 .upsert(payload, { onConflict: 'user_id, role_id' })
                 .select()
@@ -598,7 +682,7 @@ export default function ApplicationModal({ role, onClose }) {
         } catch (err) {
             console.error('Error saving draft:', err);
         }
-    };
+    }, [user, role, draftId]);
 
     // Debounce saving form text data
     useEffect(() => {
@@ -606,7 +690,7 @@ export default function ApplicationModal({ role, onClose }) {
             saveDraft({ form_data: formData });
         }, 1000);
         return () => clearTimeout(timer);
-    }, [formData]);
+    }, [formData, saveDraft]);
 
     const handleChange = (e) =>
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -684,13 +768,8 @@ export default function ApplicationModal({ role, onClose }) {
 
             // ── Step 3: Save to Supabase ──────────────────────
 
-            // Use registration_fees directly from the Careers table schema.
-            // Strip any non-numeric characters (e.g. "₹999", "INR 1500") and parse.
-            const rawFee = role.registration_fees
-                ? parseInt(String(role.registration_fees).replace(/\D/g, ''), 10)
-                : NaN;
-
-            const fees = !isNaN(rawFee) && rawFee > 0 ? rawFee : 999;
+            // Use the final (possibly discounted) fee
+            const finalFees = currentFee;
 
             const sanitizeInput = (str) => {
                 if (typeof str !== 'string') return str;
@@ -712,7 +791,7 @@ export default function ApplicationModal({ role, onClose }) {
                 email: sanitizeInput(formData.email),
                 college_proof_url: proofUrl,
                 resume_url: resumeUrl,
-                fees_amount: fees,
+                fees_amount: finalFees,
                 payment_status: 'pending'
             }]).select();
 
@@ -745,7 +824,7 @@ export default function ApplicationModal({ role, onClose }) {
                         customer_email: formData.email,
                         customer_phone: formData.mobile_number,
                         customer_name: formData.full_name,
-                        amount: fees, // Dynamic price synced with database record
+                        amount: finalFees, // Dynamic price synced with database record
                         return_url: `${window.location.origin}/profile?tx_id=${applicationId}`,
                         is_dev: isDev
                     }),
@@ -814,7 +893,7 @@ export default function ApplicationModal({ role, onClose }) {
                 </div>
 
                 {/* ── Form ── */}
-                <form id="am-form" className="am__form" onSubmit={handleSubmit}>
+                <form id="am-form" className="am__form" onSubmit={handleSubmit} data-lenis-prevent>
 
                     {error && (
                         <div ref={errorRef} className="am__error">
@@ -832,8 +911,8 @@ export default function ApplicationModal({ role, onClose }) {
                                 type="text" name="full_name" required
                                 placeholder="e.g. Arya Sharma"
                                 value={formData.full_name} onChange={handleChange}
-                                readOnly
-                                className="am__input--readonly"
+                                readOnly={!!user}
+                                className={user ? "am__input--readonly" : ""}
                             />
                             <span className="am__input-icon">{Icon.user}</span>
                         </div>
@@ -847,8 +926,8 @@ export default function ApplicationModal({ role, onClose }) {
                                     type="tel" name="mobile_number" required
                                     placeholder="+91 XXXXX XXXXX"
                                     value={formData.mobile_number} onChange={handleChange}
-                                    readOnly
-                                    className="am__input--readonly"
+                                    readOnly={!!user}
+                                    className={user ? "am__input--readonly" : ""}
                                 />
                                 <span className="am__input-icon">{Icon.phone}</span>
                             </div>
@@ -860,8 +939,8 @@ export default function ApplicationModal({ role, onClose }) {
                                     type="email" name="email" required
                                     placeholder="you@example.com"
                                     value={formData.email} onChange={handleChange}
-                                    readOnly
-                                    className="am__input--readonly"
+                                    readOnly={!!user}
+                                    className={user ? "am__input--readonly" : ""}
                                 />
                                 <span className="am__input-icon">{Icon.mail}</span>
                             </div>
@@ -1000,13 +1079,43 @@ export default function ApplicationModal({ role, onClose }) {
 
 
 
+                    {/* Referral Discount Code */}
+                    <div className="am__section-label">Referral Discount</div>
+                    <div className="am__input-group am__promo-group">
+                        <label>Referral / Promo Code (Optional)</label>
+                        <div className="am__promo-row">
+                            <input
+                                type="text"
+                                name="promo_code"
+                                placeholder="Enter code (e.g. WELCOME10)"
+                                value={promoCode}
+                                onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                                className="am__input"
+                                disabled={promoApplied}
+                            />
+                            <button
+                                type="button"
+                                onClick={handleApplyPromo}
+                                className="am__promo-btn"
+                                disabled={!promoCode || promoApplied || promoLoading}
+                            >
+                                {promoLoading ? 'Checking...' : 'Apply'}
+                            </button>
+                        </div>
+                        {promoMessage && (
+                            <p className={`am__promo-message ${promoApplied ? 'am__promo-message--success' : 'am__promo-message--error'}`}>
+                                {promoMessage}
+                            </p>
+                        )}
+                    </div>
+
                     {/* Manual Math Captcha */}
                     <div className="am__captcha">
                         <label>Security Verification *</label>
                         <div className="am__captcha-box">
                             <span className="am__captcha-problem">
                                 {mathProblem.text.split('').map((ch, i) =>
-                                    /[+\-]/.test(ch)
+                                    /[+-]/.test(ch)
                                         ? <span key={i}> {ch} </span>
                                         : ch
                                 )} = ?
@@ -1027,25 +1136,43 @@ export default function ApplicationModal({ role, onClose }) {
 
                 {/* ── Footer (outside scroll area) ── */}
                 <div className="am__footer">
-                    <button
-                        type="button"
-                        className="am__btn-cancel"
-                        onClick={onClose}
-                        disabled={loading}
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="submit"
-                        form="am-form"
-                        className="am__btn-submit"
-                        disabled={loading}
-                    >
-                        {loading
-                            ? <><span className="am__spinner" />Processing…</>
-                            : <>Continue to Payment&nbsp;{Icon.arrow}</>
-                        }
-                    </button>
+                    <div className="am__footer-price-wrap">
+                        <span className="am__footer-price-label">Total Fee</span>
+                        <div className="am__footer-price-row">
+                            {discountApplied && (
+                                <span className="am__price-original">
+                                    ₹{originalFee}
+                                </span>
+                            )}
+                            <span 
+                                className={`am__price-display ${priceSparkle ? 'am__price-display--pulse' : ''} ${discountApplied ? 'am__price-display--discounted' : ''}`}
+                                style={{ fontSize: '24px', fontWeight: 800, fontFamily: 'var(--font-heading)' }}
+                            >
+                                ₹{currentFee}
+                            </span>
+                        </div>
+                    </div>
+                    <div className="am__footer-btns">
+                        <button
+                            type="button"
+                            className="am__btn-cancel"
+                            onClick={onClose}
+                            disabled={loading}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            form="am-form"
+                            className="am__btn-submit"
+                            disabled={loading}
+                        >
+                            {loading
+                                ? <><span className="am__spinner" />Processing…</>
+                                : <>Continue to Payment&nbsp;{Icon.arrow}</>
+                            }
+                        </button>
+                    </div>
                 </div>
 
             </div>

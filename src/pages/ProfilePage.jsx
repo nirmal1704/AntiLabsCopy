@@ -221,11 +221,18 @@ export default function ProfilePage() {
                             }
                         }
 
-                        // ── Show success screen, then reload after 3s ──
-                        setSuccessMsg('🎉 Payment Successful! Enrollment confirmed. Redirecting...');
-                        setTimeout(() => {
-                            window.location.href = window.location.pathname;
-                        }, 3000);
+                        // ── Show success screen, then redirect or reload after 3s ──
+                        if (!user) {
+                            setSuccessMsg('🎉 Payment Successful! Redirecting to complete registration...');
+                            setTimeout(() => {
+                                navigate(`/register?tx_id=${txId}&email=${encodeURIComponent(txData.email)}&name=${encodeURIComponent(txData.full_name)}&phone=${encodeURIComponent(txData.mobile_number)}`);
+                            }, 2000);
+                        } else {
+                            setSuccessMsg('🎉 Payment Successful! Enrollment confirmed. Redirecting...');
+                            setTimeout(() => {
+                                window.location.href = window.location.pathname;
+                            }, 3000);
+                        }
                         return; // Don't fall through
                     }
                 } else {
@@ -246,6 +253,7 @@ export default function ProfilePage() {
             window.history.replaceState({}, '', window.location.pathname);
         };
         checkPayment();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Populate form data once user is available
@@ -301,7 +309,37 @@ export default function ProfilePage() {
         }
     }, [user]);
 
+    const queryParams = new URLSearchParams(window.location.search);
+    const hasPaymentParams = (queryParams.get('tx_id') || queryParams.get('reg_id')) && queryParams.get('order_id');
+
     if (!user) {
+        if (hasPaymentParams) {
+            return (
+                <div className="profile-page">
+                    <SEO title="Verifying Payment" description="Please wait while we verify your payment." canonicalUrl="/profile" />
+                    <Navbar />
+                    <main className="auth-container" style={{ textAlign: 'center' }}>
+                        <div className="auth-card">
+                            <h2>Verifying Payment...</h2>
+                            {errorMsg ? (
+                                <>
+                                    <p style={{ marginTop: '8px', color: '#ef4444' }}>{errorMsg}</p>
+                                    <button onClick={() => navigate('/login')} className="btn btn-primary auth-btn" style={{ marginTop: '24px' }}>
+                                        Go to Login
+                                    </button>
+                                </>
+                            ) : successMsg ? (
+                                <p style={{ marginTop: '8px', color: '#10b981' }}>{successMsg}</p>
+                            ) : (
+                                <p style={{ marginTop: '8px', color: '#64748b' }}>Please wait while we confirm your enrollment with Cashfree.</p>
+                            )}
+                        </div>
+                    </main>
+                    <Footer />
+                </div>
+            );
+        }
+
         return (
             <div className="profile-page">
                 <SEO title="Your Profile" description="Manage your AntiLabs profile." canonicalUrl="/profile" />

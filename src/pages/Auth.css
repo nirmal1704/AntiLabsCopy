@@ -215,3 +215,15 @@ textarea.auth-input {
         font-size: 1.5rem;
     }
 }
+
+.auth-input.auth-input--readonly {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-muted, #64748b);
+    cursor: not-allowed;
+    border-color: #cbd5e1;
+}
+
+.auth-input.auth-input--readonly:focus {
+    box-shadow: none;
+    border-color: #cbd5e1;
+}

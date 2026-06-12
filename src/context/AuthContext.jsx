@@ -25,9 +25,39 @@ export const AuthProvider = ({ children }) => {
 
                 if (error) {
                     if (error.code === 'PGRST116') {
-                        // Profile missing (0 rows) - probably wiped from db. Clear the ghost session.
-                        console.warn("Profile not found in database. Signing out ghost session.");
-                        await supabase.auth.signOut();
+                        console.warn("Profile not found in database. Attempting frontend creation fallback.");
+                        
+                        // Parse age safely
+                        let parsedAge = null;
+                        try {
+                            if (session.user.user_metadata?.age) {
+                                parsedAge = parseInt(session.user.user_metadata.age, 10);
+                            }
+                        } catch (e) {
+                            console.error("Failed to parse age:", e);
+                        }
+
+                        const { data: insertedData, error: insertError } = await supabase
+                            .from('users')
+                            .insert([{
+                                auth_id: session.user.id,
+                                name: session.user.user_metadata?.name || 'User',
+                                email: session.user.email,
+                                phone_number: session.user.user_metadata?.phone || null,
+                                age: parsedAge,
+                                profession: session.user.user_metadata?.profession || null,
+                                residential_address: session.user.user_metadata?.address || null
+                            }])
+                            .select()
+                            .single();
+
+                        if (!insertError && insertedData) {
+                            setUser(insertedData);
+                        } else {
+                            console.error("Frontend fallback creation failed:", insertError);
+                            console.warn("Signing out ghost session.");
+                            await supabase.auth.signOut();
+                        }
                     } else {
                         throw error;
                     }
