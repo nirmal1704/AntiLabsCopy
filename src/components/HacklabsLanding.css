@@ -1,0 +1,154 @@
+.hero-content h1 {
+  font-size: clamp(4rem, 7vw, 7rem);
+  line-height: 0.95;
+  font-weight: 800;
+
+  margin-bottom: 2rem;
+}
+
+.hero-content h1 span {
+  color: #7c4dff;
+}
+.hacklabs-page {
+  min-height: 100vh;
+  background: #07071a;
+  color: white;
+}
+
+.hacklabs-hero {
+  min-height: 100vh;
+
+  display: flex;
+  justify-content: center;
+  gap: 120px;
+  align-items: center;
+
+  padding: 0px;
+}
+.hero-content {
+  max-width: 600px;
+}
+
+.hero-badge {
+  color: #a78bfa;
+  margin-bottom: 1rem;
+}
+
+.hero-content h1 {
+  font-size: 5rem;
+  line-height: 1;
+  margin-bottom: 1.5rem;
+}
+
+.hero-content p {
+  color: #8888aa;
+  font-size: 1.1rem;
+  line-height: 1.8;
+  margin-bottom: 2rem;
+}
+
+.hero-content button {
+  background: #6d4aff;
+
+  border: none;
+
+  color: white;
+
+  padding: 14px 28px;
+
+  border-radius: 12px;
+
+  cursor: pointer;
+}
+.hero-badge {
+  display: inline-flex;
+
+  padding: 10px 18px;
+
+  border-radius: 999px;
+
+  border: 1px solid rgba(124, 77, 255, 0.25);
+
+  background: rgba(124, 77, 255, 0.08);
+
+  color: #b89cff;
+
+  margin-bottom: 2rem;
+}
+.hero-visual {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.floating-card {
+  position: absolute;
+
+  width: 240px;
+
+  background: rgba(124, 77, 255, 0.08);
+
+  border: 1px solid rgba(124, 77, 255, 0.2);
+
+  backdrop-filter: blur(20px);
+
+  border-radius: 20px;
+
+  padding: 18px;
+
+  color: #a78bfa;
+
+  font-family: monospace;
+
+  z-index: 1;
+}
+
+.card-left {
+  top: 18%;
+  right: 30%;
+
+  animation: floatCard 6s ease-in-out infinite;
+}
+
+.card-right {
+  top: 30%;
+  right: 0%;
+
+  animation: floatCard 7s ease-in-out infinite;
+}
+
+.card-header {
+  display: flex;
+  gap: 6px;
+
+  margin-bottom: 14px;
+}
+
+.card-header span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+
+  background: #7c4dff;
+}
+
+@keyframes floatCard {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+#robot-hero-slot {
+  position: relative;
+
+  height: 520px;
+  width: 600px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}

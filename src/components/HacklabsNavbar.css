@@ -1,0 +1,163 @@
+/* ==========================================
+   NAVBAR
+========================================== */
+
+.hacklabs-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 76px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0;
+
+  background: rgba(2, 0, 30, 0.92);
+
+  backdrop-filter: blur(18px);
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+  z-index: 9999;
+}
+
+/* ==========================================
+   LEFT
+========================================== */
+
+.hacklabs-navbar__left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.hacklabs-navbar__logo {
+  width: 220px;
+  height: 75px;
+  opacity: 1;
+  object-fit: contain;
+}
+.hacklabs-navbar__logo.show {
+  opacity: 1;
+}
+
+.hacklabs-navbar__brand {
+  color: white;
+
+  font-size: 1.3rem;
+  font-weight: 700;
+
+  letter-spacing: -0.02em;
+}
+
+/* ==========================================
+   CENTER
+========================================== */
+
+.hacklabs-navbar__center {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+}
+
+.hacklabs-navbar__center a {
+  color: #7d7ba3;
+
+  text-decoration: none;
+
+  font-size: 0.95rem;
+  font-weight: 500;
+
+  transition: all 0.25s ease;
+}
+
+.hacklabs-navbar__center a:hover {
+  color: white;
+}
+
+.hacklabs-navbar__center a:first-child {
+  color: white;
+}
+
+/* ==========================================
+   RIGHT
+========================================== */
+
+.hacklabs-navbar__right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hacklabs-navbar__login {
+  height: 44px;
+
+  padding: 0 28px;
+
+  border-radius: 14px;
+
+  border: 1px solid rgba(125, 123, 163, 0.35);
+
+  background: transparent;
+
+  color: white;
+
+  font-size: 1rem;
+
+  cursor: pointer;
+
+  transition: all 0.25s ease;
+}
+
+.hacklabs-navbar__login:hover {
+  border-color: #8f6fff;
+}
+
+.hacklabs-navbar__register {
+  height: 52px;
+
+  padding: 0 34px;
+
+  border: none;
+
+  border-radius: 14px;
+
+  background: linear-gradient(135deg, #7c4dff, #5b3df5);
+
+  color: white;
+
+  font-size: 1rem;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: all 0.25s ease;
+}
+
+.hacklabs-navbar__register:hover {
+  transform: translateY(-2px);
+
+  box-shadow: 0 10px 25px rgba(124, 77, 255, 0.35);
+}
+
+/* ==========================================
+   APPEAR ANIMATION
+========================================== */
+
+.hacklabs-navbar {
+  opacity: 0;
+  transform: translateY(-20px);
+
+  animation: navbarReveal 0.8s ease forwards;
+}
+
+@keyframes navbarReveal {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
