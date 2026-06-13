@@ -30,6 +30,7 @@ export default function RegisterPage() {
     const [verifyingOtp, setVerifyingOtp] = useState(false);
     const [timer, setTimer] = useState(120);
     const errorRef = useRef(null);
+    const [txId, setTxId] = useState(null);
 
     // Auto-scroll to error message
     useEffect(() => {
@@ -47,6 +48,32 @@ export default function RegisterPage() {
             navigate('/');
         }
     }, [user, navigate]);
+
+    useEffect(() => {
+        const queryParams = new URLSearchParams(window.location.search);
+        const txIdParam = queryParams.get('tx_id');
+        const emailParam = queryParams.get('email');
+        const nameParam = queryParams.get('name');
+        const phoneParam = queryParams.get('phone');
+
+        if (txIdParam) {
+            setTxId(txIdParam);
+            let cleanedPhone = phoneParam ? decodeURIComponent(phoneParam) : '';
+            // Strip any +91 or 91 prefix if it exists so the 10-digit number is clean in the input
+            let digits = cleanedPhone.replace(/\D/g, '');
+            if (digits.length > 10 && digits.startsWith('91')) {
+                digits = digits.substring(2);
+            } else if (digits.length === 12 && digits.startsWith('91')) {
+                digits = digits.substring(2);
+            }
+            setFormData(prev => ({
+                ...prev,
+                name: nameParam ? decodeURIComponent(nameParam) : prev.name,
+                email: emailParam ? decodeURIComponent(emailParam) : prev.email,
+                phone: digits || cleanedPhone || prev.phone
+            }));
+        }
+    }, []);
 
     useEffect(() => {
         let interval;
@@ -106,7 +133,7 @@ export default function RegisterPage() {
         setLoading(true);
 
         try {
-            const { data, error } = await supabase.auth.signUp({
+            const { error } = await supabase.auth.signUp({
                 email: formData.email,
                 password: formData.password,
                 options: {
@@ -152,9 +179,102 @@ export default function RegisterPage() {
 
             if (error) throw error;
 
-            setSuccessMsg('Email verified successfully! Taking you to the dashboard...');
+            // Fetch the user's public user_id (integer) from the users table
+            let profile = null;
+            const { data: fetchedProfile, error: profileError } = await supabase
+                .from('users')
+                .select('user_id')
+                .eq('auth_id', data.user.id)
+                .single();
+
+            if (!profileError && fetchedProfile) {
+                profile = fetchedProfile;
+            } else if (profileError && profileError.code === 'PGRST116') {
+                console.warn("Profile not found during OTP verification. Attempting frontend creation.");
+                let digitsOnly = formData.phone.replace(/\D/g, '');
+                if (digitsOnly.length > 10 && digitsOnly.startsWith('91')) {
+                    digitsOnly = digitsOnly.substring(2);
+                }
+                digitsOnly = digitsOnly.replace(/^0+/, '');
+                const formattedPhone = `+91${digitsOnly}`;
+
+                const { data: insertedData, error: insertError } = await supabase
+                    .from('users')
+                    .insert([{
+                        auth_id: data.user.id,
+                        name: formData.name,
+                        email: formData.email,
+                        phone_number: formattedPhone,
+                        age: formData.age ? parseInt(formData.age, 10) : null,
+                        profession: formData.profession,
+                        residential_address: formData.address
+                    }])
+                    .select('user_id')
+                    .single();
+
+                if (!insertError && insertedData) {
+                    profile = insertedData;
+                } else {
+                    console.error("Fallback profile insertion failed:", insertError);
+                }
+            }
+
+            if (profile) {
+                const newUserId = profile.user_id;
+
+                // 1. Active checkout case: Link this specific transaction
+                if (txId) {
+                    await supabase
+                        .from('transactions')
+                        .update({ user_id: newUserId })
+                        .eq('transaction_id', txId);
+
+                    // Fetch the transaction details to get the role_id
+                    const { data: tx } = await supabase
+                        .from('transactions')
+                        .select('role_id')
+                        .eq('transaction_id', txId)
+                        .maybeSingle();
+
+                    if (tx) {
+                        await supabase
+                            .from('training_registrations')
+                            .update({ user_id: newUserId })
+                            .eq('email', formData.email)
+                            .eq('role_id', tx.role_id)
+                            .is('user_id', null);
+                    }
+                }
+
+                // 2. Passive Drop-off handling & active matching fallback:
+                // Find all paid transactions with this email where user_id is null and link them
+                const { data: paidTxs } = await supabase
+                    .from('transactions')
+                    .select('transaction_id, role_id')
+                    .eq('email', formData.email)
+                    .eq('payment_status', 'paid')
+                    .is('user_id', null);
+
+                if (paidTxs && paidTxs.length > 0) {
+                    for (const tx of paidTxs) {
+                        await supabase
+                            .from('transactions')
+                            .update({ user_id: newUserId })
+                            .eq('transaction_id', tx.transaction_id);
+
+                        await supabase
+                            .from('training_registrations')
+                            .update({ user_id: newUserId })
+                            .eq('email', formData.email)
+                            .eq('role_id', tx.role_id)
+                            .is('user_id', null);
+                    }
+                }
+            }
+
+            setSuccessMsg('Email verified successfully! Taking you to your profile...');
             setTimeout(() => {
-                navigate('/');
+                navigate('/profile');
             }, 2000);
         } catch (error) {
             console.error('Error verifying OTP:', error);
@@ -194,11 +314,12 @@ export default function RegisterPage() {
                                     type="text"
                                     id="name"
                                     name="name"
-                                    className="auth-input"
+                                    className={`auth-input ${txId ? 'auth-input--readonly' : ''}`}
                                     placeholder="John Doe"
                                     value={formData.name}
                                     onChange={handleChange}
                                     required
+                                    readOnly={!!txId}
                                 />
                             </div>
 
@@ -208,11 +329,12 @@ export default function RegisterPage() {
                                     type="email"
                                     id="email"
                                     name="email"
-                                    className="auth-input"
+                                    className={`auth-input ${txId ? 'auth-input--readonly' : ''}`}
                                     placeholder="john@example.com"
                                     value={formData.email}
                                     onChange={handleChange}
                                     required
+                                    readOnly={!!txId}
                                 />
                             </div>
 
@@ -253,12 +375,13 @@ export default function RegisterPage() {
                                         type="tel"
                                         id="phone"
                                         name="phone"
-                                        className="auth-input"
+                                        className={`auth-input ${txId ? 'auth-input--readonly' : ''}`}
                                         style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
                                         placeholder="9876543210"
                                         value={formData.phone}
                                         onChange={handleChange}
                                         required
+                                        readOnly={!!txId}
                                     />
                                 </div>
                             </div>

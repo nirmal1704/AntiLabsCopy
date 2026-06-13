@@ -132,6 +132,7 @@
 .am__form {
     padding: 28px 32px;
     overflow-y: auto;
+    overscroll-behavior: contain;
     display: flex;
     flex-direction: column;
     gap: 22px;
@@ -556,14 +557,146 @@
     color: var(--text-muted);
 }
 
+/* ── Promo Code ────────────────────────────────────────────── */
+.am__promo-group {
+    margin-bottom: 10px;
+}
+
+.am__promo-row {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+}
+
+.am__input-group input.am__input {
+    padding-left: 14px;
+}
+
+.am__promo-btn {
+    padding: 11px 22px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: var(--font-heading);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1.5px solid var(--border-cyan);
+    background: var(--surface-2);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 90px;
+}
+
+.am__promo-btn:hover:not(:disabled) {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: var(--primary);
+    transform: translateY(-1px);
+}
+
+.am__promo-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.am__promo-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text-muted);
+    transform: none;
+}
+
+.am__promo-message {
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 6px;
+    margin-bottom: 0;
+}
+
+.am__promo-message--success {
+    color: #10b981;
+}
+
+.am__promo-message--error {
+    color: #ef4444;
+}
+
 /* ── Footer buttons ──────────────────────────────────────── */
 .am__footer {
     display: flex;
-    justify-content: flex-end;
-    gap: 12px;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
     padding: 20px 32px 24px;
     border-top: 1px solid var(--border);
     background: var(--surface);
+}
+
+.am__footer-price-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: flex-start;
+}
+
+.am__footer-price-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.am__footer-price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.am__price-original {
+    font-size: 14px;
+    text-decoration: line-through;
+    color: rgba(239, 68, 68, 0.7);
+    font-weight: 600;
+}
+
+.am__price-display {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--accent);
+    font-family: var(--font-heading);
+    transition: color 0.3s ease, transform 0.3s ease;
+    display: inline-block;
+}
+
+.am__price-display--discounted {
+    color: #10b981; /* bright emerald green */
+}
+
+.am__price-display--pulse {
+    animation: am-price-pulse 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes am-price-pulse {
+    0% {
+        transform: scale(1);
+    }
+    30% {
+        transform: scale(1.22);
+        text-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
+    }
+    100% {
+        transform: scale(1);
+        text-shadow: none;
+    }
+}
+
+.am__footer-btns {
+    display: flex;
+    gap: 12px;
 }
 
 .am__btn-cancel {
@@ -647,6 +780,19 @@
     .am__footer {
         padding: 16px 20px 20px;
         flex-direction: column-reverse;
+        align-items: stretch;
+        gap: 16px;
+    }
+
+    .am__footer-price-wrap {
+        align-items: center;
+    }
+
+    .am__footer-btns {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
     }
 
     .am__btn-submit,
