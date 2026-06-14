@@ -1,8 +1,15 @@
+@import url("https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Pliant:ital,wght@0,100..900;1,100..900&display=swap");
+* {
+  font-family: "Pliant", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
 .landing-content {
   opacity: 0;
   background: #07071a;
   transform: translateY(40px);
-
+  z-index: 1;
   transition:
     opacity 0.9s ease,
     transform 0.9s ease;
@@ -17,14 +24,18 @@
    Hero Section
 ====================================== */
 .hero-content h1 {
-  font-size: clamp(4rem, 7vw, 7rem);
+  /* font-size: clamp(4rem, 7vw, 7rem); */
+  /* font-size: 40px; */
   line-height: 0.95;
-  font-weight: 800;
+  font-family: "Archivo Black", sans-serif;
+  font-weight: 400;
+  font-style: normal;
   color: #7c4dff50;
   margin-bottom: 2rem;
 }
 
 .hero-content h1 span {
+  font-family: "Archivo Black", sans-serif;
   color: #7c4dff;
 }
 .hacklabs-page {
@@ -105,7 +116,7 @@
 }
 .floating-card {
   position: absolute;
-
+  z-index: 1;
   width: 240px;
 
   background: rgba(124, 77, 255, 0.08);
@@ -128,7 +139,6 @@
 .card-left {
   top: 12%;
   right: 33%;
-
   animation: floatCard 6s ease-in-out infinite;
 }
 
@@ -166,7 +176,6 @@
 }
 #robot-hero-slot {
   position: relative;
-
   height: 520px;
   width: 600px;
   display: flex;
@@ -189,8 +198,38 @@
 }
 .Mascot {
   position: absolute;
-  top: 15%;
+
+  transition:
+    top 0.8s ease,
+    right 0.8s ease,
+    bottom 0.8s ease,
+    transform 0.8s ease;
+}
+
+/* Hero mode */
+
+.Mascot--hero {
+  position: absolute;
+
+  top: 20%;
   right: 15%;
+  z-index: 0;
+  transform: scale(1);
+}
+
+/* Floating mode */
+
+.Mascot--floating {
+  position: fixed;
+
+  bottom: -71px;
+  right: -59px;
+
+  top: auto;
+
+  z-index: 9999;
+
+  transform: scale(0.25);
 }
 /* ======================================
    STATS SECTION
@@ -199,10 +238,8 @@
 .hacklabs-stats {
   width: min(1400px, 92%);
   margin: 0 auto;
-
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-
+  grid-template-columns: repeat(4, 0.5fr);
   gap: 22px;
 
   /* padding-bottom: 50px; */
@@ -213,7 +250,7 @@
 
   border: 1px solid rgba(124, 77, 255, 0.15);
 
-  border-radius: 22px;
+  border-radius: 15px;
   cursor: pointer;
   padding: 25px 32px;
 
@@ -233,6 +270,7 @@
 .stat-card h3 {
   font-size: 3rem;
   line-height: 1;
+  font-family: "Archivo Black", sans-serif;
 
   color: white;
 
@@ -249,4 +287,162 @@
 
 .Details {
   background: #07071a;
+}
+/* ======================================
+   LARGE TABLETS
+====================================== */
+
+@media (max-width: 1200px) {
+  .hacklabs-hero {
+    gap: 8rem;
+    padding: 0 3rem;
+  }
+
+  #robot-hero-slot {
+    width: 450px;
+    height: 450px;
+  }
+
+  .hero-content h1 {
+    font-size: 4.5rem;
+  }
+
+  .hacklabs-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ======================================
+   TABLETS
+====================================== */
+
+@media (max-width: 992px) {
+  .hacklabs-hero {
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+
+    gap: 3rem;
+
+    padding: 8rem 2rem 4rem;
+  }
+
+  .hero-content {
+    max-width: 700px;
+  }
+
+  .hero-content h1 {
+    font-size: 4rem;
+  }
+
+  .hero-content p {
+    margin-inline: auto;
+  }
+
+  .hero-visual {
+    display: none;
+  }
+
+  #robot-hero-slot {
+    display: none;
+  }
+
+  .floating-card {
+    display: none;
+  }
+
+  .hacklabs-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 993px) {
+  .Mascot {
+    position: absolute;
+  }
+}
+/* ======================================
+   MOBILE
+====================================== */
+
+@media (max-width: 768px) {
+  .hacklabs-page {
+    min-height: auto;
+  }
+
+  .hacklabs-hero {
+    min-height: auto;
+
+    padding: 7rem 1.5rem 3rem;
+  }
+
+  .hero-content h1 {
+    font-size: 3.2rem;
+    line-height: 1.05;
+  }
+
+  .hero-content p {
+    font-size: 1rem;
+  }
+
+  .hero-content button {
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .hero-badge {
+    font-size: 0.9rem;
+  }
+
+  .hacklabs-stats {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .stat-card {
+    padding: 24px;
+  }
+
+  .stat-card h3 {
+    font-size: 2.5rem;
+  }
+}
+
+/* ======================================
+   SMALL MOBILE
+====================================== */
+
+@media (max-width: 480px) {
+  .hacklabs-hero {
+    padding: 6rem 1rem 2rem;
+  }
+
+  .hero-content h1 {
+    font-size: 2.5rem;
+  }
+
+  .hero-content p {
+    font-size: 0.95rem;
+  }
+
+  .hero-badge {
+    font-size: 0.8rem;
+    padding: 8px 14px;
+  }
+
+  .hero-content button {
+    width: 100%;
+    font-size: 1rem;
+  }
+
+  .stat-card {
+    padding: 20px;
+  }
+
+  .stat-card h3 {
+    font-size: 2rem;
+  }
+
+  .stat-card p {
+    font-size: 0.95rem;
+  }
 }

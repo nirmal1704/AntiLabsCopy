@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double:wght@100..900&display=swap");
 /* ==========================================
    TIMELINE SECTION
 ========================================== */
@@ -119,17 +120,23 @@
 
 .timeline-big-time {
   position: absolute;
-
+  font-family: "Bitcount Grid Double", system-ui;
+  font-optical-sizing: auto;
   right: 80px;
   top: 50%;
-
+  font-style: normal;
+  font-variation-settings:
+    "slnt" 0,
+    "CRSV" 0.5,
+    "ELSH" 0,
+    "ELXP" 0;
   transform: translateY(-50%);
 
   font-size: clamp(5rem, 12vw, 10rem);
 
-  font-weight: 900;
+  font-weight: 500;
 
-  color: #7c4dff;
+  color: white;
 
   pointer-events: none;
 

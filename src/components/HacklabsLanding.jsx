@@ -1,8 +1,35 @@
 import RobotMascot from "./RobotMascot";
 import TimelineSection from "./HacklabsTimeline";
 import "./HacklabsLanding.css";
+import { useEffect, useState } from "react";
 
 export default function HacklabsLanding({ robotArrived, contentVisible }) {
+  const [robotMode, setRobotMode] = useState("hero");
+
+  useEffect(() => {
+    const updateRobotPosition = () => {
+      if (window.innerWidth <= 992) {
+        setRobotMode("floating");
+      } else {
+        setRobotMode("hero");
+      }
+    };
+
+    updateRobotPosition();
+
+    window.addEventListener("resize", updateRobotPosition);
+
+    return () => {
+      window.removeEventListener("resize", updateRobotPosition);
+    };
+  }, []);
+  const moveRobotToCorner = () => {
+    setRobotMode("floating");
+  };
+
+  const moveRobotToHero = () => {
+    setRobotMode("hero");
+  };
   const timelineEvents = [
     {
       time: "22:00",
@@ -98,11 +125,7 @@ export default function HacklabsLanding({ robotArrived, contentVisible }) {
                   But they run out of tokens
                 </code>
               </div>
-              <div className="Mascot">
-                <RobotMascot
-                  className={robotArrived ? "hero-robot arrived" : "hero-robot"}
-                />
-              </div>
+
               <div className="floating-card card-right">
                 <div className="card-header">
                   <span></span>
@@ -119,6 +142,7 @@ export default function HacklabsLanding({ robotArrived, contentVisible }) {
               </div>
             </div>
           </section>
+
           <section className="hacklabs-stats">
             <div className="stat-card">
               <h3>500+</h3>
@@ -141,6 +165,15 @@ export default function HacklabsLanding({ robotArrived, contentVisible }) {
             </div>
           </section>
         </main>
+      </div>
+      <div
+        className={`Mascot ${
+          robotMode === "floating" ? "Mascot--floating" : "Mascot--hero"
+        }`}
+      >
+        <RobotMascot
+          className={robotArrived ? "hero-robot arrived" : "hero-robot"}
+        />
       </div>
       <div className="Details">
         <TimelineSection timelineEvents={timelineEvents} />

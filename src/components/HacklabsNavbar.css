@@ -144,6 +144,37 @@
 
   box-shadow: 0 10px 25px rgba(124, 77, 255, 0.35);
 }
+.hacklabs-mobile-menu {
+  position: fixed;
+
+  top: 70px;
+  left: 0;
+  right: 0;
+
+  background: #07071a;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 18px;
+
+  padding: 24px;
+
+  z-index: 9998;
+
+  border-bottom: 1px solid rgba(124, 77, 255, 0.15);
+}
+
+.hacklabs-mobile-menu a {
+  color: white;
+  text-decoration: none;
+  font-size: 1rem;
+}
+
+.hacklabs-mobile-menu .hacklabs-navbar__login,
+.hacklabs-mobile-menu .hacklabs-navbar__register {
+  width: 100%;
+}
 
 /* ==========================================
    APPEAR ANIMATION
@@ -160,5 +191,91 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+/* ==========================================
+   TABLET
+========================================== */
+
+@media (max-width: 1200px) {
+  .hacklabs-navbar {
+    padding: 0 24px;
+  }
+
+  .hacklabs-navbar__logo {
+    width: 180px;
+    height: 60px;
+  }
+
+  .hacklabs-navbar__center {
+    gap: 24px;
+  }
+
+  .hacklabs-navbar__center a {
+    font-size: 0.9rem;
+  }
+}
+
+/* ==========================================
+   MOBILE MENU BUTTON
+========================================== */
+
+.hacklabs-navbar__menu {
+  display: none;
+
+  background: transparent;
+  border: none;
+
+  color: white;
+
+  font-size: 1.8rem;
+  cursor: pointer;
+}
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width: 992px) {
+  .hacklabs-navbar {
+    height: 70px;
+    padding: 0 20px;
+  }
+
+  .hacklabs-navbar__logo {
+    width: 160px;
+    height: 54px;
+  }
+
+  .hacklabs-navbar__center {
+    display: none;
+  }
+
+  .hacklabs-navbar__right {
+    display: none;
+  }
+
+  .hacklabs-navbar__menu {
+    display: block;
+  }
+}
+
+/* ==========================================
+   SMALL MOBILE
+========================================== */
+
+@media (max-width: 576px) {
+  .hacklabs-navbar {
+    height: 64px;
+    padding: 0 16px;
+  }
+
+  .hacklabs-navbar__logo {
+    width: 140px;
+    height: 48px;
+  }
+
+  .hacklabs-navbar__menu {
+    font-size: 1.6rem;
   }
 }
