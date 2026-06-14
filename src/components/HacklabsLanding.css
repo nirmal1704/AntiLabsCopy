@@ -1,8 +1,26 @@
+.landing-content {
+  opacity: 0;
+  background: #07071a;
+  transform: translateY(40px);
+
+  transition:
+    opacity 0.9s ease,
+    transform 0.9s ease;
+}
+
+.landing-content--show {
+  opacity: 1;
+
+  transform: translateY(0);
+}
+/* ======================================
+   Hero Section
+====================================== */
 .hero-content h1 {
   font-size: clamp(4rem, 7vw, 7rem);
   line-height: 0.95;
   font-weight: 800;
-
+  color: #7c4dff50;
   margin-bottom: 2rem;
 }
 
@@ -10,28 +28,22 @@
   color: #7c4dff;
 }
 .hacklabs-page {
-  min-height: 100vh;
+  min-height: 80vh;
   background: #07071a;
   color: white;
 }
 
 .hacklabs-hero {
-  min-height: 100vh;
-
+  margin-top: 5%;
+  min-height: 80vh;
   display: flex;
   justify-content: center;
-  gap: 120px;
+  gap: 45%;
   align-items: center;
-
   padding: 0px;
 }
 .hero-content {
   max-width: 600px;
-}
-
-.hero-badge {
-  color: #a78bfa;
-  margin-bottom: 1rem;
 }
 
 .hero-content h1 {
@@ -41,17 +53,17 @@
 }
 
 .hero-content p {
-  color: #8888aa;
-  font-size: 1.1rem;
-  line-height: 1.8;
-  margin-bottom: 2rem;
+  color: #8888aabb;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
 }
 
 .hero-content button {
   background: #6d4aff;
 
   border: none;
-
+  font-size: 1.2rem;
   color: white;
 
   padding: 14px 28px;
@@ -59,21 +71,30 @@
   border-radius: 12px;
 
   cursor: pointer;
+  transition: all 0.25s ease;
 }
+.hero-content button:hover {
+  transform: translateY(-2px);
+
+  box-shadow: 0 10px 25px rgba(124, 77, 255, 0.35);
+}
+
 .hero-badge {
   display: inline-flex;
 
   padding: 10px 18px;
-
   border-radius: 999px;
-
-  border: 1px solid rgba(124, 77, 255, 0.25);
-
+  margin-bottom: 1rem;
+  border: 1px solid green;
+  cursor: pointer;
   background: rgba(124, 77, 255, 0.08);
+  transition: all 0.25s ease;
+  color: green;
+}
+.hero-badge:hover {
+  transform: translateY(-2px);
 
-  color: #b89cff;
-
-  margin-bottom: 2rem;
+  box-shadow: 25px 10px 25px rgba(80, 255, 77, 0.35);
 }
 .hero-visual {
   position: relative;
@@ -105,8 +126,8 @@
 }
 
 .card-left {
-  top: 18%;
-  right: 30%;
+  top: 12%;
+  right: 33%;
 
   animation: floatCard 6s ease-in-out infinite;
 }
@@ -151,4 +172,81 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
+}
+.hero-robot {
+  opacity: 0;
+
+  transform: scale(0.6);
+
+  transition:
+    transform 0.8s ease,
+    opacity 0.8s ease;
+}
+
+.hero-robot.arrived {
+  opacity: 1;
+  transform: scale(1);
+}
+.Mascot {
+  position: absolute;
+  top: 15%;
+  right: 15%;
+}
+/* ======================================
+   STATS SECTION
+====================================== */
+
+.hacklabs-stats {
+  width: min(1400px, 92%);
+  margin: 0 auto;
+
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+
+  gap: 22px;
+
+  /* padding-bottom: 50px; */
+}
+
+.stat-card {
+  background: rgba(124, 77, 255, 0.04);
+
+  border: 1px solid rgba(124, 77, 255, 0.15);
+
+  border-radius: 22px;
+  cursor: pointer;
+  padding: 25px 32px;
+
+  backdrop-filter: blur(16px);
+
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+
+  border-color: rgba(124, 77, 255, 0.35);
+
+  box-shadow: 0 15px 40px rgba(124, 77, 255, 0.15);
+}
+
+.stat-card h3 {
+  font-size: 3rem;
+  line-height: 1;
+
+  color: white;
+
+  margin-bottom: 14px;
+
+  font-weight: 700;
+}
+
+.stat-card p {
+  color: #8d8aa8;
+
+  font-size: 1.1rem;
+}
+
+.Details {
+  background: #07071a;
 }

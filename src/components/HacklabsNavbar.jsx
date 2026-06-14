@@ -23,7 +23,7 @@ export default function HacklabsNavbar({ logoArrived }) {
       <div className="hacklabs-navbar__right">
         <button className="hacklabs-navbar__login">Log In</button>
 
-        <button className="hacklabs-navbar__register">Register Now</button>
+        <button className="hacklabs-navbar__register">Register</button>
       </div>
     </nav>
   );

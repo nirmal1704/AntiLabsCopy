@@ -13,6 +13,8 @@ export default function HacklabsPage() {
   const [showHackNavbar, setShowHackNavbar] = useState(true);
   const [logoFlying, setLogoFlying] = useState(false);
   const [logoArrived, setLogoArrived] = useState(false);
+  const [contentVisible, setContentVisible] = useState(false);
+
   return (
     <>
       {!introDone ? (
@@ -36,6 +38,9 @@ export default function HacklabsPage() {
               setTimeout(() => {
                 setTransitioning(false);
                 setRobotArrived(true);
+                setTimeout(() => {
+                  setContentVisible(true);
+                }, 300);
               }, 1800);
             }}
           />
@@ -43,7 +48,10 @@ export default function HacklabsPage() {
       ) : (
         <>
           {introDone && <HacklabsNavbar logoArrived={logoArrived} />}
-          <HacklabsLanding robotArrived={robotArrived} />
+          <HacklabsLanding
+            robotArrived={robotArrived}
+            contentVisible={contentVisible}
+          />
         </>
       )}
       {logoFlying && <img src="/hacklabs.png" className="hacklabs-logo-fly" />}
