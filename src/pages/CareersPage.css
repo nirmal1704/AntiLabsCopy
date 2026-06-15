@@ -479,3 +479,28 @@
         font-size: 15px;
     }
 }
+
+.cp__role-enroll-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 10px;
+    font-weight: 700;
+    line-height: 1.2;
+    height: auto;
+    box-shadow: 0 4px 12px rgba(0, 200, 255, 0.15);
+    border: none;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.cp__role-enroll-btn:hover {
+    box-shadow: 0 6px 18px rgba(0, 200, 255, 0.3);
+}
+
+@media (max-width: 480px) {
+    .cp__role-enroll-btn {
+        padding: 8px 14px;
+        font-size: 12px;
+        border-radius: 8px;
+    }
+}
