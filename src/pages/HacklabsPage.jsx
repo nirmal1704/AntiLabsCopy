@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import HacklabsIntro from "../components/HacklabsIntro";
 import "./HacklabsPage.css";
 import HacklabsLanding from "../components/HacklabsLanding";
@@ -14,7 +14,15 @@ export default function HacklabsPage() {
   const [logoFlying, setLogoFlying] = useState(false);
   const [logoArrived, setLogoArrived] = useState(false);
   const [contentVisible, setContentVisible] = useState(false);
+  useEffect(() => {
+    document.body.style.background = "#000";
+    document.documentElement.style.background = "#000";
 
+    return () => {
+      document.body.style.background = "";
+      document.documentElement.style.background = "";
+    };
+  }, []);
   return (
     <>
       {!introDone ? (
