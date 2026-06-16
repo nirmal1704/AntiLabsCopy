@@ -1,13 +1,17 @@
 @import url("https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Pliant:ital,wght@0,100..900;1,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap");
 * {
-  font-family: "Pliant", sans-serif;
+  /* font-family: "Pliant", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal; */
+  font-family: "Rubik", sans-serif;
   font-optical-sizing: auto;
   font-style: normal;
 }
 .landing-content {
   opacity: 0;
-  background: #07071a;
+  background: black;
   transform: translateY(40px);
   z-index: 1;
   transition:
@@ -30,17 +34,18 @@
   font-family: "Archivo Black", sans-serif;
   font-weight: 400;
   font-style: normal;
-  color: #7c4dff50;
+  color: white;
   margin-bottom: 2rem;
 }
 
 .hero-content h1 span {
   font-family: "Archivo Black", sans-serif;
-  color: #7c4dff;
+  /* color: #7c4dff; */
+  color: var(--accent);
 }
 .hacklabs-page {
   min-height: 80vh;
-  background: #07071a;
+  background: black;
   color: white;
 }
 
@@ -71,7 +76,7 @@
 }
 
 .hero-content button {
-  background: #6d4aff;
+  background: var(--accent);
 
   border: none;
   font-size: 1.2rem;
@@ -92,8 +97,7 @@
 
 .hero-badge {
   display: inline-flex;
-
-  padding: 10px 18px;
+  padding: 10px 16px;
   border-radius: 999px;
   margin-bottom: 1rem;
   border: 1px solid green;
@@ -107,19 +111,16 @@
 
   box-shadow: 25px 10px 25px rgba(80, 255, 77, 0.35);
 }
-.hero-visual {
-  position: relative;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.hero-badge b {
+  padding-left: 4px;
 }
+
 .floating-card {
   position: absolute;
   z-index: 1;
   width: 240px;
 
-  background: rgba(124, 77, 255, 0.08);
+  background: var(--accent-dim);
 
   border: 1px solid rgba(124, 77, 255, 0.2);
 
@@ -129,7 +130,7 @@
 
   padding: 18px;
 
-  color: #a78bfa;
+  color: var(--accent-bright);
 
   font-family: monospace;
 
@@ -161,7 +162,7 @@
   height: 10px;
   border-radius: 50%;
 
-  background: #7c4dff;
+  background: var(--accent-glow);
 }
 
 @keyframes floatCard {
@@ -174,14 +175,7 @@
     transform: translateY(-10px);
   }
 }
-#robot-hero-slot {
-  position: relative;
-  height: 520px;
-  width: 600px;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-}
+
 .hero-robot {
   opacity: 0;
 
@@ -196,41 +190,7 @@
   opacity: 1;
   transform: scale(1);
 }
-.Mascot {
-  position: absolute;
 
-  transition:
-    top 0.8s ease,
-    right 0.8s ease,
-    bottom 0.8s ease,
-    transform 0.8s ease;
-}
-
-/* Hero mode */
-
-.Mascot--hero {
-  position: absolute;
-
-  top: 20%;
-  right: 15%;
-  z-index: 0;
-  transform: scale(1);
-}
-
-/* Floating mode */
-
-.Mascot--floating {
-  position: fixed;
-
-  bottom: -71px;
-  right: -59px;
-
-  top: auto;
-
-  z-index: 9999;
-
-  transform: scale(0.25);
-}
 /* ======================================
    STATS SECTION
 ====================================== */
@@ -248,7 +208,7 @@
 .stat-card {
   background: rgba(124, 77, 255, 0.04);
 
-  border: 1px solid rgba(124, 77, 255, 0.15);
+  border: 3px solid rgba(124, 77, 255, 0.15);
 
   border-radius: 15px;
   cursor: pointer;
@@ -262,7 +222,7 @@
 .stat-card:hover {
   transform: translateY(-4px);
 
-  border-color: rgba(124, 77, 255, 0.35);
+  border-color: var(--accent-bright);
 
   box-shadow: 0 15px 40px rgba(124, 77, 255, 0.15);
 }
@@ -286,7 +246,151 @@
 }
 
 .Details {
-  background: #07071a;
+  background: black;
+}
+/* ======================================
+   ASSISTANT SYSTEM
+====================================== */
+
+.AssistantGroup {
+  z-index: 99;
+  transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* HERO */
+
+.AssistantGroup--hero {
+  position: absolute;
+
+  top: 45%;
+  right: 20%;
+
+  transform: translateY(-50%) scale(1);
+}
+
+/* FLOATING */
+
+.AssistantGroup--floating {
+  position: fixed;
+
+  right: 20px;
+  bottom: 20px;
+
+  transform: scale(0.42);
+
+  transform-origin: bottom right;
+
+  animation: assistantFloat 4s ease-in-out infinite;
+}
+
+@keyframes assistantFloat {
+  0%,
+  100% {
+    transform: scale(0.42) translateY(0);
+  }
+
+  50% {
+    transform: scale(0.42) translateY(-8px);
+  }
+}
+
+/* CARD ATTACHED TO ROBOT */
+
+.assistant-card {
+  position: absolute;
+
+  width: 260px;
+
+  top: -80px;
+  left: -220px;
+
+  transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* FLOATING CARD */
+
+.AssistantGroup--floating .assistant-card {
+  width: 280px;
+
+  top: -35px;
+  left: -215px;
+
+  transform: scale(2);
+}
+
+/* RIGHT CARD */
+
+.card-right {
+  position: absolute;
+
+  top: 50%;
+  right: 5%;
+
+  transform: translateY(-50%);
+
+  animation: floatCard 7s ease-in-out infinite;
+
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease;
+}
+
+.card-right--hide {
+  opacity: 0;
+
+  transform: translateY(-50%) translateX(40px);
+
+  pointer-events: none;
+}
+/* =========================
+   CARD ATTACHED TO ROBOT
+========================= */
+
+.assistant-card {
+  position: absolute;
+
+  width: 260px;
+
+  top: -70px;
+  left: -220px;
+
+  transition: all 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* assistant mode */
+
+.AssistantGroup--floating .assistant-card {
+  width: 340px;
+  top: -40px;
+  left: -250px;
+
+  transform: scale(0.9);
+}
+
+/* =========================
+   RIGHT CARD
+========================= */
+
+.card-right {
+  position: absolute;
+
+  top: 50%;
+  right: 3%;
+
+  transform: translateY(-50%);
+
+  animation: floatCard 7s ease-in-out infinite;
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease;
+}
+
+.card-right--hide {
+  opacity: 0;
+
+  transform: translateY(-50%) translateX(40px);
+
+  pointer-events: none;
 }
 /* ======================================
    LARGE TABLETS
@@ -356,9 +460,6 @@
   }
 }
 @media (min-width: 993px) {
-  .Mascot {
-    position: absolute;
-  }
 }
 /* ======================================
    MOBILE
@@ -444,5 +545,49 @@
 
   .stat-card p {
     font-size: 0.95rem;
+  }
+}
+/* ======================================
+   TABLET
+====================================== */
+
+@media (max-width: 992px) {
+  .AssistantGroup--floating {
+    position: fixed;
+
+    right: 15px;
+    bottom: 15px;
+
+    transform: scale(0.22);
+
+    transform-origin: bottom right;
+  }
+
+  .assistant-card {
+    display: none;
+  }
+}
+
+/* ======================================
+   MOBILE
+====================================== */
+
+@media (max-width: 768px) {
+  .AssistantGroup--floating {
+    right: 15px;
+    bottom: 15px;
+    transform: scale(0.16);
+  }
+}
+
+/* ======================================
+   SMALL MOBILE
+====================================== */
+
+@media (max-width: 480px) {
+  .AssistantGroup--floating {
+    right: 15px;
+    bottom: 15px;
+    transform: scale(0.1);
   }
 }

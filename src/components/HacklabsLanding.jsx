@@ -5,7 +5,27 @@ import { useEffect, useState } from "react";
 
 export default function HacklabsLanding({ robotArrived, contentVisible }) {
   const [robotMode, setRobotMode] = useState("hero");
+  useEffect(() => {
+    const handleScroll = () => {
+      // Mobile/tablet always stay floating
+      if (window.innerWidth <= 992) {
+        setRobotMode("floating");
+        return;
+      }
 
+      // Desktop: move to assistant mode after a tiny scroll
+      setRobotMode(window.scrollY > 5 ? "floating" : "hero");
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    // Run once on mount
+    handleScroll();
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
   useEffect(() => {
     const updateRobotPosition = () => {
       if (window.innerWidth <= 992) {
@@ -32,7 +52,8 @@ export default function HacklabsLanding({ robotArrived, contentVisible }) {
   };
   const timelineEvents = [
     {
-      time: "22:00",
+      time_hour: "22",
+      time_minutes: "00",
       day: "Day 1",
       title: "Opening Ceremony",
       subtitle: "Kick-off & Vision",
@@ -41,7 +62,8 @@ export default function HacklabsLanding({ robotArrived, contentVisible }) {
     },
 
     {
-      time: "23:00",
+      time_hour: "23",
+      time_minutes: "00",
       day: "Day 1",
       title: "Team Formation",
       subtitle: "Find your squad",
@@ -49,7 +71,8 @@ export default function HacklabsLanding({ robotArrived, contentVisible }) {
     },
 
     {
-      time: "08:00",
+      time_hour: "08",
+      time_minutes: "00",
       day: "Day 2",
       title: "Mentor Connect",
       subtitle: "Industry Experts",
@@ -57,7 +80,8 @@ export default function HacklabsLanding({ robotArrived, contentVisible }) {
     },
 
     {
-      time: "20:00",
+      time_hour: "20",
+      time_minutes: "00",
       day: "Day 2",
       title: "Final Submission",
       subtitle: "Ship it",
@@ -65,7 +89,8 @@ export default function HacklabsLanding({ robotArrived, contentVisible }) {
     },
 
     {
-      time: "21:00",
+      time_hour: "21",
+      time_minutes: "00",
       day: "Day 2",
       title: "Judging",
       subtitle: "Project Evaluation",
@@ -73,7 +98,8 @@ export default function HacklabsLanding({ robotArrived, contentVisible }) {
     },
 
     {
-      time: "22:00",
+      time_hour: "22",
+      time_minutes: "00",
       day: "Day 2",
       title: "Closing Ceremony",
       subtitle: "Awards & Celebration",
@@ -92,7 +118,22 @@ export default function HacklabsLanding({ robotArrived, contentVisible }) {
             {/* LEFT SIDE */}
             <div className="left">
               <div className="hero-content">
-                <div className="hero-badge">• Applications Open </div>
+                <div className="hero-badge">
+                  <b>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                      class="bi bi-circle-fill"
+                      viewBox="0 0 16 16"
+                    >
+                      <circle cx="8" cy="8" r="8" />
+                    </svg>
+                    {"   "}
+                    Applications Open{" "}
+                  </b>
+                </div>
 
                 <h1>
                   Build.
@@ -111,36 +152,7 @@ export default function HacklabsLanding({ robotArrived, contentVisible }) {
             </div>
 
             {/* RIGHT SIDE */}
-            <div className="right">
-              <div className="floating-card card-left">
-                <div className="card-header">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-                <code>
-                  <br />
-                  I was Supposed to be an Assistant
-                  <br />
-                  But they run out of tokens
-                </code>
-              </div>
-
-              <div className="floating-card card-right">
-                <div className="card-header">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-
-                <code>
-                  Hello,
-                  <br />
-                  Welcome to HackLabs
-                  <br />
-                </code>
-              </div>
-            </div>
+            <div className="right"></div>
           </section>
 
           <section className="hacklabs-stats">
@@ -167,14 +179,51 @@ export default function HacklabsLanding({ robotArrived, contentVisible }) {
         </main>
       </div>
       <div
-        className={`Mascot ${
-          robotMode === "floating" ? "Mascot--floating" : "Mascot--hero"
+        className={`AssistantGroup ${
+          robotMode === "floating"
+            ? "AssistantGroup--floating"
+            : "AssistantGroup--hero"
         }`}
       >
+        <div className="floating-card assistant-card">
+          <div className="card-header">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+
+          <code>
+            <br />
+            I was Supposed to be an Assistant
+            <br />
+            But they run out of tokens
+          </code>
+        </div>
+
         <RobotMascot
           className={robotArrived ? "hero-robot arrived" : "hero-robot"}
         />
       </div>
+
+      <div
+        className={`floating-card card-right ${
+          robotMode === "floating" ? "card-right--hide" : ""
+        }`}
+      >
+        <div className="card-header">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+
+        <code>
+          Hello,
+          <br />
+          Welcome to HackLabs
+          <br />
+        </code>
+      </div>
+
       <div className="Details">
         <TimelineSection timelineEvents={timelineEvents} />
       </div>

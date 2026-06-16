@@ -57,7 +57,11 @@ export default function TimelineSection({ timelineEvents }) {
           </div>
         </div>
 
-        <div className="timeline-big-time">{current.time}</div>
+        <div className="timeline-big-time">
+          {current.time_hour}
+          <span>:</span>
+          {current.time_minutes}
+        </div>
         <button className="timeline-calendar-btn">
           <span className="calendar-icon">
             {/* Outline */}
