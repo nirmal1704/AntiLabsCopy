@@ -1,0 +1,126 @@
+@import url("https://fonts.googleapis.com/css2?family=Zen+Dots&display=swap");
+
+.benefits-section {
+  width: 95%;
+  max-width: 1050px;
+  margin: 40px auto;
+  padding-bottom: 60px;
+}
+.old-price {
+  text-decoration: line-through;
+  opacity: 0.7;
+  margin: 0 12px;
+  display: inline-block;
+}
+.benefits-section .benefits-heading {
+  color: white;
+  font-family: "Zen Dots", sans-serif;
+  text-align: center;
+  font-size: 48px;
+  font-weight: 400;
+  margin-bottom: 35px;
+}
+
+.benefits-table {
+  border: 1px solid rgba(255, 255, 255, 0.45);
+}
+
+.benefit-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  min-height: 90px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.45);
+  transition: all 0.35s ease;
+}
+
+.benefit-row:last-child {
+  border-bottom: none;
+}
+
+.benefit-row:hover {
+  border-color: #ffffff;
+}
+
+.benefit-row:hover .icon-cell,
+.benefit-row:hover .icon-cell svg {
+  color: #ffffff;
+}
+
+.benefit-row:hover .text-cell {
+  color: #ffffff;
+}
+
+.icon-cell {
+  border-right: 1px solid rgba(255, 255, 255, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 40px;
+  transition: all 0.35s ease;
+}
+
+.icon-cell svg {
+  width: 60px;
+  height: 60px;
+  color: rgba(255, 255, 255, 0.45);
+  stroke-width: 2;
+  transition: all 0.35s ease;
+}
+
+.text-cell {
+  font-family: "Zen Dots", sans-serif;
+
+  display: flex;
+  align-items: center;
+  padding-left: 20px;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 22px;
+  transition: all 0.35s ease;
+}
+
+@media (max-width: 900px) {
+  .benefit-row {
+    grid-template-columns: 90px 1fr;
+    min-height: 75px;
+  }
+
+  .icon-cell {
+    font-size: 28px;
+  }
+
+  .icon-cell svg {
+    width: 45px;
+    height: 45px;
+  }
+
+  .text-cell {
+    font-size: 16px;
+    padding-left: 15px;
+  }
+}
+
+@media (max-width: 600px) {
+  .benefits-heading {
+    font-size: 16px;
+  }
+
+  .benefit-row {
+    grid-template-columns: 70px 1fr;
+    min-height: 65px;
+  }
+
+  .icon-cell {
+    font-size: 22px;
+  }
+
+  .icon-cell svg {
+    width: 35px;
+    height: 35px;
+  }
+
+  .text-cell {
+    font-size: 12px;
+    padding-left: 10px;
+  }
+}

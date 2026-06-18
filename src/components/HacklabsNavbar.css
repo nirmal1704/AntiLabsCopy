@@ -1,0 +1,64 @@
+@import url("https://fonts.googleapis.com/css2?family=Zen+Dots&display=swap");
+
+.hacklabs-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  width: 100%;
+  height: 80px;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  box-sizing: border-box;
+}
+.navbar-logo {
+  height: 100px;
+  width: auto;
+  display: block;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.nav-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-family: "Zen Dots", sans-serif;
+  font-size: 1.15rem;
+  padding: 0;
+}
+
+.nav-btn:hover {
+  color: rgba(255, 255, 255, 0.39);
+}
+
+@media (max-width: 768px) {
+  .hacklabs-navbar {
+    padding: 0 20px;
+  }
+
+  .navbar-logo {
+    height: 30px;
+  }
+
+  .nav-btn {
+    font-size: 0.9rem;
+  }
+
+  .navbar-right {
+    gap: 12px;
+  }
+}

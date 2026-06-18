@@ -1,0 +1,19 @@
+.total_8 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 80px;
+  margin-bottom: 80px;
+}
+
+.box_8 {
+  border: 1px solid white;
+  padding: 32px;
+  margin: 1px;
+  width: 22%;
+}
+
+.head_8 {
+  font-size: 30px;
+  font-family: "Zen Dots", sans-serif;
+}

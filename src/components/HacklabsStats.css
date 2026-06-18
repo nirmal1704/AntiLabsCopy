@@ -1,0 +1,24 @@
+.Stats {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  background-color: black;
+  color: white;
+  font-family: "Zen Dots", sans-serif;
+}
+
+.box {
+  border: 5px dotted white;
+  border-radius: 10px;
+  padding: 1rem;
+  margin: 20px;
+}
+
+.Statstitle {
+  font-size: 50px;
+}
+
+.Statssubtitle {
+  font-size: 20px;
+}
