@@ -51,7 +51,7 @@
   }
 
   .navbar-logo {
-    height: 30px;
+    height: 50px;
   }
 
   .nav-btn {
@@ -60,5 +60,14 @@
 
   .navbar-right {
     gap: 12px;
+  }
+}
+@media (width <= 768px) {
+  .hacklabs-navbar {
+    position: relative;
+    height: 70px;
+  }
+  .navbar-logo {
+    height: 70px;
   }
 }

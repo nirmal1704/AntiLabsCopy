@@ -4,70 +4,44 @@ import "./HacklabsFAQ.css";
 
 const faqData = [
   {
-    question: "What is Ship?",
+    question: "Who can participate?",
     answer:
-      "Ship is a hackathon focused on building innovative products, collaborating with developers, and shipping ideas quickly.",
+      "Students, developers, designers, and tech enthusiasts are welcome to join HackLabs 2026.",
   },
   {
-    question: "Will this be live-streamed?",
+    question: "What is the registration fee?",
+    answer: "The registration fee is ₹199 per team.",
+  },
+  {
+    question: "How many members can a team have?",
+    answer: "Each team can have up to 4 members.",
+  },
+  {
+    question: "How does the hackathon work?",
     answer:
-      "Yes. Keynotes, opening ceremonies, and selected demos will be streamed online.",
+      "Join the official Google Meet, receive the problem statement, build your solution within 48 hours, and submit your project.",
   },
   {
-    question: "What is Ship?",
+    question: "What do I need to submit?",
     answer:
-      "Ship is a hackathon focused on building innovative products, collaborating with developers, and shipping ideas quickly.",
+      "You must submit your source code, documentation, and a YouTube demo video of your project.",
   },
   {
-    question: "Will this be live-streamed?",
+    question: "What can I win?",
     answer:
-      "Yes. Keynotes, opening ceremonies, and selected demos will be streamed online.",
+      "Participants can compete for a ₹10,000+ prize pool, internship opportunities, domains, hosting, and exclusive perks.",
   },
   {
-    question: "What is Ship?",
+    question: "Will I receive a certificate?",
     answer:
-      "Ship is a hackathon focused on building innovative products, collaborating with developers, and shipping ideas quickly.",
+      "Yes, all eligible participants will receive a participation certificate.",
   },
   {
-    question: "Will this be live-streamed?",
+    question: "Do I need prior hackathon experience?",
     answer:
-      "Yes. Keynotes, opening ceremonies, and selected demos will be streamed online.",
-  },
-  {
-    question: "What is Ship?",
-    answer:
-      "Ship is a hackathon focused on building innovative products, collaborating with developers, and shipping ideas quickly.",
-  },
-  {
-    question: "Will this be live-streamed?",
-    answer:
-      "Yes. Keynotes, opening ceremonies, and selected demos will be streamed online.",
-  },
-  {
-    question: "Will this be live-streamed?",
-    answer:
-      "Yes. Keynotes, opening ceremonies, and selected demos will be streamed online.",
-  },
-  {
-    question: "Will this be live-streamed?",
-    answer:
-      "Yes. Keynotes, opening ceremonies, and selected demos will be streamed online.",
-  },
-  {
-    question: "When will the full agenda be announced?",
-    answer: "The complete schedule will be released closer to the event date.",
-  },
-  {
-    question: "Can I participate as a sponsor of the event?",
-    answer: "Absolutely. Reach out through our sponsorship page to learn more.",
-  },
-  {
-    question: "Dietary Restrictions & Food Allergies",
-    answer:
-      "We'll provide options for various dietary requirements. Participants can specify restrictions during registration.",
+      "No. Beginners are encouraged to participate, learn, and build alongside experienced developers.",
   },
 ];
-
 export default function FAQSection() {
   const [activeIndex, setActiveIndex] = useState(null);
 

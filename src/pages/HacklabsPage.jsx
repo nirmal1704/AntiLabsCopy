@@ -19,9 +19,9 @@ function HacklabsPage() {
         <HacklabsStats />
         <HacklabsTimer />
         <HacklabsPhases />
-        <HacklabsBenefits />
         <HacklabsJudges />
         <HacklabsPrize />
+        <HacklabsBenefits />
         <HacklabsFAQ />
       </div>
       <HacklabsFooter />
