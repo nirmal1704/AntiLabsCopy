@@ -21,6 +21,9 @@ import CookieBanner from "./components/CookieBanner";
 const ServicesPage = lazy(() => import("./pages/ServicesPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const HacklabsPage = lazy(() => import("./pages/HacklabsPage"));
+const HacklabsDashboardPage = lazy(
+  () => import("./pages/HacklabsDashboardPage"),
+);
 const CareersPage = lazy(() => import("./pages/CareersPage"));
 const ContactPage = lazy(() => import("./pages/ContactPage"));
 const TestimonialsPage = lazy(() => import("./pages/TestimonialsPage"));
@@ -91,7 +94,7 @@ export default function App() {
         <Suspense fallback={<PageLoader />}>
           <div
             className={
-              location.pathname === "/hacklabs"
+              location.pathname.startsWith("/hacklabs")
                 ? "app app-dark"
                 : "app app-light"
             }
@@ -101,6 +104,10 @@ export default function App() {
               <Route path="/about" element={<AboutPage />} />
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/hacklabs" element={<HacklabsPage />} />
+              <Route
+                path="/hacklabs/dashboard"
+                element={<HacklabsDashboardPage />}
+              />
               <Route path="/careers" element={<CareersPage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/testimonials" element={<TestimonialsPage />} />
