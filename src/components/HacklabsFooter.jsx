@@ -1,7 +1,6 @@
 import React from "react";
 import "./HacklabsFooter.css";
-import { FaGithub, FaXTwitter } from "react-icons/fa6";
-import { IoChatbubbleOutline } from "react-icons/io5";
+import { FaLinkedinIn, FaInstagram, FaWhatsapp } from "react-icons/fa";
 
 export default function Footer() {
   return (
@@ -13,10 +12,9 @@ export default function Footer() {
 
         {/* Navigation */}
         <nav className="footer-nav">
-          <a href="/enterprise">Enterprise</a>
-          <a href="/demo">Get a Demo</a>
-          <a href="/privacy-policy">Privacy Policy</a>
-          <a href="/event-terms">Event T&amp;Cs</a>
+          <a href="/">Antilabs</a>
+          <a href="/privacy">Privacy Policy</a>
+          <a href="/terms">Event T&amp;Cs</a>
         </nav>
 
         {/* Bottom Section */}
@@ -25,25 +23,30 @@ export default function Footer() {
 
           <div className="footer-socials">
             <a
-              href="https://github.com"
+              href="https://www.linkedin.com/company/antilabs/"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="GitHub"
+              aria-label="LinkedIn"
             >
-              <FaGithub />
+              <FaLinkedinIn />
             </a>
 
             <a
-              href="https://x.com"
+              href="https://www.instagram.com/antilabs.in"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="X"
+              aria-label="Instagram"
             >
-              <FaXTwitter />
+              <FaInstagram />
             </a>
 
-            <a href="/contact" aria-label="Contact">
-              <IoChatbubbleOutline />
+            <a
+              href="https://wa.me/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="WhatsApp"
+            >
+              <FaWhatsapp />
             </a>
           </div>
         </div>
