@@ -111,9 +111,12 @@ body {
   color: #fff;
   border: 3px solid var(--bronze);
   color: var(--bronze);
-
-  padding: 18px;
+  padding: 16px;
   margin-left: -3px;
+}
+.bronze h2 {
+  font-family: "Zen Dots", sans-serif;
+  color: var(--bronze);
 }
 
 /* =====================
@@ -190,6 +193,18 @@ body {
     gap: 20px;
   }
 
+  .gold {
+    order: 1;
+  }
+
+  .silver {
+    order: 2;
+  }
+
+  .bronze {
+    order: 3;
+  }
+
   .silver,
   .gold,
   .bronze {
@@ -198,10 +213,6 @@ body {
     height: auto;
     min-height: 250px;
     margin: 0;
-  }
-
-  .amount {
-    font-size: 40px;
   }
 }
 

@@ -2,18 +2,65 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 80px;
-  margin-bottom: 80px;
+  gap: 12px;
+  margin: 80px 0;
+  flex-wrap: wrap;
 }
 
 .box_8 {
   border: 1px solid white;
   padding: 32px;
-  margin: 1px;
-  width: 22%;
+  flex: 1;
+  min-width: 180px;
+  max-width: 250px;
+  text-align: center;
+  box-sizing: border-box;
 }
 
 .head_8 {
   font-size: 30px;
   font-family: "Zen Dots", sans-serif;
+  line-height: 1.4;
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+  .box_8 {
+    min-width: 160px;
+    padding: 24px;
+  }
+
+  .head_8 {
+    font-size: 24px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .total_8 {
+    gap: 8px;
+    margin: 50px 0;
+  }
+
+  .box_8 {
+    width: calc(50% - 4px);
+    min-width: unset;
+    max-width: unset;
+    padding: 20px 10px;
+  }
+
+  .head_8 {
+    font-size: 18px;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 350px) {
+  .box_8 {
+    width: 100%;
+  }
+
+  .head_8 {
+    font-size: 16px;
+  }
 }

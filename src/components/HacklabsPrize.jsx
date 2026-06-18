@@ -13,7 +13,7 @@ export default function PrizePool() {
           <h2 className="amount">₹1500</h2>
 
           <ul>
-            <li>Free Domain for 1 Year</li>
+            <li>Free Domain for 1 Year worth ₹1000</li>
             <li>Fast-Track Internship Opportunity</li>
           </ul>
         </div>
@@ -25,7 +25,7 @@ export default function PrizePool() {
           <h2 className="amount">₹3000</h2>
 
           <ul>
-            <li>Free Domain & Hosting for 1 Year</li>
+            <li>Free Domain & Hosting for 1 Year worth ₹3000</li>
             <li>Fast-Track Internship Opportunity</li>
           </ul>
         </div>
@@ -33,10 +33,10 @@ export default function PrizePool() {
         {/* 3rd Prize */}
         <div className="prize-card bronze">
           <div className="rank-circle">3</div>
+          <h2 className="amount">₹500</h2>
 
           <ul className="third-prize-list">
-            <li>Paid Internship Interview Opportunity</li>
-            <li>Priority Consideration for AntiLabs Programs</li>
+            <li>Fast-Track Internship Interview Opportunity</li>
           </ul>
         </div>
       </div>
