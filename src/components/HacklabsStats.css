@@ -1,24 +1,74 @@
+@import url("https://fonts.googleapis.com/css2?family=Zen+Dots&display=swap");
+
 .Stats {
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: stretch;
   flex-wrap: wrap;
-  background-color: black;
-  color: white;
+  gap: 20px;
+  padding: 40px 20px;
+  background: #000;
+  color: #fff;
   font-family: "Zen Dots", sans-serif;
 }
 
 .box {
-  border: 5px dotted white;
-  border-radius: 10px;
-  padding: 1rem;
-  margin: 20px;
+  border: 4px dotted #fff;
+  border-radius: 14px;
+  padding: 1.5rem;
+  min-width: 220px;
+  flex: 1 1 220px;
+  max-width: 280px;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.box:hover {
+  transform: translateY(-5px);
 }
 
 .Statstitle {
-  font-size: 50px;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1;
+  margin-bottom: 12px;
 }
 
 .Statssubtitle {
-  font-size: 20px;
+  font-size: clamp(0.8rem, 2vw, 1.1rem);
+  line-height: 1.4;
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+  .Stats {
+    gap: 15px;
+    padding: 30px 15px;
+  }
+
+  .box {
+    min-width: 180px;
+    padding: 1.2rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .Stats {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .box {
+    width: 100%;
+    max-width: 320px;
+    margin: 0;
+  }
+
+  .Statstitle {
+    font-size: 2.2rem;
+  }
+
+  .Statssubtitle {
+    font-size: 0.9rem;
+  }
 }
