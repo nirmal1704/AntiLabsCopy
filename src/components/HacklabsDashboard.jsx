@@ -15,11 +15,11 @@ export default function HacklabsDashboard() {
 
   const members = [
     { id: 1, type: "add" },
-    { id: 2, type: "empty", name: "Mem 1" },
+    { id: 2, type: "empty", name: "Rajeev Masand" },
     {
       id: 3,
       type: "filled",
-      name: "Mem 2",
+      name: "Piyush Singh",
       image: "/hacklabspiyush.png",
     },
     { id: 4, type: "add" },
@@ -60,7 +60,7 @@ export default function HacklabsDashboard() {
             </div>
 
             <div className="member-bottom">
-              <h3>{member.type === "add" ? "Add Mem" : member.name}</h3>
+              <h3>{member.type === "add" ? "Add Member" : member.name}</h3>
             </div>
           </div>
         ))}

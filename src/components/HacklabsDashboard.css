@@ -30,8 +30,11 @@
   border: 1px solid #7a7a7a;
   background: #000000;
   overflow: hidden;
+  transition: ease 0.5s;
 }
-
+.member-card:hover {
+  transform: scale(1.1);
+}
 .member-top {
   height: 305px;
   background: #e7e7e7;
