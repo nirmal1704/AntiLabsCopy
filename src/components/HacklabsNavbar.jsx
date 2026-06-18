@@ -9,7 +9,12 @@ export default function HacklabsNavbar() {
   return (
     <nav className="hacklabs-navbar">
       <div className="navbar-left">
-        <img src={logo} alt="Hacklabs Logo" className="navbar-logo" />
+        <img
+          src={logo}
+          alt="Hacklabs Logo"
+          onClick={() => navigate("/hacklabs")}
+          className="navbar-logo"
+        />
       </div>
 
       <div className="navbar-right">
