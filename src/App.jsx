@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { ReactLenis } from "lenis/react";
 import "lenis/dist/lenis.css";
 import SEO from "./components/SEO";
@@ -82,6 +82,7 @@ const PageLoader = () => (
 );
 
 export default function App() {
+  const location = useLocation();
   return (
     <ReactLenis root>
       <ErrorBoundary>
