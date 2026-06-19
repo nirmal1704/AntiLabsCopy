@@ -1,10 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Zen+Dots&display=swap");
 
 .dashboard {
-  margin-top: 40px;
   min-height: 100vh;
   background: #000000;
-  padding: 40px 20px;
+  padding: 80px 20px;
   text-align: center;
   box-sizing: border-box;
 }
@@ -131,7 +130,9 @@
     width: calc(50% - 8px);
     max-width: 180px;
   }
-
+  .member-card:hover {
+    transform: scale(1);
+  }
   .member-top {
     height: 230px;
   }
@@ -183,6 +184,9 @@
   .member-card {
     width: calc(50% - 6px);
     max-width: none;
+  }
+  .member-card:hover {
+    transform: scale(1);
   }
 
   .member-top {

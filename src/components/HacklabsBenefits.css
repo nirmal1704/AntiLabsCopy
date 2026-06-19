@@ -6,12 +6,7 @@
   margin: 40px auto;
   padding-bottom: 60px;
 }
-.old-price {
-  text-decoration: line-through;
-  opacity: 0.7;
-  margin: 0 12px;
-  display: inline-block;
-}
+
 .benefits-section .benefits-heading {
   color: white;
   font-family: "Zen Dots", sans-serif;
@@ -24,7 +19,19 @@
 .benefits-table {
   border: 1px solid rgba(255, 255, 255, 0.45);
 }
+.price-wrapper {
+  white-space: nowrap;
+}
 
+.old-price {
+  text-decoration: line-through;
+  opacity: 0.7;
+  margin: 0 6px;
+}
+
+.new-price {
+  white-space: nowrap;
+}
 .benefit-row {
   display: grid;
   grid-template-columns: 140px 1fr;
@@ -70,7 +77,6 @@
 
 .text-cell {
   font-family: "Zen Dots", sans-serif;
-
   display: flex;
   align-items: center;
   padding-left: 20px;
@@ -122,5 +128,6 @@
   .text-cell {
     font-size: 12px;
     padding-left: 10px;
+    flex-wrap: wrap;
   }
 }

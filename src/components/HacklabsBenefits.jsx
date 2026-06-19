@@ -27,8 +27,11 @@ const benefits = [
     icon: <FaGears />,
     text: (
       <>
-        AntiLabs Training Programs for
-        <span className="old-price"> ₹3000 </span> ₹1
+        AntiLabs Training Programs for{" "}
+        <span className="price-wrapper">
+          <span className="old-price">₹3000</span>
+          <span className="new-price">₹1</span>
+        </span>
       </>
     ),
   },
