@@ -56,8 +56,17 @@ html {
 }
 
 .app-light {
-  background-color: white;
-  color: black;
+  font-family: var(--font-body);
+  background-color: var(--bg);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Prevent iOS Safari text size adjustment on rotation */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* Suppress mobile tap highlight flash */
+  -webkit-tap-highlight-color: transparent;
 }
 
 .app-dark {

@@ -4,7 +4,7 @@ import { FaLinkedinIn, FaInstagram, FaWhatsapp } from "react-icons/fa";
 
 export default function Footer() {
   return (
-    <footer className="footer">
+    <footer className="Hacklabsfooter">
       <div className="footer-container">
         <div className="footer-logo">
           <img src="/Hacklabslogo.png" alt="Your Logo" />

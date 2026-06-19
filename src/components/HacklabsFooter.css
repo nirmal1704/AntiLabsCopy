@@ -1,6 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Zen+Dots&display=swap");
 
-.footer {
+.Hacklabsfooter {
   background-color: #000;
   color: #fff;
   padding: 0px 20px 60px;
@@ -110,7 +110,7 @@
 
 /* Mobile */
 @media (max-width: 480px) {
-  .footer {
+  .Hacklabsfooter {
     padding: 60px 15px 40px;
   }
 
