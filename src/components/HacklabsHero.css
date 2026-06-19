@@ -141,8 +141,11 @@
     font-size: 1rem;
   }
 
-  .hero-left h1 {
-    font-size: 1.5rem;
+  .hero-left .dark {
+    font-size: 6rem;
+  }
+  .hero-left .light {
+    font-size: 6rem;
   }
 
   .ticket-btn {
