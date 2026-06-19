@@ -65,6 +65,7 @@
   list-style: none;
   gap: 6px;
   align-items: center;
+  justify-content: center;
   margin: 0 auto;
 }
 
@@ -73,7 +74,7 @@
   font-size: 16.5px; /* Increased from 14.5px */
   font-weight: 600; /* Increased font-weight for visibility */
   color: var(--text-secondary);
-  /* padding: 10px 16px; Increased from 8px 14px */
+  padding: 10px 16px;
   border-radius: 6px;
   transition:
     color 0.2s,
