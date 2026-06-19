@@ -6,8 +6,15 @@ export default function Footer() {
   return (
     <footer className="Hacklabsfooter">
       <div className="footer-container">
-        <div className="footer-logo">
-          <img src="/Hacklabslogo.png" alt="Your Logo" />
+        <div className="footer-logo" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "12px" }}>
+          <img 
+            src="/hacklabs-logo.png" 
+            alt="Hacklabs Logo Symbol" 
+            style={{ height: "40px", mixBlendMode: "screen" }} 
+          />
+          <span style={{ color: "white", fontFamily: "Zen Dots", fontSize: "28px" }}>
+            Hacklabs
+          </span>
         </div>
 
         {/* Navigation */}

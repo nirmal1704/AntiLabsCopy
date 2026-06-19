@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import HacklabsHero from "../components/HacklabsHero";
 import HacklabsNavbar from "../components/HacklabsNavbar";
 import HacklabsPhases from "../components/HacklabsPhases";
@@ -9,22 +10,45 @@ import HacklabsStats from "../components/HacklabsStats";
 import HacklabsTimer from "../components/HacklabsTimer";
 import HacklabsFAQ from "../components/HacklabsFAQ";
 import HacklabsFooter from "../components/HacklabsFooter";
+import CinematicTransition from "../components/CinematicTransition";
+import "./HacklabsPage.css";
 
 function HacklabsPage() {
+  const [isTransitioning, setIsTransitioning] = useState(() => {
+    return sessionStorage.getItem("playHacklabsTransition") === "true";
+  });
+
+  useEffect(() => {
+    if (isTransitioning) {
+      sessionStorage.removeItem("playHacklabsTransition");
+    }
+  }, [isTransitioning]);
+
   return (
     <>
-      <HacklabsNavbar />
-      <div className="HacklabsLanding">
-        <HacklabsHero />
-        <HacklabsStats />
-        <HacklabsTimer />
-        <HacklabsPhases />
-        <HacklabsJudges />
-        <HacklabsPrize />
-        <HacklabsBenefits />
-        <HacklabsFAQ />
+      <div className="hacklabs-page-wrapper">
+        {isTransitioning ? (
+          <CinematicTransition onComplete={() => setIsTransitioning(false)} />
+        ) : (
+          <HacklabsNavbar />
+        )}
+        <motion.div 
+          className="HacklabsLanding"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: isTransitioning ? 0 : 1 }}
+          transition={{ duration: 0.8 }}
+        >
+          <HacklabsHero />
+          <HacklabsStats />
+          <HacklabsTimer />
+          <HacklabsPhases />
+          <HacklabsJudges />
+          <HacklabsPrize />
+          <HacklabsBenefits />
+          <HacklabsFAQ />
+        </motion.div>
+        {!isTransitioning && <HacklabsFooter />}
       </div>
-      <HacklabsFooter />
     </>
   );
 }

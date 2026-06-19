@@ -1,7 +1,5 @@
 import React, { Suspense, lazy } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
-import { ReactLenis } from "lenis/react";
-import "lenis/dist/lenis.css";
 import SEO from "./components/SEO";
 import ScrollToTop from "./components/ScrollToTop";
 import Navbar from "./components/Navbar";
@@ -87,7 +85,7 @@ const PageLoader = () => (
 export default function App() {
   const location = useLocation();
   return (
-    <ReactLenis root>
+    <>
       <ErrorBoundary>
         <ScrollToTop />
         <CookieBanner />
@@ -127,6 +125,6 @@ export default function App() {
           </div>
         </Suspense>
       </ErrorBoundary>
-    </ReactLenis>
+    </>
   );
 }
