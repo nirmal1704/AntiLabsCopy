@@ -55,7 +55,7 @@ export default function Navbar() {
                 }
                 onClick={() => setMenuOpen(false)}
               >
-                <span>{item.label}</span>
+                {item.label}
                 <i className="bi bi-chevron-right navbar__link-chevron" />
               </NavLink>
             </li>
