@@ -8,7 +8,10 @@ export default function HacklabsNavbar() {
 
   return (
     <nav className="hacklabs-navbar">
-      <div className="navbar-left" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+      <div
+        className="navbar-left"
+        style={{ display: "flex", alignItems: "center", gap: "12px" }}
+      >
         <motion.img
           layoutId="hacklabs-logo-transition"
           src="/hacklabs-logo.png"
@@ -16,8 +19,8 @@ export default function HacklabsNavbar() {
           onClick={() => navigate("/")}
           style={{ height: "32px", cursor: "pointer", mixBlendMode: "screen" }}
         />
-        <span 
-          onClick={() => navigate("/hacklabs")} 
+        <span
+          onClick={() => navigate("/hacklabs")}
           className="hacklabs-logo-text"
         >
           Hacklabs
