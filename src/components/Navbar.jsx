@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "./Navbar.css";
 
@@ -22,6 +22,43 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleHacklabsClick = (e) => {
+    e.preventDefault();
+    setMenuOpen(false);
+    
+    const overlay = document.createElement('div');
+    overlay.className = 'tv-shutdown-overlay';
+    overlay.id = 'tv-shutdown-overlay';
+    
+    const top = document.createElement('div');
+    top.className = 'tv-shutdown-top';
+    
+    const bottom = document.createElement('div');
+    bottom.className = 'tv-shutdown-bottom';
+    
+    const line = document.createElement('div');
+    line.className = 'tv-shutdown-line';
+    
+    overlay.appendChild(top);
+    overlay.appendChild(line);
+    overlay.appendChild(bottom);
+    document.body.appendChild(overlay);
+
+    sessionStorage.setItem("playHacklabsTransition", "true");
+
+    setTimeout(() => {
+      navigate("/hacklabs");
+      
+      setTimeout(() => {
+        const existingOverlay = document.getElementById('tv-shutdown-overlay');
+        if (existingOverlay) {
+          existingOverlay.remove();
+        }
+      }, 2000);
+    }, 700);
+  };
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 40);
@@ -51,9 +88,15 @@ export default function Navbar() {
                 to={item.route}
                 end={item.route === "/"}
                 className={({ isActive }) =>
-                  `navbar__link${isActive ? " navbar__link--active" : ""}`
+                  `navbar__link${isActive ? " navbar__link--active" : ""}${item.label === "Hacklabs" ? " hacklabs-nav-link" : ""}`
                 }
-                onClick={() => setMenuOpen(false)}
+                onClick={(e) => {
+                  if (item.label === "Hacklabs") {
+                    handleHacklabsClick(e);
+                  } else {
+                    setMenuOpen(false);
+                  }
+                }}
               >
                 <span>{item.label}</span>
                 <i className="bi bi-chevron-right navbar__link-chevron" />
