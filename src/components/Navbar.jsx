@@ -7,7 +7,7 @@ const navItems = [
   { label: "Who we are", route: "/about" },
   { label: "What we do", route: "/services" },
   { label: "Insights", route: "/blogs" },
-  { label: "HackLabs", route: "/hacklabs" },
+  { label: "Hacklabs", route: "/hacklabs" },
   { label: "Careers", route: "/careers" },
   { label: "Customer stories", route: "/testimonials" },
 ];

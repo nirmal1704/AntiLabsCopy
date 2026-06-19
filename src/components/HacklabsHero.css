@@ -1,0 +1,160 @@
+@import url("https://fonts.googleapis.com/css2?family=Doto:wght@100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Zen+Dots&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Raleway+Dots&display=swap");
+.hero {
+  min-height: calc(100vh - 90px);
+  background: #000;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15rem;
+}
+
+/* LEFT SIDE */
+
+.hero-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hero-subtitle {
+  font-family: "Doto", sans-serif;
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #fff;
+  margin-bottom: 2rem;
+  letter-spacing: 1px;
+}
+
+.hero-left .dark {
+  margin: 0;
+  font-family: "Raleway Dots", sans-serif;
+  font-weight: 400;
+  font-size: 15vh;
+  color: #cfcfcf;
+}
+.hero-left .light {
+  margin: 0;
+  font-family: "Raleway Dots", sans-serif;
+  font-weight: 400;
+  font-size: 15vh;
+  color: #cfcfcf9e;
+}
+
+/* RIGHT SIDE */
+
+.hero-right {
+  transform: translateY(-10px);
+}
+
+/* TICKET BUTTON */
+.ticket-btn {
+  position: relative;
+  bottom: -100px;
+  width: 420px;
+  height: 140px;
+  border: 2.5px solid #000;
+  outline: none;
+  cursor: pointer;
+  background: #e8e8e8;
+  color: #000;
+  font-family: "Zen Dots", sans-serif;
+  font-size: 1.85rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible; /* important — let corners bleed outside */
+  transition: transform 0.25s ease;
+}
+
+.ticket-btn:hover {
+  transform: translateY(-4px);
+}
+
+.corner {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  background: #000; /* match your PAGE background exactly */
+  z-index: 2;
+}
+
+/* Push corners fully outside so they cut BOTH fill AND border */
+.corner.top-left {
+  top: -10px;
+  left: -10px;
+}
+.corner.top-right {
+  top: -10px;
+  right: -10px;
+}
+.corner.bottom-left {
+  bottom: -10px;
+  left: -10px;
+}
+.corner.bottom-right {
+  bottom: -10px;
+  right: -10px;
+}
+
+.btn-text {
+  position: relative;
+  z-index: 3;
+}
+/* TABLET */
+
+@media (max-width: 1024px) {
+  .hero {
+    flex-direction: column;
+    gap: 4rem;
+    text-align: center;
+    padding: 4rem 2rem;
+  }
+
+  .hero-right {
+    transform: none;
+  }
+
+  .hero-left h1 {
+    font-size: 4.5rem;
+  }
+
+  .ticket-btn {
+    width: 360px;
+    height: 120px;
+    font-size: 1.5rem;
+    bottom: 0;
+  }
+}
+
+/* MOBILE */
+
+@media (max-width: 640px) {
+  .hero {
+    padding: 3rem 1.5rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+
+  .hero-left h1 {
+    font-size: 3rem;
+  }
+
+  .ticket-btn {
+    width: 290px;
+    height: 100px;
+    font-size: 1.1rem;
+    bottom: 0px;
+  }
+
+  .ticket-btn::before,
+  .ticket-btn::after {
+    width: 25px;
+    height: 55px;
+  }
+}
