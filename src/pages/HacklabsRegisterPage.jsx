@@ -9,6 +9,7 @@ export default function HacklabsRegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showOtp, setShowOtp] = useState(false);
+  const [resendTimer, setResendTimer] = useState(0);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -25,6 +26,18 @@ export default function HacklabsRegisterPage() {
       }
     });
   }, [navigate]);
+
+  useEffect(() => {
+    let interval = null;
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    } else if (interval) {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [resendTimer]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -52,6 +65,7 @@ export default function HacklabsRegisterPage() {
       } else {
         // Email confirmation required -> Show OTP step
         setShowOtp(true);
+        setResendTimer(60); // Start the initial 60s cooldown when they register
       }
     } catch (err) {
       setError(err.message);
@@ -77,6 +91,26 @@ export default function HacklabsRegisterPage() {
       if (data?.session) {
         navigate("/hacklabs/onboarding");
       }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (resendTimer > 0) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: formData.email,
+      });
+      if (error) throw error;
+      
+      setResendTimer(60);
+      alert("A new verification code has been sent to your email.");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -141,6 +175,25 @@ export default function HacklabsRegisterPage() {
                   <button type="submit" className="register-submit-btn" disabled={loading}>
                     {loading ? "VERIFYING..." : "CONFIRM_IDENTITY"}
                   </button>
+
+                  <div style={{ marginTop: "1.5rem", textAlign: "center" }}>
+                    <button 
+                      type="button" 
+                      onClick={handleResendOtp}
+                      disabled={resendTimer > 0 || loading}
+                      style={{ 
+                        background: "none", 
+                        border: "none", 
+                        color: resendTimer > 0 ? "#64748b" : "#38bdf8", 
+                        cursor: resendTimer > 0 ? "not-allowed" : "pointer",
+                        textDecoration: resendTimer > 0 ? "none" : "underline",
+                        fontSize: "0.9rem",
+                        fontFamily: "inherit"
+                      }}
+                    >
+                      {resendTimer > 0 ? `Resend code available in ${resendTimer}s` : "Didn't receive code? Resend OTP"}
+                    </button>
+                  </div>
                 </form>
               </>
             )}
