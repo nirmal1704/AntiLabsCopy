@@ -14,6 +14,7 @@ import CTABanner from "./components/CTABanner";
 import Footer from "./components/Footer";
 import ErrorBoundary from "./components/ErrorBoundary";
 import CookieBanner from "./components/CookieBanner";
+import { AuthModalProvider } from "./context/AuthModalContext";
 
 // Lazy loaded pages
 const ServicesPage = lazy(() => import("./pages/ServicesPage"));
@@ -22,6 +23,10 @@ const HacklabsPage = lazy(() => import("./pages/HacklabsPage"));
 const HacklabsDashboardPage = lazy(
   () => import("./pages/HacklabsDashboardPage"),
 );
+const HacklabsRegisterPage = lazy(() => import("./pages/HacklabsRegisterPage"));
+const HacklabsOnboardingPage = lazy(() => import("./pages/HacklabsOnboardingPage"));
+const HacklabsJudgeDashboard = lazy(() => import("./pages/HacklabsJudgeDashboard"));
+const HacklabsAuthModal = lazy(() => import("./components/HacklabsAuthModal"));
 const CareersPage = lazy(() => import("./pages/CareersPage"));
 const ContactPage = lazy(() => import("./pages/ContactPage"));
 const TestimonialsPage = lazy(() => import("./pages/TestimonialsPage"));
@@ -87,8 +92,9 @@ export default function App() {
   return (
     <>
       <ErrorBoundary>
-        <ScrollToTop />
-        <CookieBanner />
+        <AuthModalProvider>
+          <ScrollToTop />
+          <CookieBanner />
         <Suspense fallback={<PageLoader />}>
           <div
             className={
@@ -105,6 +111,18 @@ export default function App() {
               <Route
                 path="/hacklabs/dashboard"
                 element={<HacklabsDashboardPage />}
+              />
+              <Route
+                path="/hacklabs/register"
+                element={<HacklabsRegisterPage />}
+              />
+              <Route
+                path="/hacklabs/onboarding"
+                element={<HacklabsOnboardingPage />}
+              />
+              <Route
+                path="/hacklabs/judge-dashboard"
+                element={<HacklabsJudgeDashboard />}
               />
               <Route path="/careers" element={<CareersPage />} />
               <Route path="/contact" element={<ContactPage />} />
@@ -123,7 +141,9 @@ export default function App() {
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </div>
+          <HacklabsAuthModal />
         </Suspense>
+        </AuthModalProvider>
       </ErrorBoundary>
     </>
   );

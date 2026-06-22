@@ -1,6 +1,21 @@
+import { useNavigate } from "react-router-dom";
+import { useAuthModal } from "../context/AuthModalContext";
+import { supabase } from "../supabase";
 import "./HacklabsHero.css";
 
 export default function HacklabsHero() {
+  const navigate = useNavigate();
+  const { openLogin } = useAuthModal();
+
+  const handleJoinClick = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      navigate("/hacklabs/dashboard");
+    } else {
+      openLogin();
+    }
+  };
+
   return (
     <>
       <section className="hero">
@@ -11,11 +26,9 @@ export default function HacklabsHero() {
           <span className="dark">Innovate.</span>
           <span className="light">Get Hired.</span>
         </div>
-
         <div className="hero-right">
-          <div className="ticket-btn-wrapper" onClick={() => {}}>
+          <div className="ticket-btn-wrapper" onClick={handleJoinClick}>
             <button className="ticket-btn">
-              {/* Corner cutters */}
               <span className="corner top-left"></span>
               <span className="corner top-right"></span>
               <span className="corner bottom-left"></span>

@@ -13,8 +13,51 @@
   font-size: clamp(3rem, 8vw, 7rem);
   font-weight: 700;
   color: #ffffff;
-  margin-bottom: 70px;
+  margin-bottom: 30px;
   letter-spacing: 2px;
+}
+
+.payment-banner {
+  background: rgba(255, 165, 0, 0.1);
+  border: 1px solid rgba(255, 165, 0, 0.5);
+  color: #ffa500;
+  padding: 15px;
+  border-radius: 8px;
+  max-width: 600px;
+  margin: 0 auto 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.payment-banner p {
+  margin: 0;
+  font-family: "Space Grotesk", sans-serif;
+}
+
+.pay-btn {
+  background: #ffa500;
+  color: #000;
+  border: none;
+  padding: 10px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.pay-btn:disabled {
+  opacity: 0.5;
+}
+
+.payment-success-banner {
+  background: rgba(0, 255, 0, 0.1);
+  border: 1px solid rgba(0, 255, 0, 0.5);
+  color: #00ff00;
+  padding: 15px;
+  border-radius: 8px;
+  max-width: 600px;
+  margin: 0 auto 40px;
+  font-family: "Space Grotesk", sans-serif;
 }
 
 .members-grid {
@@ -51,6 +94,7 @@
   align-items: center;
   justify-content: flex-start;
   padding-left: 16px;
+  position: relative;
 }
 
 .member-bottom h3 {
@@ -59,6 +103,19 @@
   font-family: "Zen Dots", sans-serif;
   font-size: 2.2rem;
   font-weight: 500;
+}
+
+.captain-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #0ea5e9;
+  color: #000;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: bold;
 }
 
 /* ADD MEMBER */
@@ -70,6 +127,11 @@
   font-size: 9rem;
   line-height: 1;
   cursor: pointer;
+  transition: color 0.3s;
+}
+
+.add-btn:hover {
+  color: #0ea5e9;
 }
 
 /* EMPTY MEMBER */
@@ -94,6 +156,84 @@
   border-bottom: none;
   border-radius: 270px 270px 0 0;
   margin-top: 28px;
+}
+
+/* MODAL */
+
+.hacklabs-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.hacklabs-modal {
+  background: #111;
+  padding: 30px;
+  border-radius: 12px;
+  border: 1px solid #333;
+  width: 90%;
+  max-width: 400px;
+  font-family: "Space Grotesk", sans-serif;
+  color: #fff;
+  text-align: left;
+}
+
+.hacklabs-modal h3 {
+  margin-top: 0;
+  font-size: 1.5rem;
+}
+
+.hacklabs-modal p {
+  color: #aaa;
+  margin-bottom: 20px;
+}
+
+.hacklabs-modal input {
+  width: 100%;
+  padding: 12px;
+  background: #000;
+  border: 1px solid #333;
+  color: #fff;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-size: 1rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modal-actions button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.cancel-btn {
+  background: transparent;
+  color: #fff;
+  border: 1px solid #333 !important;
+}
+
+.invite-btn {
+  background: #fff;
+  color: #000;
+}
+
+.modal-error {
+  color: #ff4444;
+  margin-bottom: 15px;
+  background: rgba(255,0,0,0.1);
+  padding: 10px;
+  border-radius: 4px;
 }
 
 /* MEMBER IMAGE */
@@ -162,6 +302,11 @@
     width: 170px;
     height: 90px;
     margin-top: 15px;
+  }
+
+  .payment-banner {
+    flex-direction: column;
+    gap: 15px;
   }
 }
 
