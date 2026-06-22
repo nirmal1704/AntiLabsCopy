@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Zen+Dots&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Doto:wght@100..900&display=swap");
 
 .hacklabs-navbar {
   position: fixed;
@@ -48,6 +49,49 @@
   color: rgba(255, 255, 255, 0.39);
 }
 
+/* User Badge Styles */
+.hacklabs-user-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 6px 12px;
+  transition: all 0.3s ease;
+}
+
+.hacklabs-user-badge:hover {
+  border-color: #333;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.user-icon {
+  width: 32px;
+  height: 32px;
+  background: #e8e8e8;
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Sharp corners aesthetic */
+  clip-path: polygon(10% 0, 100% 0, 100% 90%, 90% 100%, 0 100%, 0 10%);
+}
+
+.user-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.user-name {
+  color: #fff;
+  font-family: "Doto", monospace;
+  font-size: 1rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
 @media (max-width: 768px) {
   .hacklabs-navbar {
     padding: 0 20px;
@@ -63,6 +107,10 @@
 
   .navbar-right {
     gap: 12px;
+  }
+
+  .user-name {
+    display: none; /* Hide name on mobile to save space */
   }
 }
 @media (width <= 768px) {
