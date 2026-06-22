@@ -14,7 +14,8 @@ export default function HacklabsRegisterPage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    password: ""
+    password: "",
+    confirmPassword: "",
   });
   const [otp, setOtp] = useState("");
 
@@ -43,8 +44,24 @@ export default function HacklabsRegisterPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const passwordValid = formData.password.length >= 6;
+
+  const passwordsMatch = formData.password === formData.confirmPassword;
+
+  const formValid =
+    formData.name.trim() !== "" &&
+    formData.email.trim() !== "" &&
+    passwordValid &&
+    passwordsMatch;
+
   const handleRegister = async (e) => {
     e.preventDefault();
+
+    if (!formValid) {
+      setError("Please fill all fields correctly.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -53,19 +70,19 @@ export default function HacklabsRegisterPage() {
         email: formData.email,
         password: formData.password,
         options: {
-          data: { full_name: formData.name }
-        }
+          data: {
+            full_name: formData.name,
+          },
+        },
       });
 
       if (authError) throw authError;
 
       if (data?.session) {
-        // If email confirmation is disabled in Supabase, they login immediately
         navigate("/hacklabs/onboarding");
       } else {
-        // Email confirmation required -> Show OTP step
         setShowOtp(true);
-        setResendTimer(60); // Start the initial 60s cooldown when they register
+        setResendTimer(60);
       }
     } catch (err) {
       setError(err.message);
@@ -73,7 +90,6 @@ export default function HacklabsRegisterPage() {
       setLoading(false);
     }
   };
-
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -83,7 +99,7 @@ export default function HacklabsRegisterPage() {
       const { data, error: verifyError } = await supabase.auth.verifyOtp({
         email: formData.email,
         token: otp,
-        type: 'signup'
+        type: "signup",
       });
 
       if (verifyError) throw verifyError;
@@ -104,11 +120,11 @@ export default function HacklabsRegisterPage() {
     setError(null);
     try {
       const { error } = await supabase.auth.resend({
-        type: 'signup',
+        type: "signup",
         email: formData.email,
       });
       if (error) throw error;
-      
+
       setResendTimer(60);
       alert("A new verification code has been sent to your email.");
     } catch (err) {
@@ -121,83 +137,160 @@ export default function HacklabsRegisterPage() {
   return (
     <div className="register-page">
       <HacklabsNavbar />
-      
-      <div className="register-container" style={{ maxWidth: "500px", margin: "4rem auto" }}>
-        <h1 className="register-title">SYSTEM.AUTHENTICATION</h1>
-        
+
+      <div className="register-container">
         {error && <div className="register-error">{error}</div>}
 
         <div className="register-layout">
           <div className="register-form-section" style={{ width: "100%" }}>
-            
             {!showOtp ? (
               <>
-                <h3 style={{ marginBottom: "1.5rem", color: "#e2e8f0" }}>Establish Identity</h3>
+                <h3 style={{ marginBottom: "1.5rem", color: "#e2e8f0" }}>
+                  Establish Identity
+                </h3>
                 <form onSubmit={handleRegister} className="register-form">
                   <div className="input-group">
-                    <label>FULL_NAME</label>
-                    <input type="text" name="name" required value={formData.name} onChange={handleChange} placeholder="John Doe" />
-                  </div>
-                  <div className="input-group">
-                    <label>EMAIL_ADDRESS</label>
-                    <input type="email" name="email" required value={formData.email} onChange={handleChange} placeholder="john@example.com" />
-                  </div>
-                  <div className="input-group">
-                    <label>SECURE_PASSWORD</label>
-                    <input type="password" name="password" required value={formData.password} onChange={handleChange} placeholder="••••••••" minLength="6" />
+                    <label>Full Name</label>
+
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder="John Doe"
+                      required
+                    />
                   </div>
 
-                  <button type="submit" className="register-submit-btn" disabled={loading}>
-                    {loading ? "PROCESSING..." : "REQUEST_ACCESS"}
+                  <div className="input-group">
+                    <label>Email Address</label>
+
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="john@example.com"
+                      required
+                    />
+                  </div>
+
+                  <div className="input-group">
+                    <label>Enter Password</label>
+
+                    <input
+                      type="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder="••••••••"
+                      className={
+                        formData.password && !passwordValid ? "input-error" : ""
+                      }
+                    />
+
+                    {formData.password && !passwordValid && (
+                      <span className="field-error">
+                        Password must be at least 6 characters
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="input-group">
+                    <label>Confirm Password</label>
+
+                    <input
+                      type="password"
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      placeholder="••••••••"
+                      className={
+                        formData.confirmPassword && !passwordsMatch
+                          ? "input-error"
+                          : ""
+                      }
+                    />
+
+                    {formData.confirmPassword && !passwordsMatch && (
+                      <span className="field-error">
+                        Passwords do not match
+                      </span>
+                    )}
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="register-submit-btn"
+                    disabled={!formValid || loading}
+                  >
+                    {loading ? "PROCESSING..." : "Create Account"}
                   </button>
                 </form>
               </>
             ) : (
               <>
-                <h3 style={{ marginBottom: "1.5rem", color: "#e2e8f0" }}>Verify Comm-Link</h3>
-                <p style={{ color: "#94a3b8", marginBottom: "2rem", fontSize: "0.95rem" }}>
-                  A 6-digit security code has been transmitted to {formData.email}.
+                <h3 style={{ marginBottom: "1.5rem", color: "#e2e8f0" }}>
+                  Verify Comm-Link
+                </h3>
+                <p
+                  style={{
+                    color: "#94a3b8",
+                    marginBottom: "2rem",
+                    fontSize: "0.95rem",
+                  }}
+                >
+                  A 6-digit security code has been Sent to {formData.email}.
                 </p>
                 <form onSubmit={handleVerifyOtp} className="register-form">
                   <div className="input-group">
-                    <label>ONE_TIME_PASSWORD</label>
-                    <input 
-                      type="text" 
-                      required 
-                      value={otp} 
-                      onChange={(e) => setOtp(e.target.value)} 
-                      placeholder="00000000" 
+                    <label>One Time Password</label>
+                    <input
+                      type="text"
+                      required
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value)}
+                      placeholder="00000000"
                       maxLength="8"
-                      style={{ letterSpacing: "8px", textAlign: "center", fontSize: "1.5rem" }}
+                      style={{
+                        letterSpacing: "8px",
+                        textAlign: "center",
+                        fontSize: "1.5rem",
+                      }}
                     />
                   </div>
 
-                  <button type="submit" className="register-submit-btn" disabled={loading}>
-                    {loading ? "VERIFYING..." : "CONFIRM_IDENTITY"}
+                  <button
+                    type="submit"
+                    className="register-submit-btn"
+                    disabled={loading}
+                  >
+                    {loading ? "VERIFYING..." : "Submit OTP"}
                   </button>
 
-                  <div style={{ marginTop: "1.5rem", textAlign: "center" }}>
-                    <button 
-                      type="button" 
+                  <div style={{ marginTop: "1.5rem" }}>
+                    <button
+                      type="button"
                       onClick={handleResendOtp}
                       disabled={resendTimer > 0 || loading}
-                      style={{ 
-                        background: "none", 
-                        border: "none", 
-                        color: resendTimer > 0 ? "#64748b" : "#38bdf8", 
+                      style={{
+                        background: "none",
+                        border: "none",
+                        color: resendTimer > 0 ? "#64748b" : "#38bdf8",
                         cursor: resendTimer > 0 ? "not-allowed" : "pointer",
                         textDecoration: resendTimer > 0 ? "none" : "underline",
                         fontSize: "0.9rem",
-                        fontFamily: "inherit"
+                        fontFamily: "inherit",
                       }}
                     >
-                      {resendTimer > 0 ? `Resend code available in ${resendTimer}s` : "Didn't receive code? Resend OTP"}
+                      {resendTimer > 0
+                        ? `Resend code available in ${resendTimer}s`
+                        : "Didn't receive code? Resend OTP"}
                     </button>
                   </div>
                 </form>
               </>
             )}
-
           </div>
         </div>
       </div>

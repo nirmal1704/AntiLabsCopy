@@ -1,166 +1,261 @@
+@import url("https://fonts.googleapis.com/css2?family=Zen+Dots&display=swap");
+
 .team-formation-container {
+  width: 100%;
+  min-height: 100vh;
+  background: #000;
+  color: #fff;
+  font-family: "Zen Dots", sans-serif;
   padding: 40px;
-  max-width: 800px;
-  margin: 40px auto;
-  background: #111;
-  border-radius: 12px;
-  border: 1px solid #333;
-  color: #fff;
-  font-family: 'Space Grotesk', sans-serif;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  padding-top: 6rem;
 }
 
-.participant-info {
-  text-align: center;
-  margin-bottom: 40px;
-  padding-bottom: 30px;
-  border-bottom: 1px solid #333;
-}
+/* HOME SCREEN */
 
-.participant-info h3 {
-  font-size: 1.2rem;
-  margin-bottom: 15px;
-  font-weight: 500;
-  color: #ccc;
-}
-
-.code-box {
-  background: #000;
-  border: 2px dashed #555;
-  padding: 15px 30px;
-  display: inline-block;
-  font-size: 1.5rem;
-  font-weight: bold;
-  letter-spacing: 2px;
-  border-radius: 8px;
-  color: #fff;
-  margin-bottom: 10px;
-}
-
-.code-hint {
-  font-size: 0.9rem;
-  color: #888;
-}
-
-.formation-error {
-  background: rgba(255, 0, 0, 0.1);
-  color: #ff4444;
-  padding: 12px;
-  border-radius: 6px;
-  margin-bottom: 30px;
-  text-align: center;
-  border: 1px solid rgba(255, 0, 0, 0.2);
-}
-
-.formation-actions {
+.team-home {
   display: flex;
-  align-items: stretch;
-  gap: 30px;
+  flex-direction: column;
+  align-items: center;
 }
 
-.formation-card {
-  flex: 1;
-  background: #1a1a1a;
-  padding: 30px;
-  border-radius: 8px;
-  border: 1px solid #222;
-}
-
-.formation-card h3 {
-  margin-bottom: 20px;
-  font-size: 1.2rem;
-}
-
-.formation-card input {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 15px;
-  background: #000;
-  border: 1px solid #333;
+.team-home h1 {
+  font-size: clamp(4rem, 10vw, 7rem);
+  font-family: "Zen Dots", sans-serif;
   color: #fff;
-  border-radius: 6px;
-  outline: none;
+  font-weight: 400;
+  margin-bottom: 60px;
 }
 
-.formation-card input:focus {
-  border-color: #fff;
+.primary-btn,
+.secondary-btn {
+  width: min(700px, 90%);
+  height: 100px;
+  font-family: "Zen Dots", sans-serif;
+  font-size: clamp(1.2rem, 3vw, 2rem);
+  cursor: pointer;
+  margin-bottom: 40px;
+  transition: 0.3s ease;
 }
 
-.formation-card button {
-  width: 100%;
-  padding: 12px;
+.primary-btn {
   background: #fff;
   color: #000;
   border: none;
-  font-weight: 600;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: opacity 0.3s;
 }
 
-.formation-card button:hover {
+.primary-btn:hover {
   opacity: 0.9;
 }
 
-.formation-card button.outline-btn {
+.secondary-btn {
   background: transparent;
   color: #fff;
-  border: 1px solid #fff;
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
-.formation-card button.outline-btn:hover {
-  background: rgba(255,255,255,0.1);
+.secondary-btn:hover {
+  border-color: #fff;
 }
 
-.formation-divider {
+/* CREATE + JOIN SCREEN */
+
+.team-screen {
+  width: 100%;
+}
+
+.team-screen h1 {
+  text-align: center;
+  font-size: clamp(4rem, 10vw, 7rem);
+  margin-bottom: 50px;
+  font-family: "Zen Dots", sans-serif;
+  color: #fff;
+}
+.team-screen h2 {
+  font-family: "Zen Dots", sans-serif;
+  color: #fff;
+}
+
+.team-form {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.team-form label,
+.join-form label {
+  font-size: clamp(1rem, 2vw, 1.8rem);
+}
+
+.team-form input {
+  width: 100%;
+  height: 60px;
+  margin-top: 20px;
+  margin-bottom: 40px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: white;
+  padding: 0 20px;
+  font-family: "Zen Dots", sans-serif;
+}
+
+.team-form input:focus,
+.join-form input:focus {
+  outline: none;
+  border-color: white;
+}
+
+/* BUTTON GROUP */
+
+.form-actions {
   display: flex;
-  align-items: center;
-  color: #555;
-  font-weight: bold;
+  gap: 20px;
 }
 
-.invites-section {
-  margin-top: 40px;
-  padding-top: 30px;
-  border-top: 1px solid #333;
-}
-
-.invites-section h3 {
-  margin-bottom: 20px;
-}
-
-.invites-list {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.invite-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #1a1a1a;
-  padding: 15px 20px;
-  border-radius: 8px;
-  border: 1px solid #333;
-}
-
-.invite-card button {
-  padding: 8px 16px;
-  background: #fff;
-  color: #000;
+.form-actions button,
+.back-btn {
+  flex: 1;
+  height: 70px;
+  font-family: "Zen Dots", sans-serif;
+  cursor: pointer;
   border: none;
-  border-radius: 4px;
-  font-weight: 600;
+}
+
+.form-actions button[type="submit"] {
+  background: white;
+  color: black;
+}
+
+.back-btn {
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* JOIN FORM */
+
+.join-form {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  margin-bottom: 70px;
+}
+
+.join-form label {
+  white-space: nowrap;
+}
+
+.join-form input {
+  flex: 1;
+  height: 55px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: white;
+  padding: 0 15px;
+  font-family: "Zen Dots", sans-serif;
+}
+
+.join-form button {
+  width: 140px;
+  height: 55px;
+  background: white;
+  color: black;
+  border: none;
+  font-family: "Zen Dots", sans-serif;
   cursor: pointer;
 }
 
+/* TEAM DETAILS */
+
+.details-heading {
+  font-size: clamp(2rem, 5vw, 4rem);
+  margin-bottom: 40px;
+}
+
+.team-members {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.member-row {
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  padding-left: 40px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+  font-size: clamp(1rem, 2vw, 1.8rem);
+}
+
+.member-row:last-child {
+  border-bottom: none;
+}
+
+.bottom-back {
+  margin-top: 40px;
+  width: 220px;
+  height: 65px;
+}
+
+/* INVITES */
+
+.invites-section {
+  width: min(900px, 90%);
+  margin-top: 60px;
+}
+
+.invites-section h2 {
+  margin-bottom: 20px;
+}
+
+.invite-card {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.invite-card button {
+  background: white;
+  color: black;
+  border: none;
+  padding: 12px 24px;
+  font-family: "Zen Dots", sans-serif;
+  cursor: pointer;
+}
+
+/* MOBILE */
+
 @media (max-width: 768px) {
-  .formation-actions {
+  .team-formation-container {
+    padding: 20px;
+  }
+
+  .team-home h1,
+  .team-screen h1 {
+    font-size: 3rem;
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    height: 80px;
+    font-size: 1rem;
+  }
+
+  .join-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .join-form button {
+    width: 100%;
+  }
+
+  .form-actions {
     flex-direction: column;
   }
-  .formation-divider {
-    text-align: center;
-    padding: 10px 0;
+
+  .member-row {
+    padding-left: 20px;
+    min-height: 65px;
   }
 }

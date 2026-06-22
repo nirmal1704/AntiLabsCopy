@@ -8,10 +8,15 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [invites, setInvites] = useState([]);
+  const [view, setView] = useState("home");
+
+  // home
+  // create
+  // join
 
   useEffect(() => {
     fetchInvites();
-    
+
     const interval = setInterval(() => {
       fetchInvites();
     }, 5000);
@@ -23,10 +28,12 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
     try {
       const { data, error } = await supabase
         .from("hacklabs_invitations")
-        .select(`
+        .select(
+          `
           id, type, status,
           team:hacklabs_teams(name, unique_team_code)
-        `)
+        `,
+        )
         .eq("participant_auth_id", participant.auth_id)
         .eq("status", "pending")
         .eq("type", "invite");
@@ -39,7 +46,9 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
   };
 
   const generateTeamCode = () => {
-    return "HL-TEAM-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+    return (
+      "HL-TEAM-" + Math.random().toString(36).substring(2, 8).toUpperCase()
+    );
   };
 
   const handleCreateTeam = async (e) => {
@@ -60,7 +69,10 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
         .single();
 
       if (teamError) {
-        if (teamError.code === '23505') throw new Error("This Team Name is already taken! Please choose another.");
+        if (teamError.code === "23505")
+          throw new Error(
+            "This Team Name is already taken! Please choose another.",
+          );
         throw teamError;
       }
 
@@ -91,7 +103,8 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
         .eq("unique_team_code", joinCode)
         .single();
 
-      if (teamError || !teamData) throw new Error("Team not found. Please check the code.");
+      if (teamError || !teamData)
+        throw new Error("Team not found. Please check the code.");
 
       const { error: inviteError } = await supabase
         .from("hacklabs_invitations")
@@ -99,11 +112,11 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
           team_id: teamData.id,
           participant_auth_id: participant.auth_id,
           type: "request",
-          status: "pending"
+          status: "pending",
         });
 
       if (inviteError) throw inviteError;
-      
+
       alert("Request sent successfully! Wait for the captain to accept.");
       setJoinCode("");
     } catch (err) {
@@ -116,7 +129,9 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
   const handleAcceptInvite = async (inviteId, team) => {
     setLoading(true);
     try {
-      const { error } = await supabase.rpc('accept_hacklabs_invite', { invite_id: inviteId });
+      const { error } = await supabase.rpc("accept_hacklabs_invite", {
+        invite_id: inviteId,
+      });
       if (error) throw error;
 
       onTeamUpdated(team);
@@ -126,71 +141,103 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
       setLoading(false);
     }
   };
-
   return (
     <div className="team-formation-container">
-      <div className="participant-info">
-        <h3>Your Unique User Code</h3>
-        <div className="code-box">{participant?.unique_user_code}</div>
-        <p className="code-hint">Share this code with a team captain to get invited!</p>
-      </div>
-
       {error && <div className="formation-error">{error}</div>}
 
-      <div className="formation-actions">
-        <div className="formation-card">
-          <h3>Create a Team</h3>
-          <form onSubmit={handleCreateTeam}>
-            <input 
-              type="text" 
-              placeholder="Enter Team Name" 
+      {view === "home" && (
+        <div className="team-home">
+          <h1>Team</h1>
+
+          <button className="primary-btn" onClick={() => setView("create")}>
+            Create Team
+          </button>
+
+          <button className="secondary-btn" onClick={() => setView("join")}>
+            Join Team
+          </button>
+
+          {invites.length > 0 && (
+            <div className="invites-section">
+              <h2>Pending Invites</h2>
+
+              {invites.map((inv) => (
+                <div key={inv.id} className="invite-card">
+                  <span>{inv.team?.name}</span>
+
+                  <button onClick={() => handleAcceptInvite(inv.id, inv.team)}>
+                    Accept
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {view === "create" && (
+        <div className="team-screen">
+          <h1>Create Team</h1>
+
+          <form className="team-form" onSubmit={handleCreateTeam}>
+            <label>Enter Team Name :</label>
+
+            <input
+              type="text"
               value={teamName}
               onChange={(e) => setTeamName(e.target.value)}
               required
             />
-            <button type="submit" disabled={loading}>
-              Create Team as Captain
-            </button>
+
+            <div className="form-actions">
+              <button type="submit">
+                {loading ? "Creating..." : "Create"}
+              </button>
+
+              <button
+                type="button"
+                className="back-btn"
+                onClick={() => setView("home")}
+              >
+                Back
+              </button>
+            </div>
           </form>
         </div>
+      )}
 
-        <div className="formation-divider">OR</div>
+      {view === "join" && (
+        <div className="team-screen">
+          <h1>Join Team</h1>
 
-        <div className="formation-card">
-          <h3>Join a Team</h3>
-          <form onSubmit={handleJoinRequest}>
-            <input 
-              type="text" 
-              placeholder="Enter Unique Team Code" 
+          <form className="join-form" onSubmit={handleJoinRequest}>
+            <label>Enter Team ID:</label>
+
+            <input
+              type="text"
               value={joinCode}
               onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
               required
             />
-            <button type="submit" disabled={loading} className="outline-btn">
-              Send Join Request
-            </button>
-          </form>
-        </div>
-      </div>
 
-      {invites.length > 0 && (
-        <div className="invites-section">
-          <h3>Pending Invites</h3>
-          <div className="invites-list">
-            {invites.map((inv) => (
-              <div key={inv.id} className="invite-card">
-                <div>
-                  <strong>{inv.team?.name}</strong> invited you to join.
-                </div>
-                <button 
-                  onClick={() => handleAcceptInvite(inv.id, inv.team)}
-                  disabled={loading}
-                >
-                  Accept Invite
-                </button>
-              </div>
-            ))}
+            <button type="submit">{loading ? "..." : "Join"}</button>
+          </form>
+
+          <h2 className="details-heading">Team Details :-</h2>
+
+          <div className="team-members">
+            <div className="member-row">Captain</div>
+            <div className="member-row">Empty Slot</div>
+            <div className="member-row">Empty Slot</div>
+            <div className="member-row">Empty Slot</div>
           </div>
+
+          <button
+            className="back-btn bottom-back"
+            onClick={() => setView("home")}
+          >
+            Back
+          </button>
         </div>
       )}
     </div>

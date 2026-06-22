@@ -3,7 +3,11 @@ import { supabase } from "../supabase";
 import HacklabsAvatar from "./HacklabsAvatar";
 import "./HacklabsDashboard.css";
 
-export default function HacklabsDashboard({ team, participant, onTeamUpdated }) {
+export default function HacklabsDashboard({
+  team,
+  participant,
+  onTeamUpdated,
+}) {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 780);
   const [members, setMembers] = useState([]);
   const [isFetchingMembers, setIsFetchingMembers] = useState(true);
@@ -12,7 +16,7 @@ export default function HacklabsDashboard({ team, participant, onTeamUpdated }) 
   const [inviteCode, setInviteCode] = useState("");
   const [inviteError, setInviteError] = useState(null);
   const [requests, setRequests] = useState([]);
-  
+
   const isCaptain = team?.captain_id === participant?.auth_id;
 
   useEffect(() => {
@@ -24,7 +28,7 @@ export default function HacklabsDashboard({ team, participant, onTeamUpdated }) 
   useEffect(() => {
     fetchMembers(true);
     fetchRequests();
-    
+
     const interval = setInterval(() => {
       fetchRequests();
       fetchMembers(false);
@@ -56,10 +60,12 @@ export default function HacklabsDashboard({ team, participant, onTeamUpdated }) 
     try {
       const { data, error } = await supabase
         .from("hacklabs_invitations")
-        .select(`
+        .select(
+          `
           id, type, status,
           participant:hacklabs_personal_details(auth_id, full_name, unique_user_code)
-        `)
+        `,
+        )
         .eq("team_id", team.id)
         .eq("status", "pending")
         .eq("type", "request");
@@ -78,13 +84,13 @@ export default function HacklabsDashboard({ team, participant, onTeamUpdated }) 
     setInviteError(null);
 
     try {
-      const { error: rpcError } = await supabase.rpc('invite_user_by_code', {
+      const { error: rpcError } = await supabase.rpc("invite_user_by_code", {
         target_user_code: inviteCode,
-        source_team_id: team.id
+        source_team_id: team.id,
       });
 
       if (rpcError) throw rpcError;
-      
+
       alert("Invite sent successfully!");
       setShowModal(false);
       setInviteCode("");
@@ -98,9 +104,11 @@ export default function HacklabsDashboard({ team, participant, onTeamUpdated }) 
   const handleAcceptRequest = async (inviteId, participantId) => {
     setLoading(true);
     try {
-      const { error } = await supabase.rpc('accept_hacklabs_invite', { invite_id: inviteId });
+      const { error } = await supabase.rpc("accept_hacklabs_invite", {
+        invite_id: inviteId,
+      });
       if (error) throw error;
-      
+
       fetchMembers();
       fetchRequests();
     } catch (err) {
@@ -114,18 +122,21 @@ export default function HacklabsDashboard({ team, participant, onTeamUpdated }) 
   const handlePayment = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("create-razorpay-order", {
-        body: {
-          team_id: team.id,
-          customer_name: participant.name,
-          customer_email: participant.email
-        }
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "create-razorpay-order",
+        {
+          body: {
+            team_id: team.id,
+            customer_name: participant.name,
+            customer_email: participant.email,
+          },
+        },
+      );
 
       if (error) throw error;
 
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "", 
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "",
         amount: data.amount,
         currency: data.currency,
         name: "AntiLabs",
@@ -134,12 +145,12 @@ export default function HacklabsDashboard({ team, participant, onTeamUpdated }) 
         handler: async function (response) {
           await supabase
             .from("hacklabs_teams")
-            .update({ 
+            .update({
               payment_status: "paid",
-              razorpay_payment_id: response.razorpay_payment_id 
+              razorpay_payment_id: response.razorpay_payment_id,
             })
             .eq("id", team.id);
-          
+
           alert("Payment Successful!");
           onTeamUpdated({ ...team, payment_status: "paid" });
         },
@@ -148,8 +159,8 @@ export default function HacklabsDashboard({ team, participant, onTeamUpdated }) 
           email: participant.email,
         },
         theme: {
-          color: "#000000"
-        }
+          color: "#000000",
+        },
       };
 
       const rzp = new window.Razorpay(options);
@@ -163,10 +174,10 @@ export default function HacklabsDashboard({ team, participant, onTeamUpdated }) 
   };
 
   const slots = [
-    { id: 'slot-0', type: 'add' },
-    { id: 'slot-1', type: 'add' },
-    { id: 'slot-2', type: 'add' },
-    { id: 'slot-3', type: 'add' }
+    { id: "slot-0", type: "add" },
+    { id: "slot-1", type: "add" },
+    { id: "slot-2", type: "add" },
+    { id: "slot-3", type: "add" },
   ];
 
   const order = [1, 2, 0, 3];
@@ -175,11 +186,11 @@ export default function HacklabsDashboard({ team, participant, onTeamUpdated }) 
       const targetIndex = order[i];
       slots[targetIndex] = {
         id: member.auth_id,
-        type: 'filled',
+        type: "filled",
         name: member.full_name,
         username: member.unique_user_code,
         avatar_config: member.profile_photo,
-        isCaptain: member.auth_id === team.captain_id
+        isCaptain: member.auth_id === team.captain_id,
       };
     }
   });
@@ -195,16 +206,15 @@ export default function HacklabsDashboard({ team, participant, onTeamUpdated }) 
   return (
     <section className="dashboard">
       <h1 className="team-title">{team?.name || "Team Dashboard"}</h1>
-      
-      <div className="team-code-box" style={{ background: "#0f172a", padding: "1rem 2rem", borderRadius: "8px", border: "1px dashed #38bdf8", marginBottom: "2rem", textAlign: "center", display: "inline-block" }}>
-        <p style={{ color: "#94a3b8", fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "0.5rem" }}>Share this code to invite members</p>
-        <span style={{ color: "#38bdf8", fontSize: "1.5rem", letterSpacing: "4px", fontWeight: "bold" }}>{team?.unique_team_code}</span>
-      </div>
-      
+
       {isCaptain && team?.payment_status === "pending" && (
         <div className="payment-banner">
           <p>Your team registration is pending payment.</p>
-          <button onClick={handlePayment} disabled={loading} className="pay-btn">
+          <button
+            onClick={handlePayment}
+            disabled={loading}
+            className="pay-btn"
+          >
             Finalize and Pay (₹199)
           </button>
         </div>
@@ -218,13 +228,20 @@ export default function HacklabsDashboard({ team, participant, onTeamUpdated }) 
 
       <div className="members-grid">
         {isFetchingMembers ? (
-          <div style={{ padding: "3rem", color: "#94a3b8", textAlign: "center", gridColumn: "1 / -1" }}>
+          <div
+            style={{
+              padding: "3rem",
+              color: "#94a3b8",
+              textAlign: "center",
+              gridColumn: "1 / -1",
+            }}
+          >
             Loading team roster...
           </div>
         ) : (
           displayMembers.map((member, idx) => (
-            <div 
-              key={member.id || idx} 
+            <div
+              key={member.id || idx}
               className={`member-card ${member.type === "add" ? "is-add-card" : ""}`}
               onClick={() => {
                 if (member.type === "add") {
@@ -234,9 +251,7 @@ export default function HacklabsDashboard({ team, participant, onTeamUpdated }) 
               style={{ cursor: member.type === "add" ? "pointer" : "default" }}
             >
               <div className="member-top">
-                {member.type === "add" && (
-                  <div className="add-btn">+</div>
-                )}
+                {member.type === "add" && <div className="add-btn">+</div>}
 
                 {member.type === "filled" && (
                   <div className="placeholder-user">
@@ -244,8 +259,18 @@ export default function HacklabsDashboard({ team, participant, onTeamUpdated }) 
                       <HacklabsAvatar config={member.avatar_config} size={80} />
                     ) : (
                       <>
-                        <div className="head" style={{ background: member.isCaptain ? "#0ea5e9" : "#ccc" }}></div>
-                        <div className="body" style={{ borderColor: member.isCaptain ? "#0ea5e9" : "#ccc" }}></div>
+                        <div
+                          className="head"
+                          style={{
+                            background: member.isCaptain ? "#0ea5e9" : "#ccc",
+                          }}
+                        ></div>
+                        <div
+                          className="body"
+                          style={{
+                            borderColor: member.isCaptain ? "#0ea5e9" : "#ccc",
+                          }}
+                        ></div>
                       </>
                     )}
                   </div>
@@ -254,30 +279,78 @@ export default function HacklabsDashboard({ team, participant, onTeamUpdated }) 
 
               <div className="member-bottom">
                 <h3>{member.type === "add" ? "Add Member" : member.name}</h3>
-                {member.isCaptain && <span className="captain-badge">Captain</span>}
+                {member.isCaptain && (
+                  <span className="captain-badge">Captain</span>
+                )}
               </div>
             </div>
           ))
         )}
+      </div>
+      <div
+        className="team-code-box"
+        style={{
+          marginTop: "2rem",
+          background: "#0f172a",
+          padding: "1rem 2rem",
+          borderRadius: "8px",
+          border: "1px dashed #38bdf8",
+          marginBottom: "2rem",
+          textAlign: "center",
+          display: "inline-block",
+        }}
+      >
+        <p
+          style={{
+            color: "#94a3b8",
+            fontSize: "0.85rem",
+            textTransform: "uppercase",
+            letterSpacing: "1px",
+            marginBottom: "0.5rem",
+          }}
+        >
+          Share this code to invite members
+        </p>
+        <span
+          style={{
+            color: "#38bdf8",
+            fontSize: "1.5rem",
+            letterSpacing: "4px",
+            fontWeight: "bold",
+          }}
+        >
+          {team?.unique_team_code}
+        </span>
       </div>
 
       {showModal && (
         <div className="hacklabs-modal-overlay">
           <div className="hacklabs-modal">
             <h3>Invite Member</h3>
-            <p>Enter the Unique User Code of your friend to invite them to {team.name}.</p>
+            <p>
+              Enter the Unique User Code of your friend to invite them to{" "}
+              {team.name}.
+            </p>
             {inviteError && <div className="modal-error">{inviteError}</div>}
             <form onSubmit={handleInvite}>
-              <input 
-                type="text" 
-                placeholder="HL-XXXXXX" 
+              <input
+                type="text"
+                placeholder="HL-XXXXXX"
                 value={inviteCode}
                 onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
                 required
               />
               <div className="modal-actions">
-                <button type="button" onClick={() => setShowModal(false)} className="cancel-btn">Cancel</button>
-                <button type="submit" disabled={loading} className="invite-btn">Send Invite</button>
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="cancel-btn"
+                >
+                  Cancel
+                </button>
+                <button type="submit" disabled={loading} className="invite-btn">
+                  Send Invite
+                </button>
               </div>
             </form>
           </div>
@@ -285,15 +358,67 @@ export default function HacklabsDashboard({ team, participant, onTeamUpdated }) 
       )}
 
       {isCaptain && requests.length > 0 && (
-        <div className="requests-section" style={{ marginTop: "2rem", background: "#151b2b", padding: "1.5rem", borderRadius: "8px" }}>
-          <h3 style={{ color: "#94a3b8", marginBottom: "1rem" }}>Pending Join Requests</h3>
-          <div className="requests-list" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            {requests.map(req => (
-              <div key={req.id} className="request-card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#0b0f19", padding: "1rem", borderRadius: "6px" }}>
+        <div
+          className="requests-section"
+          style={{
+            marginTop: "2 rem",
+            background: "#151b2b",
+            padding: "1.5rem",
+
+            borderRadius: "8px",
+          }}
+        >
+          <h3 style={{ color: "#94a3b8", marginBottom: "1rem" }}>
+            Pending Join Requests
+          </h3>
+          <div
+            className="requests-list"
+            style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+          >
+            {requests.map((req) => (
+              <div
+                key={req.id}
+                className="request-card"
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  background: "#0b0f19",
+                  padding: "1rem",
+                  borderRadius: "6px",
+                }}
+              >
                 <div>
-                  <strong>{Array.isArray(req.participant) ? req.participant[0]?.full_name : req.participant?.full_name}</strong> (@{Array.isArray(req.participant) ? req.participant[0]?.unique_user_code : req.participant?.unique_user_code}) wants to join your team.
+                  <strong>
+                    {Array.isArray(req.participant)
+                      ? req.participant[0]?.full_name
+                      : req.participant?.full_name}
+                  </strong>{" "}
+                  (@
+                  {Array.isArray(req.participant)
+                    ? req.participant[0]?.unique_user_code
+                    : req.participant?.unique_user_code}
+                  ) wants to join your team.
                 </div>
-                <button onClick={() => handleAcceptRequest(req.id, Array.isArray(req.participant) ? req.participant[0]?.auth_id : req.participant?.auth_id)} disabled={loading} style={{ background: "#0ea5e9", color: "#fff", border: "none", padding: "0.5rem 1rem", borderRadius: "4px", cursor: "pointer" }}>
+                <button
+                  onClick={() =>
+                    handleAcceptRequest(
+                      req.id,
+                      Array.isArray(req.participant)
+                        ? req.participant[0]?.auth_id
+                        : req.participant?.auth_id,
+                    )
+                  }
+                  disabled={loading}
+                  style={{
+                    background: "#0ea5e9",
+                    color: "#fff",
+                    border: "none",
+                    padding: "0.5rem 1rem",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                  }}
+                >
                   Accept
                 </button>
               </div>

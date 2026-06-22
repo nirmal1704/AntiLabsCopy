@@ -24,6 +24,11 @@ export default function HacklabsJudges() {
       role: "Back-End Devloper",
       image: nirmalImg,
     },
+    {
+      name: "Kaushtubham Shukla",
+      role: "AI Engineer",
+      image: kaushImg,
+    },
   ];
   const [selectedJudge, setSelectedJudge] = useState(judges[0]);
   return (
