@@ -75,13 +75,16 @@
   max-height: 0;
   overflow: hidden;
   transition:
-    max-height 0.35s ease,
-    padding 0.35s ease;
+    max-height 0.2s ease-out,
+    padding 0.2s ease-out;
 }
 
 .faq-answer.active {
-  max-height: 300px;
+  max-height: 200px;
   padding-bottom: 24px;
+  transition:
+    max-height 0.2s ease-in,
+    padding 0.2s ease-in;
 }
 
 .faq-answer p {

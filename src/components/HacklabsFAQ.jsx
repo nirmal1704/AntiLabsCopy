@@ -4,6 +4,11 @@ import "./HacklabsFAQ.css";
 
 const faqData = [
   {
+    question: "What is the Theme of Hacklabs?",
+    answer:
+      "HackLabs 2026 focuses on AI and Web3, encouraging participants to build innovative solutions using artificial intelligence, blockchain, decentralization, and emerging technologies that define the future of the internet.",
+  },
+  {
     question: "Who can participate?",
     answer:
       "Students, developers, designers, and tech enthusiasts are welcome to join HackLabs 2026.",

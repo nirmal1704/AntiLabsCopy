@@ -5,7 +5,7 @@ export default function HacklabsHero() {
     <>
       <section className="hero">
         <div className="hero-left">
-          <p className="hero-subtitle">AntiLabs Presents /// HackLabs 2025</p>
+          <p className="hero-subtitle">AntiLabs Presents /// HackLabs 2026</p>
 
           <span className="light">Build.</span>
           <span className="dark">Innovate.</span>
