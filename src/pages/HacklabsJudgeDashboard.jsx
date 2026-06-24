@@ -74,21 +74,21 @@ export default function HacklabsJudgeDashboard() {
               {filteredData.map(item => (
                 <React.Fragment key={item.auth_id}>
                   <tr className={expandedId === item.auth_id ? "expanded-row" : ""}>
-                    <td style={{ fontFamily: "monospace", color: "#38bdf8" }}>{item.unique_user_code}</td>
+                    <td className="code-mono">{item.unique_user_code}</td>
                     <td>
                       <strong>{item.full_name}</strong>
                       <br/>
-                      <span style={{ fontSize: "0.8rem", color: "#94a3b8" }}>{item.mobile_number}</span>
+                      <span className="sub-text">{item.mobile_number}</span>
                     </td>
                     <td>
                       {item.team_name ? (
                         <>
-                          <span style={{ color: "#e2e8f0" }}>{item.team_name}</span>
+                          <span className="team-name-text">{item.team_name}</span>
                           <br/>
-                          <span style={{ fontSize: "0.8rem", color: "#64748b", fontFamily: "monospace" }}>{item.unique_team_code}</span>
+                          <span className="team-code-text">{item.unique_team_code}</span>
                         </>
                       ) : (
-                        <span style={{ color: "#ef4444" }}>No Team</span>
+                        <span className="no-team-text">No Team</span>
                       )}
                     </td>
                     <td>

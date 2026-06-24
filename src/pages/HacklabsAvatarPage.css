@@ -1,0 +1,70 @@
+.avatar-page {
+  min-height: 100vh;
+  background: #000;
+  color: #fff;
+  font-family: "Zen Dots", sans-serif;
+  display: flex;
+  justify-content: center;
+}
+
+.avatar-page-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: #fff;
+  font-family: "Zen Dots", monospace;
+  letter-spacing: 2px;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+.avatar-page-container {
+  width: 100%;
+  max-width: 800px;
+  padding: 120px 2rem 4rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.avatar-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.avatar-header h1 {
+  font-size: clamp(2rem, 5vw, 4rem);
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  font-weight: 400;
+  margin-bottom: 1rem;
+}
+
+.avatar-header p {
+  color: rgba(255, 255, 255, 0.6);
+  font-family: sans-serif;
+  letter-spacing: 1px;
+}
+
+.avatar-actions {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+@media (max-width: 768px) {
+  .avatar-actions {
+    flex-direction: column-reverse;
+    gap: 1rem;
+  }
+}

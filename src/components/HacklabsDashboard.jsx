@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase";
 import HacklabsAvatar from "./HacklabsAvatar";
 import "./HacklabsDashboard.css";
@@ -16,6 +17,9 @@ export default function HacklabsDashboard({
   const [inviteCode, setInviteCode] = useState("");
   const [inviteError, setInviteError] = useState(null);
   const [requests, setRequests] = useState([]);
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [selectedMemberDetails, setSelectedMemberDetails] = useState({ loading: false, tech: null, acad: null });
+  const navigate = useNavigate();
 
   const isCaptain = team?.captain_id === participant?.auth_id;
 
@@ -67,8 +71,7 @@ export default function HacklabsDashboard({
         `,
         )
         .eq("team_id", team.id)
-        .eq("status", "pending")
-        .eq("type", "request");
+        .eq("status", "pending");
 
       if (error) throw error;
       setRequests(data || []);
@@ -94,6 +97,7 @@ export default function HacklabsDashboard({
       alert("Invite sent successfully!");
       setShowModal(false);
       setInviteCode("");
+      fetchRequests();
     } catch (err) {
       setInviteError(err.message);
     } finally {
@@ -119,11 +123,27 @@ export default function HacklabsDashboard({
     }
   };
 
+  const handleMemberClick = async (member) => {
+    if (member.type === "add") {
+      setShowModal(true);
+    } else if (member.type === "filled") {
+      setSelectedMember(member);
+      setSelectedMemberDetails({ loading: true, tech: null, acad: null });
+      
+      const [{ data: tech }, { data: acad }] = await Promise.all([
+        supabase.from("hacklabs_technical_info").select("*").eq("auth_id", member.id).single(),
+        supabase.from("hacklabs_academic_info").select("*").eq("auth_id", member.id).single()
+      ]);
+      
+      setSelectedMemberDetails({ loading: false, tech, acad });
+    }
+  };
+
   const handlePayment = async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke(
-        "create-razorpay-order",
+        "create-cashfree-order",
         {
           body: {
             team_id: team.id,
@@ -135,39 +155,44 @@ export default function HacklabsDashboard({
 
       if (error) throw error;
 
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "",
-        amount: data.amount,
-        currency: data.currency,
-        name: "AntiLabs",
-        description: "HackLabs 2025 Team Registration",
-        order_id: data.order_id,
-        handler: async function (response) {
+      if (!window.Cashfree) {
+        const script = document.createElement("script");
+        script.src = "https://sdk.cashfree.com/js/v3/cashfree.js";
+        await new Promise((resolve) => {
+          script.onload = resolve;
+          document.body.appendChild(script);
+        });
+      }
+
+      const cashfree = window.Cashfree({
+        mode: "sandbox", // Switch to "production" when going live
+      });
+
+      const checkoutOptions = {
+        paymentSessionId: data.payment_session_id,
+        redirectTarget: "_modal",
+      };
+
+      cashfree.checkout(checkoutOptions).then(async (result) => {
+        if(result.error){
+          console.error("Payment error", result.error);
+          alert("Payment failed: " + result.error.message);
+        } else if(result.paymentDetails || result.redirect){
           await supabase
             .from("hacklabs_teams")
             .update({
               payment_status: "paid",
-              razorpay_payment_id: response.razorpay_payment_id,
+              cashfree_order_id: data.order_id,
             })
             .eq("id", team.id);
 
           alert("Payment Successful!");
           onTeamUpdated({ ...team, payment_status: "paid" });
-        },
-        prefill: {
-          name: participant.name,
-          email: participant.email,
-        },
-        theme: {
-          color: "#000000",
-        },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
+        }
+      });
     } catch (err) {
       console.error(err);
-      alert("Payment failed or API keys missing.");
+      alert("Payment failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -210,12 +235,34 @@ export default function HacklabsDashboard({
       {isCaptain && team?.payment_status === "pending" && (
         <div className="payment-banner">
           <p>Your team registration is pending payment.</p>
+          
+          <div className="fee-breakdown">
+            <h4>Payment Summary</h4>
+            <div className="fee-row">
+              <span>Registration Fee:</span>
+              <span>₹199.00</span>
+            </div>
+            <div className="fee-row-sub">
+              <span>Platform Fee (2%):</span>
+              <span>₹3.98</span>
+            </div>
+            <div className="fee-row-sub">
+              <span>GST on Fee (18%):</span>
+              <span>₹0.72</span>
+            </div>
+            <hr className="fee-divider" />
+            <div className="fee-total">
+              <span>Total Payable:</span>
+              <span>₹203.70</span>
+            </div>
+          </div>
+
           <button
             onClick={handlePayment}
             disabled={loading}
             className="pay-btn"
           >
-            Finalize and Pay (₹199)
+            Finalize and Pay (₹203.70)
           </button>
         </div>
       )}
@@ -228,27 +275,15 @@ export default function HacklabsDashboard({
 
       <div className="members-grid">
         {isFetchingMembers ? (
-          <div
-            style={{
-              padding: "3rem",
-              color: "#94a3b8",
-              textAlign: "center",
-              gridColumn: "1 / -1",
-            }}
-          >
+          <div className="team-roster-loading">
             Loading team roster...
           </div>
         ) : (
           displayMembers.map((member, idx) => (
             <div
               key={member.id || idx}
-              className={`member-card ${member.type === "add" ? "is-add-card" : ""}`}
-              onClick={() => {
-                if (member.type === "add") {
-                  setShowModal(true);
-                }
-              }}
-              style={{ cursor: member.type === "add" ? "pointer" : "default" }}
+              className={`member-card pointer-cursor ${member.type === "add" ? "is-add-card" : ""}`}
+              onClick={() => handleMemberClick(member)}
             >
               <div className="member-top">
                 {member.type === "add" && <div className="add-btn">+</div>}
@@ -258,20 +293,9 @@ export default function HacklabsDashboard({
                     {member.avatar_config ? (
                       <HacklabsAvatar config={member.avatar_config} size={80} />
                     ) : (
-                      <>
-                        <div
-                          className="head"
-                          style={{
-                            background: member.isCaptain ? "#0ea5e9" : "#ccc",
-                          }}
-                        ></div>
-                        <div
-                          className="body"
-                          style={{
-                            borderColor: member.isCaptain ? "#0ea5e9" : "#ccc",
-                          }}
-                        ></div>
-                      </>
+                      <div className="empty-avatar">
+                        ?
+                      </div>
                     )}
                   </div>
                 )}
@@ -287,38 +311,11 @@ export default function HacklabsDashboard({
           ))
         )}
       </div>
-      <div
-        className="team-code-box"
-        style={{
-          marginTop: "2rem",
-          background: "#0f172a",
-          padding: "1rem 2rem",
-          borderRadius: "8px",
-          border: "1px dashed #38bdf8",
-          marginBottom: "2rem",
-          textAlign: "center",
-          display: "inline-block",
-        }}
-      >
-        <p
-          style={{
-            color: "#94a3b8",
-            fontSize: "0.85rem",
-            textTransform: "uppercase",
-            letterSpacing: "1px",
-            marginBottom: "0.5rem",
-          }}
-        >
+      <div className="team-code-box-wrapper">
+        <p className="team-code-label">
           Share this code to invite members
         </p>
-        <span
-          style={{
-            color: "#38bdf8",
-            fontSize: "1.5rem",
-            letterSpacing: "4px",
-            fontWeight: "bold",
-          }}
-        >
+        <span className="team-code-value">
           {team?.unique_team_code}
         </span>
       </div>
@@ -357,72 +354,112 @@ export default function HacklabsDashboard({
         </div>
       )}
 
-      {isCaptain && requests.length > 0 && (
-        <div
-          className="requests-section"
-          style={{
-            marginTop: "2 rem",
-            background: "#151b2b",
-            padding: "1.5rem",
+      {selectedMember && (
+        <div className="hacklabs-modal-overlay" onClick={(e) => { if (e.target.className === 'hacklabs-modal-overlay') setSelectedMember(null); }}>
+          <div className="hacklabs-member-modal">
+            <button className="close-modal-btn" onClick={() => setSelectedMember(null)}>✕</button>
+            
+            <div className="member-modal-header">
+              <div className="member-modal-avatar">
+                {selectedMember.avatar_config ? (
+                  <HacklabsAvatar config={selectedMember.avatar_config} size={100} />
+                ) : (
+                  <div className={`no-avatar-placeholder ${selectedMember.isCaptain ? 'no-avatar-captain' : 'no-avatar-member'}`} />
+                )}
+              </div>
+              <div className="member-modal-title">
+                <h2>{selectedMember.name}</h2>
+                <p>@{selectedMember.username}</p>
+                {selectedMember.isCaptain && <span className="captain-badge">Captain</span>}
+              </div>
+            </div>
 
-            borderRadius: "8px",
-          }}
-        >
-          <h3 style={{ color: "#94a3b8", marginBottom: "1rem" }}>
-            Pending Join Requests
-          </h3>
-          <div
-            className="requests-list"
-            style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
-          >
-            {requests.map((req) => (
-              <div
-                key={req.id}
-                className="request-card"
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  background: "#0b0f19",
-                  padding: "1rem",
-                  borderRadius: "6px",
-                }}
-              >
-                <div>
-                  <strong>
-                    {Array.isArray(req.participant)
-                      ? req.participant[0]?.full_name
-                      : req.participant?.full_name}
-                  </strong>{" "}
-                  (@
-                  {Array.isArray(req.participant)
-                    ? req.participant[0]?.unique_user_code
-                    : req.participant?.unique_user_code}
-                  ) wants to join your team.
+            <div className="member-modal-body">
+              {selectedMemberDetails.loading ? (
+                <div className="loading-text">Decrypting Data...</div>
+              ) : (
+                <div className="member-details-grid">
+                  <div className="detail-section">
+                    <h4>ACADEMIC PROFILE</h4>
+                    <p><strong>College:</strong> {selectedMemberDetails.acad?.college_name || "N/A"}</p>
+                    <p><strong>Branch:</strong> {selectedMemberDetails.acad?.branch || "N/A"}</p>
+                    <p><strong>Year:</strong> {selectedMemberDetails.acad?.year_of_study || "N/A"}</p>
+                  </div>
+                  
+                  <div className="detail-section">
+                    <h4>TECH STACK</h4>
+                    {selectedMemberDetails.tech?.github_link && (
+                      <p><strong>GitHub:</strong> <a href={selectedMemberDetails.tech.github_link} target="_blank" rel="noreferrer">View Profile</a></p>
+                    )}
+                    {selectedMemberDetails.tech?.linkedin && (
+                      <p><strong>LinkedIn:</strong> <a href={selectedMemberDetails.tech.linkedin} target="_blank" rel="noreferrer">View Profile</a></p>
+                    )}
+                    {selectedMemberDetails.tech?.portfolio && (
+                      <p><strong>Portfolio:</strong> <a href={selectedMemberDetails.tech.portfolio} target="_blank" rel="noreferrer">View Portfolio</a></p>
+                    )}
+                  </div>
                 </div>
-                <button
-                  onClick={() =>
-                    handleAcceptRequest(
-                      req.id,
-                      Array.isArray(req.participant)
-                        ? req.participant[0]?.auth_id
-                        : req.participant?.auth_id,
-                    )
-                  }
-                  disabled={loading}
-                  style={{
-                    background: "#0ea5e9",
-                    color: "#fff",
-                    border: "none",
-                    padding: "0.5rem 1rem",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                  }}
-                >
-                  Accept
+              )}
+            </div>
+            
+            {!selectedMember.avatar_config && selectedMember.id === participant?.auth_id && (
+              <div className="member-modal-footer">
+                <p>You haven't configured your Hacker ID yet.</p>
+                <button className="create-avatar-btn" onClick={() => navigate("/hacklabs/id-card")}>
+                  Create Hacker ID
                 </button>
               </div>
-            ))}
+            )}
+          </div>
+        </div>
+      )}
+
+      {isCaptain && requests.length > 0 && (
+        <div className="requests-section">
+          <h3 className="requests-section-title">
+            Pending Join Requests & Invites
+          </h3>
+          <div className="requests-list">
+            {requests.map((req) => {
+              const pName = Array.isArray(req.participant)
+                ? req.participant[0]?.full_name
+                : req.participant?.full_name;
+              const pCode = Array.isArray(req.participant)
+                ? req.participant[0]?.unique_user_code
+                : req.participant?.unique_user_code;
+              const pId = Array.isArray(req.participant)
+                ? req.participant[0]?.auth_id
+                : req.participant?.auth_id;
+
+              return (
+                <div key={req.id} className="request-card">
+                  <div>
+                    {req.type === "invite" ? (
+                      <>
+                        You invited <strong>{pName}</strong> (@{pCode}) to join.
+                      </>
+                    ) : (
+                      <>
+                        <strong>{pName}</strong> (@{pCode}) wants to join your team.
+                      </>
+                    )}
+                  </div>
+                  {req.type === "invite" ? (
+                    <span className="pending-reply-badge">
+                      Pending Reply
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => handleAcceptRequest(req.id, pId)}
+                      disabled={loading}
+                      className="accept-btn"
+                    >
+                      Accept
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

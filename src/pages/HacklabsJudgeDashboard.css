@@ -186,3 +186,27 @@
     width: 100%;
   }
 }
+
+.code-mono {
+  font-family: monospace;
+  color: #38bdf8;
+}
+
+.sub-text {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.team-name-text {
+  color: #e2e8f0;
+}
+
+.team-code-text {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-family: monospace;
+}
+
+.no-team-text {
+  color: #ef4444;
+}
