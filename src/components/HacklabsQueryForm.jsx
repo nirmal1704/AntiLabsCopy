@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { supabase } from '../supabase';
 import './HacklabsQueryForm.css';
 
 export default function HacklabsQueryForm() {
@@ -21,34 +22,26 @@ export default function HacklabsQueryForm() {
     setLoading(true);
     setMessage('');
     
-    // -- MOCK BACKEND: Using localStorage until you add real backend --
-    // TODO: Replace this block with your actual backend submission logic
     try {
-      const existingQueries = JSON.parse(localStorage.getItem('mockHacklabsQueries') || '[]');
-      const newQuery = {
-        id: Date.now().toString(),
+      const { error } = await supabase.from('hacklabs_queries').insert([{
         name: formData.name,
         email: formData.email,
         subject: `[Hacklabs] ${formData.subject}`,
         description: formData.description,
-        status: 'open',
-        created_at: new Date().toISOString()
-      };
-      localStorage.setItem('mockHacklabsQueries', JSON.stringify([...existingQueries, newQuery]));
+        status: 'open'
+      }]);
 
-      // Simulate a network transmission delay
-      setTimeout(() => {
-        setMessage('Query submitted successfully! Our team will get back to you soon.');
-        setFormData({ name: '', email: '', subject: '', description: '' });
-        setLoading(false);
-        setTimeout(() => setMessage(''), 5000);
-      }, 1000);
+      if (error) throw error;
+
+      setMessage('Query submitted successfully! Our team will get back to you soon.');
+      setFormData({ name: '', email: '', subject: '', description: '' });
+      setLoading(false);
+      setTimeout(() => setMessage(''), 5000);
     } catch (error) {
       console.error(error);
       setMessage('Failed to submit query. Please try again.');
       setLoading(false);
     }
-    // -----------------------------------------------------------------
   };
 
   return (

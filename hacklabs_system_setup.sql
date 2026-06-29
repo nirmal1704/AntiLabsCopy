@@ -18,6 +18,28 @@ CREATE TABLE public.hacklabs_judges (
 
 -- 2. Personal Details Table (Core Profile)
 CREATE TABLE public.hacklabs_personal_details (
+-- Hacklabs Complete Master Setup Script
+-- This script safely drops existing tables and creates the entire schema, policies, and functions.
+
+-- 0. Reset Existing Tables and Views
+DROP VIEW IF EXISTS public.hacklabs_judge_view CASCADE;
+DROP TABLE IF EXISTS public.hacklabs_invitations CASCADE;
+DROP TABLE IF EXISTS public.hacklabs_academic_info CASCADE;
+DROP TABLE IF EXISTS public.hacklabs_technical_info CASCADE;
+DROP TABLE IF EXISTS public.hacklabs_personal_details CASCADE;
+DROP TABLE IF EXISTS public.hacklabs_teams CASCADE;
+DROP TABLE IF EXISTS public.hacklabs_judges CASCADE;
+DROP TABLE IF EXISTS public.hacklabs_queries CASCADE;
+DROP TABLE IF EXISTS public.hacklabs_application_drafts CASCADE;
+
+-- 1. Judges Table
+CREATE TABLE public.hacklabs_judges (
+  email text PRIMARY KEY,
+  created_at timestamp with time zone DEFAULT now()
+);
+
+-- 2. Personal Details Table (Core Profile)
+CREATE TABLE public.hacklabs_personal_details (
   auth_id uuid NOT NULL, 
   full_name text NOT NULL,
   mobile_number text NOT NULL,
@@ -25,6 +47,7 @@ CREATE TABLE public.hacklabs_personal_details (
   gender text NOT NULL,
   profile_photo jsonb,
   unique_user_code text NOT NULL UNIQUE, 
+  email text,
   team_id uuid,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT hacklabs_personal_details_pkey PRIMARY KEY (auth_id),
@@ -43,6 +66,7 @@ CREATE TABLE public.hacklabs_teams (
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT hacklabs_teams_pkey PRIMARY KEY (id),
   CONSTRAINT hacklabs_teams_name_key UNIQUE (name),
+  CONSTRAINT hacklabs_teams_captain_id_key UNIQUE (captain_id),
   CONSTRAINT hacklabs_teams_captain_id_fkey FOREIGN KEY (captain_id) REFERENCES public.hacklabs_personal_details(auth_id)
 );
 
@@ -86,7 +110,19 @@ CREATE TABLE public.hacklabs_invitations (
   CONSTRAINT hacklabs_invitations_participant_auth_id_fkey FOREIGN KEY (participant_auth_id) REFERENCES public.hacklabs_personal_details(auth_id)
 );
 
--- 7. SQL View for Judges
+-- 7. Support Queries Table
+CREATE TABLE IF NOT EXISTS public.hacklabs_queries (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  email text NOT NULL,
+  subject text NOT NULL,
+  description text NOT NULL,
+  status text NOT NULL DEFAULT 'open'::text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT hacklabs_queries_pkey PRIMARY KEY (id)
+);
+
+-- 8. SQL View for Judges
 CREATE OR REPLACE VIEW public.hacklabs_judge_view AS
 SELECT 
   p.auth_id,
@@ -95,6 +131,8 @@ SELECT
   p.dob,
   p.gender,
   p.unique_user_code,
+  p.email,
+  p.created_at,
   a.college_name,
   a.degree,
   a.branch,
@@ -206,6 +244,11 @@ BEGIN
     END IF;
   END IF;
 
+  -- Ensure the participant is not already in a team
+  IF EXISTS (SELECT 1 FROM public.hacklabs_personal_details WHERE auth_id = inv.participant_auth_id AND team_id IS NOT NULL) THEN
+    RAISE EXCEPTION 'This participant is already in a team.';
+  END IF;
+
   UPDATE public.hacklabs_invitations SET status = 'accepted' WHERE id = invite_id;
   UPDATE public.hacklabs_personal_details SET team_id = inv.team_id WHERE auth_id = inv.participant_auth_id;
 END;
@@ -231,7 +274,10 @@ CREATE POLICY "Users can insert own personal details" ON public.hacklabs_persona
 ALTER TABLE public.hacklabs_teams ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Teams are viewable by everyone" ON public.hacklabs_teams FOR SELECT USING (true);
 CREATE POLICY "Captains can update teams" ON public.hacklabs_teams FOR UPDATE USING (captain_id = auth.uid());
-CREATE POLICY "Authenticated users can create teams" ON public.hacklabs_teams FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+CREATE POLICY "Users without a team can create teams" ON public.hacklabs_teams FOR INSERT WITH CHECK (
+  auth.uid() = captain_id AND 
+  public.get_user_team_id() IS NULL
+);
 
 -- Academic Info
 ALTER TABLE public.hacklabs_academic_info ENABLE ROW LEVEL SECURITY;
@@ -267,3 +313,53 @@ CREATE POLICY "Users can insert own requests or captain invites" ON public.hackl
     OR
     (type = 'invite' AND EXISTS (SELECT 1 FROM public.hacklabs_teams WHERE id = team_id AND captain_id = auth.uid()))
   );
+
+-- 8. Support Queries Table
+CREATE TABLE IF NOT EXISTS public.hacklabs_queries (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  email text NOT NULL,
+  subject text NOT NULL,
+  description text NOT NULL,
+  status text NOT NULL DEFAULT 'open'::text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT hacklabs_queries_pkey PRIMARY KEY (id)
+);
+
+ALTER TABLE public.hacklabs_queries ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can insert queries" ON public.hacklabs_queries FOR INSERT WITH CHECK (true);
+CREATE POLICY "Only judges can view queries" ON public.hacklabs_queries FOR SELECT USING (public.is_hacklabs_judge());
+CREATE POLICY "Only judges can update queries" ON public.hacklabs_queries FOR UPDATE USING (public.is_hacklabs_judge());
+CREATE POLICY "Only judges can delete queries" ON public.hacklabs_queries FOR DELETE USING (public.is_hacklabs_judge());
+
+-- 9. Hacklabs Application Drafts Table
+CREATE TABLE IF NOT EXISTS public.hacklabs_application_drafts (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  form_data jsonb NOT NULL DEFAULT '{}'::jsonb,
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT hacklabs_application_drafts_pkey PRIMARY KEY (id),
+  CONSTRAINT hacklabs_application_drafts_user_id_key UNIQUE (user_id),
+  CONSTRAINT hacklabs_application_drafts_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
+);
+
+ALTER TABLE public.hacklabs_application_drafts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can insert own drafts" ON public.hacklabs_application_drafts FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own drafts" ON public.hacklabs_application_drafts FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can view own drafts" ON public.hacklabs_application_drafts FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Judges can view all drafts" ON public.hacklabs_application_drafts FOR SELECT USING (public.is_hacklabs_judge());
+
+-- RPC for Judges to view application drafts securely
+CREATE OR REPLACE FUNCTION public.get_hacklabs_drafts()
+RETURNS SETOF public.hacklabs_application_drafts
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  IF NOT public.is_hacklabs_judge() THEN
+    RAISE EXCEPTION 'Access Denied: You are not an authorized judge.';
+  END IF;
+
+  RETURN QUERY SELECT * FROM public.hacklabs_application_drafts;
+END;
+$$;
