@@ -10,10 +10,13 @@
   background: #000;
   color: #fff;
   font-family: "Zen Dots", sans-serif;
+  max-width: 1180px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .box {
-  border: 4px dotted #fff;
+  border: 3px dotted #fff;
   border-radius: 14px;
   padding: 1.5rem;
   min-width: 220px;

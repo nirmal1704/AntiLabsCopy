@@ -11,13 +11,74 @@ body {
     linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
   background-size: 30px 30px;
   color: #ffffff;
-  padding: 4rem 2rem;
+  padding: 0;
   font-family: 'Zen Dots', sans-serif;
 }
 
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 280px;
+  background: #0a0a0a;
+  border-right: 1px solid #333333;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.sidebar h2 {
+  font-size: 1.2rem;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #333333;
+  margin: 0;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sidebar-item {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #a3a3a3;
+  font-family: 'Zen Dots', sans-serif;
+  font-size: 0.9rem;
+  padding: 1rem;
+  text-align: left;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.sidebar-item:hover {
+  background: #111111;
+  color: #ffffff;
+}
+
+.sidebar-item.active {
+  background: rgba(124, 77, 255, 0.1);
+  border: 1px solid rgba(124, 77, 255, 0.3);
+  color: #ffffff;
+}
+
+.main-content {
+  flex: 1;
+  padding: 3rem;
+  overflow-y: auto;
+}
+
 .judge-header {
-  text-align: center;
   margin-bottom: 3rem;
+  text-align: left;
 }
 
 .judge-header h1 {
@@ -33,7 +94,7 @@ body {
 
 .judge-controls {
   max-width: 1200px;
-  margin: 0 auto 2rem;
+  margin: 0 0 2rem 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -158,7 +219,7 @@ body {
 
 .judge-table-container {
   max-width: 1200px;
-  margin: 0 auto;
+  margin: 0;
   overflow-x: auto;
   background: #0a0a0a;
   border-radius: 12px;
@@ -347,4 +408,36 @@ body {
   font-family: monospace;
   padding-left: 1rem;
   border-left: 3px solid #333333;
+}
+
+.member-tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #333333;
+}
+
+.member-tab-btn {
+  background: #111111;
+  border: 1px solid #333333;
+  color: #a3a3a3;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'Zen Dots', sans-serif;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+
+.member-tab-btn:hover {
+  background: #1a1a1a;
+  color: #ffffff;
+}
+
+.member-tab-btn.active {
+  background: rgba(124, 77, 255, 0.1);
+  border-color: rgba(124, 77, 255, 0.4);
+  color: #ffffff;
 }

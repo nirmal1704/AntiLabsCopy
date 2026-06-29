@@ -8,6 +8,7 @@ import HacklabsJudges from "../components/HacklabsJudges";
 import HacklabsPrize from "../components/HacklabsPrize";
 import HacklabsStats from "../components/HacklabsStats";
 import HacklabsTimer from "../components/HacklabsTimer";
+import HacklabsQueryForm from "../components/HacklabsQueryForm";
 import HacklabsFAQ from "../components/HacklabsFAQ";
 import HacklabsFooter from "../components/HacklabsFooter";
 import CinematicTransition from "../components/CinematicTransition";
@@ -45,6 +46,7 @@ function HacklabsPage() {
           <HacklabsJudges />
           <HacklabsPrize />
           <HacklabsBenefits />
+          <HacklabsQueryForm />
           <HacklabsFAQ />
         </motion.div>
         {!isTransitioning && <HacklabsFooter />}
