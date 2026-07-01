@@ -25,6 +25,7 @@ const HacklabsDashboardPage = lazy(
 );
 const HacklabsRegisterPage = lazy(() => import("./pages/HacklabsRegisterPage"));
 const HacklabsOnboardingPage = lazy(() => import("./pages/HacklabsOnboardingPage"));
+const HacklabsAvatarPage = lazy(() => import("./pages/HacklabsAvatarPage"));
 const HacklabsJudgeDashboard = lazy(() => import("./pages/HacklabsJudgeDashboard"));
 const HacklabsAuthModal = lazy(() => import("./components/HacklabsAuthModal"));
 const CareersPage = lazy(() => import("./pages/CareersPage"));
@@ -119,6 +120,10 @@ export default function App() {
               <Route
                 path="/hacklabs/onboarding"
                 element={<HacklabsOnboardingPage />}
+              />
+              <Route
+                path="/hacklabs/id-card"
+                element={<HacklabsAvatarPage />}
               />
               <Route
                 path="/hacklabs/judge-dashboard"

@@ -76,23 +76,39 @@
 }
 
 .hero-content button {
-  background: var(--accent);
-
-  border: none;
-  font-size: 1.2rem;
+  background: linear-gradient(135deg, #7c4dff, #512da8);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-family: "Zen Dots", sans-serif;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
   color: white;
-
-  padding: 14px 28px;
-
-  border-radius: 12px;
-
+  padding: 18px 36px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 20px rgba(124, 77, 255, 0.3);
+  position: relative;
+  overflow: hidden;
 }
 .hero-content button:hover {
-  transform: translateY(-2px);
-
-  box-shadow: 0 10px 25px rgba(124, 77, 255, 0.35);
+  transform: translateY(-3px);
+  box-shadow: 0 15px 35px rgba(124, 77, 255, 0.5);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+.hero-content button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+  transform: skewX(-25deg);
+  transition: all 0.6s ease;
+}
+.hero-content button:hover::after {
+  left: 200%;
 }
 
 .hero-badge {

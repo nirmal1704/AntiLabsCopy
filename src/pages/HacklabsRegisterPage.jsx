@@ -142,10 +142,10 @@ export default function HacklabsRegisterPage() {
         {error && <div className="register-error">{error}</div>}
 
         <div className="register-layout">
-          <div className="register-form-section" style={{ width: "100%" }}>
+          <div className="register-form-section register-form-section-full">
             {!showOtp ? (
               <>
-                <h3 style={{ marginBottom: "1.5rem", color: "#e2e8f0" }}>
+                <h3 className="register-section-title">
                   Establish Identity
                 </h3>
                 <form onSubmit={handleRegister} className="register-form">
@@ -230,16 +230,10 @@ export default function HacklabsRegisterPage() {
               </>
             ) : (
               <>
-                <h3 style={{ marginBottom: "1.5rem", color: "#e2e8f0" }}>
+                <h3 className="register-section-title">
                   Verify Comm-Link
                 </h3>
-                <p
-                  style={{
-                    color: "#94a3b8",
-                    marginBottom: "2rem",
-                    fontSize: "0.95rem",
-                  }}
-                >
+                <p className="register-otp-message">
                   A 6-digit security code has been Sent to {formData.email}.
                 </p>
                 <form onSubmit={handleVerifyOtp} className="register-form">
@@ -252,11 +246,7 @@ export default function HacklabsRegisterPage() {
                       onChange={(e) => setOtp(e.target.value)}
                       placeholder="00000000"
                       maxLength="8"
-                      style={{
-                        letterSpacing: "8px",
-                        textAlign: "center",
-                        fontSize: "1.5rem",
-                      }}
+                      className="register-otp-input"
                     />
                   </div>
 
@@ -268,20 +258,12 @@ export default function HacklabsRegisterPage() {
                     {loading ? "VERIFYING..." : "Submit OTP"}
                   </button>
 
-                  <div style={{ marginTop: "1.5rem" }}>
+                  <div className="register-resend-wrapper">
                     <button
                       type="button"
                       onClick={handleResendOtp}
                       disabled={resendTimer > 0 || loading}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        color: resendTimer > 0 ? "#64748b" : "#38bdf8",
-                        cursor: resendTimer > 0 ? "not-allowed" : "pointer",
-                        textDecoration: resendTimer > 0 ? "none" : "underline",
-                        fontSize: "0.9rem",
-                        fontFamily: "inherit",
-                      }}
+                      className={`register-resend-btn ${resendTimer > 0 ? "disabled" : "active"}`}
                     >
                       {resendTimer > 0
                         ? `Resend code available in ${resendTimer}s`

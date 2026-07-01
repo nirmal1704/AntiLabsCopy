@@ -67,15 +67,12 @@ export default function HacklabsNavbar() {
 
   return (
     <nav className="hacklabs-navbar">
-      <div
-        className="navbar-left"
-        style={{ display: "flex", alignItems: "center", gap: "12px" }}
-      >
+      <div className="navbar-left navbar-left-wrapper">
         <img
           src="/hacklabs-logo.png"
           alt="Hacklabs Logo Symbol"
           onClick={() => navigate("/")}
-          style={{ height: "32px", cursor: "pointer", mixBlendMode: "screen" }}
+          className="hacklabs-logo-img"
         />
         <span
           onClick={() => navigate("/hacklabs")}
@@ -89,17 +86,16 @@ export default function HacklabsNavbar() {
         {isCheckingProfile ? null : session && (isJudge || userName) ? (
           isJudge ? (
             <button 
-              className="nav-btn" 
+              className="nav-btn judge-view-btn" 
               onClick={() => navigate("/hacklabs/judge-dashboard")}
-              style={{ borderColor: '#10b981', color: '#10b981' }}
             >
               Judge View
             </button>
           ) : (
             <div className="hacklabs-user-badge" onClick={() => navigate("/hacklabs/dashboard")}>
-              <div className="user-icon">
+              <div className={`user-icon ${avatarConfig ? 'has-avatar' : ''}`}>
                 {avatarConfig ? (
-                  <HacklabsAvatar config={avatarConfig} size={24} />
+                  <HacklabsAvatar config={avatarConfig} size={32} />
                 ) : (
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>

@@ -78,6 +78,11 @@
   clip-path: polygon(10% 0, 100% 0, 100% 90%, 90% 100%, 0 100%, 0 10%);
 }
 
+.user-icon.has-avatar {
+  background: transparent;
+  clip-path: none;
+}
+
 .user-icon svg {
   width: 20px;
   height: 20px;
@@ -121,4 +126,21 @@
   .navbar-logo {
     height: 70px;
   }
+}
+
+.navbar-left-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hacklabs-logo-img {
+  height: 32px;
+  cursor: pointer;
+  mix-blend-mode: screen;
+}
+
+.judge-view-btn {
+  border-color: #10b981 !important;
+  color: #10b981 !important;
 }

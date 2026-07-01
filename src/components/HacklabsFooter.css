@@ -135,3 +135,20 @@
     max-width: 80px;
   }
 }
+
+.footer-logo-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.footer-logo-img {
+  height: 40px;
+  mix-blend-mode: screen;
+}
+
+.footer-logo-text {
+  color: white;
+  font-family: "Zen Dots", sans-serif;
+  font-size: 28px;
+}

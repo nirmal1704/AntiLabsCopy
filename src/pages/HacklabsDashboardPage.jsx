@@ -85,7 +85,7 @@ function HacklabsDashboardPage() {
     return (
       <>
         <HacklabsNavbar />
-        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh", color: "#fff" }}>
+        <div className="dashboard-loading-screen">
           Loading your Hacklabs Profile...
         </div>
       </>

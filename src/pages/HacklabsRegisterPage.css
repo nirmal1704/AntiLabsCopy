@@ -176,3 +176,47 @@
   cursor: not-allowed;
   opacity: 0.6;
 }
+
+.register-form-section-full {
+  width: 100%;
+}
+
+.register-section-title {
+  margin-bottom: 1.5rem;
+  color: #e2e8f0;
+}
+
+.register-otp-message {
+  color: #94a3b8;
+  margin-bottom: 2rem;
+  font-size: 0.95rem;
+}
+
+.register-otp-input {
+  letter-spacing: 8px;
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+.register-resend-wrapper {
+  margin-top: 1.5rem;
+}
+
+.register-resend-btn {
+  background: none;
+  border: none;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+
+.register-resend-btn.disabled {
+  color: #64748b;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.register-resend-btn.active {
+  color: #38bdf8;
+  cursor: pointer;
+  text-decoration: underline;
+}

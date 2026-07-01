@@ -41,6 +41,36 @@ export default function HacklabsOnboardingPage() {
   });
 
   useEffect(() => {
+    const savedStep = localStorage.getItem("hacklabs_onboarding_step");
+    if (savedStep) setStep(parseInt(savedStep, 10));
+
+    const savedPersonal = localStorage.getItem("hacklabs_onboarding_personal");
+    if (savedPersonal) setPersonal(JSON.parse(savedPersonal));
+
+    const savedAcademic = localStorage.getItem("hacklabs_onboarding_academic");
+    if (savedAcademic) setAcademic(JSON.parse(savedAcademic));
+
+    const savedTechnical = localStorage.getItem("hacklabs_onboarding_technical");
+    if (savedTechnical) setTechnical(JSON.parse(savedTechnical));
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("hacklabs_onboarding_step", step.toString());
+  }, [step]);
+
+  useEffect(() => {
+    localStorage.setItem("hacklabs_onboarding_personal", JSON.stringify(personal));
+  }, [personal]);
+
+  useEffect(() => {
+    localStorage.setItem("hacklabs_onboarding_academic", JSON.stringify(academic));
+  }, [academic]);
+
+  useEffect(() => {
+    localStorage.setItem("hacklabs_onboarding_technical", JSON.stringify(technical));
+  }, [technical]);
+
+  useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session) {
         navigate("/hacklabs/register");
@@ -54,6 +84,14 @@ export default function HacklabsOnboardingPage() {
       }
 
       setUser(session.user);
+      
+      setPersonal((prev) => {
+        if (!prev.full_name && session.user.user_metadata?.full_name) {
+          return { ...prev, full_name: session.user.user_metadata.full_name };
+        }
+        return prev;
+      });
+
       const { data } = await supabase
         .from("hacklabs_personal_details")
         .select("auth_id")
@@ -189,7 +227,12 @@ export default function HacklabsOnboardingPage() {
         });
       if (tErr) throw tErr;
 
-      navigate("/hacklabs/dashboard");
+      localStorage.removeItem("hacklabs_onboarding_step");
+      localStorage.removeItem("hacklabs_onboarding_personal");
+      localStorage.removeItem("hacklabs_onboarding_academic");
+      localStorage.removeItem("hacklabs_onboarding_technical");
+
+      navigate("/hacklabs/id-card");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -245,15 +288,7 @@ export default function HacklabsOnboardingPage() {
         </div>
 
         {error && (
-          <div
-            style={{
-              background: "#7f1d1d",
-              color: "#fca5a5",
-              padding: "1rem",
-              borderRadius: "8px",
-              marginBottom: "1rem",
-            }}
-          >
+          <div className="onboarding-error-box">
             {error}
           </div>
         )}
@@ -351,7 +386,7 @@ export default function HacklabsOnboardingPage() {
               </div>
             </div>
 
-            <div className="btn-group" style={{ justifyContent: "flex-end" }}>
+            <div className="btn-group btn-group-right">
               <button type="submit" className="btn-primary">
                 Continue
               </button>

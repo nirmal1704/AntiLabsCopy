@@ -19,9 +19,34 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
 
     const interval = setInterval(() => {
       fetchInvites();
+      checkTeamStatus();
     }, 5000);
     return () => clearInterval(interval);
   }, [participant]);
+
+  const checkTeamStatus = async () => {
+    if (!participant) return;
+    try {
+      const { data, error } = await supabase
+        .from("hacklabs_personal_details")
+        .select("team_id")
+        .eq("auth_id", participant.auth_id)
+        .single();
+        
+      if (!error && data && data.team_id && !participant.team_id) {
+        const { data: teamData } = await supabase
+          .from("hacklabs_teams")
+          .select("*")
+          .eq("id", data.team_id)
+          .single();
+        if (teamData) {
+          onTeamUpdated(teamData);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const fetchInvites = async () => {
     if (!participant) return;
@@ -126,7 +151,7 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
     }
   };
 
-  const handleAcceptInvite = async (inviteId, team) => {
+  const handleAcceptInvite = async (inviteId, teamNameCode) => {
     setLoading(true);
     try {
       const { error } = await supabase.rpc("accept_hacklabs_invite", {
@@ -134,7 +159,15 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
       });
       if (error) throw error;
 
-      onTeamUpdated(team);
+      const { data: fullTeam, error: teamError } = await supabase
+        .from("hacklabs_teams")
+        .select("*")
+        .eq("unique_team_code", teamNameCode.unique_team_code)
+        .single();
+        
+      if (teamError) throw teamError;
+
+      onTeamUpdated(fullTeam);
     } catch (err) {
       setError(err.message);
     } finally {

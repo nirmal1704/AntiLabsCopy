@@ -38,8 +38,8 @@ CREATE TABLE public.hacklabs_teams (
   unique_team_code text NOT NULL UNIQUE, 
   captain_id uuid NOT NULL,
   payment_status text NOT NULL DEFAULT 'pending'::text CHECK (payment_status = ANY (ARRAY['pending'::text, 'paid'::text])),
-  razorpay_order_id text,
-  razorpay_payment_id text,
+  cashfree_order_id text,
+  cashfree_payment_session_id text,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT hacklabs_teams_pkey PRIMARY KEY (id),
   CONSTRAINT hacklabs_teams_name_key UNIQUE (name),
@@ -235,13 +235,21 @@ CREATE POLICY "Authenticated users can create teams" ON public.hacklabs_teams FO
 
 -- Academic Info
 ALTER TABLE public.hacklabs_academic_info ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can view own academic info" ON public.hacklabs_academic_info FOR SELECT USING (auth.uid() = auth_id);
+CREATE POLICY "Strict view policy for academic info" ON public.hacklabs_academic_info FOR SELECT USING (
+  auth_id = auth.uid() OR 
+  public.is_hacklabs_judge() OR 
+  EXISTS (SELECT 1 FROM public.hacklabs_personal_details WHERE auth_id = hacklabs_academic_info.auth_id)
+);
 CREATE POLICY "Users can update own academic info" ON public.hacklabs_academic_info FOR UPDATE USING (auth.uid() = auth_id);
 CREATE POLICY "Users can insert own academic info" ON public.hacklabs_academic_info FOR INSERT WITH CHECK (auth.uid() = auth_id);
 
 -- Technical Info
 ALTER TABLE public.hacklabs_technical_info ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can view own technical info" ON public.hacklabs_technical_info FOR SELECT USING (auth.uid() = auth_id);
+CREATE POLICY "Strict view policy for technical info" ON public.hacklabs_technical_info FOR SELECT USING (
+  auth_id = auth.uid() OR 
+  public.is_hacklabs_judge() OR 
+  EXISTS (SELECT 1 FROM public.hacklabs_personal_details WHERE auth_id = hacklabs_technical_info.auth_id)
+);
 CREATE POLICY "Users can update own technical info" ON public.hacklabs_technical_info FOR UPDATE USING (auth.uid() = auth_id);
 CREATE POLICY "Users can insert own technical info" ON public.hacklabs_technical_info FOR INSERT WITH CHECK (auth.uid() = auth_id);
 

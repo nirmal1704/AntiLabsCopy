@@ -71,6 +71,7 @@
 
   padding: 18px;
   margin-right: -3px;
+  background-color: rgba(192, 192, 192, 0.08);
 }
 .silver h2 {
   font-family: "Zen Dots", sans-serif;
@@ -89,6 +90,7 @@
   border: 3px solid var(--gold);
   padding: 18px;
   z-index: 2;
+  background-color: rgba(255, 215, 0, 0.08);
 }
 .gold h2 {
   font-family: "Zen Dots", sans-serif;
@@ -108,6 +110,7 @@
   color: var(--bronze);
   padding: 16px;
   margin-left: -3px;
+  background-color: rgba(205, 127, 50, 0.08);
 }
 .bronze h2 {
   font-family: "Zen Dots", sans-serif;
