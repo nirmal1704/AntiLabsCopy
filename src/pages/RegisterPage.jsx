@@ -223,53 +223,19 @@ export default function RegisterPage() {
                 const newUserId = profile.user_id;
 
                 // 1. Active checkout case: Link this specific transaction
-                if (txId) {
-                    await supabase
-                        .from('transactions')
-                        .update({ user_id: newUserId })
-                        .eq('transaction_id', txId);
-
-                    // Fetch the transaction details to get the role_id
-                    const { data: tx } = await supabase
-                        .from('transactions')
-                        .select('role_id')
-                        .eq('transaction_id', txId)
-                        .maybeSingle();
-
-                    if (tx) {
-                        await supabase
-                            .from('training_registrations')
-                            .update({ user_id: newUserId })
-                            .eq('email', formData.email)
-                            .eq('role_id', tx.role_id)
-                            .is('user_id', null);
+                    // 1. Call the secure RPC to link accounts
+                    const txId = sessionStorage.getItem('pending_tx_id');
+                    
+                    const { error: rpcError } = await supabase.rpc('link_user_account', {
+                        p_email: formData.email,
+                        p_user_id: newUserId,
+                        p_tx_id: txId ? parseInt(txId) : null
+                    });
+                    
+                    if (rpcError) {
+                        console.error("Failed to link user account via RPC:", rpcError);
+                        throw new Error("Failed to link account to transactions.");
                     }
-                }
-
-                // 2. Passive Drop-off handling & active matching fallback:
-                // Find all paid transactions with this email where user_id is null and link them
-                const { data: paidTxs } = await supabase
-                    .from('transactions')
-                    .select('transaction_id, role_id')
-                    .eq('email', formData.email)
-                    .eq('payment_status', 'paid')
-                    .is('user_id', null);
-
-                if (paidTxs && paidTxs.length > 0) {
-                    for (const tx of paidTxs) {
-                        await supabase
-                            .from('transactions')
-                            .update({ user_id: newUserId })
-                            .eq('transaction_id', tx.transaction_id);
-
-                        await supabase
-                            .from('training_registrations')
-                            .update({ user_id: newUserId })
-                            .eq('email', formData.email)
-                            .eq('role_id', tx.role_id)
-                            .is('user_id', null);
-                    }
-                }
             }
 
             setSuccessMsg('Email verified successfully! Taking you to your profile...');
