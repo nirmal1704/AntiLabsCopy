@@ -53,6 +53,7 @@ serve(async (req) => {
       : "https://api.cashfree.com/pg/orders";
 
     const payload = {
+      order_id: application_id.toString(),
       order_amount: amount,
       order_currency: "INR",
       customer_details: {
