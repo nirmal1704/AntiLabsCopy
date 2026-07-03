@@ -17,7 +17,14 @@
   justify-content: center;
   align-items: center;
 }
-
+.timer-heading {
+  color: #fff;
+  font-family: "Zen Dots", sans-serif;
+  margin-bottom: 0.75rem;
+  font-size: 58px;
+  text-align: center;
+  margin-top: 5rem;
+}
 .timer-svg {
   position: absolute;
   top: 0;
@@ -39,7 +46,7 @@
   font-weight: 400;
   color: #ffffff;
   line-height: 1;
-  font-family: 'Zen Dots', sans-serif;
+  font-family: "Zen Dots", sans-serif;
 }
 
 .timer-label {
@@ -48,14 +55,14 @@
   color: #ffffff;
   margin-top: 5px;
   text-transform: capitalize;
-  font-family: 'Zen Dots', sans-serif;
+  font-family: "Zen Dots", sans-serif;
 }
 
 .timer-colon {
   font-size: 50px;
   font-weight: 400;
   color: #ffffff;
-  font-family: 'Zen Dots', sans-serif;
+  font-family: "Zen Dots", sans-serif;
   margin-top: -22px;
 }
 
@@ -73,7 +80,7 @@
     margin-top: -24px;
   }
   .timer-value {
-    font-size: 48px;
+    font-size: 40px;
   }
   .timer-label {
     font-size: 16px;
@@ -94,7 +101,7 @@
     display: none;
   }
   .timer-value {
-    font-size: 32px;
+    font-size: 20px;
   }
   .timer-label {
     font-size: 12px;
