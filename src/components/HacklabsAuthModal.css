@@ -1,217 +1,439 @@
-@import url("https://fonts.googleapis.com/css2?family=Doto:wght@100..900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Zen+Dots&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Doto:wght@300;400;500;600;700&display=swap");
+
+/* ===========================
+   MODAL OVERLAY
+=========================== */
 
 .auth-modal-overlay {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 1.5rem;
   z-index: 9999;
+  animation: overlayFade 0.3s ease;
 }
+
+/* ===========================
+   MODAL
+=========================== */
 
 .auth-modal-box {
+  width: 100%;
+  max-width: 460px;
+
+  /* NEW */
+  max-height: 90vh;
+  overflow-y: auto;
+
+  background: rgba(8, 8, 8, 0.96);
+  border: 1px solid #2d2d2d;
+  border-radius: 14px;
+  padding: 2rem;
+
   position: relative;
-  width: 90%;
-  max-width: 450px;
-  background: #000;
-  border: 2px solid #333;
-  padding: 40px;
-  color: #fff;
-  font-family: "Doto", monospace;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+
+  backdrop-filter: blur(20px);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+
+  animation: modalIn 0.35s ease;
+  scrollbar-width: none;
+
+  /* IE */
+  -ms-overflow-style: none;
 }
 
-/* Corner Cutters */
-.auth-corner {
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  background: transparent;
-  z-index: 2;
+.auth-modal-box::-webkit-scrollbar {
+  display: none;
 }
-/* By using an inset box-shadow we create the "cut" illusion against the overlay */
-.auth-corner::before {
+
+.auth-modal-box::before {
   content: "";
   position: absolute;
-  width: 20px;
-  height: 20px;
-  background: rgba(0,0,0,0.8); /* match roughly overlay */
-  backdrop-filter: blur(8px);
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #ffffff, transparent);
+  opacity: 0.35;
 }
-.auth-corner.top-left { top: -2px; left: -2px; }
-.auth-corner.top-right { top: -2px; right: -2px; }
-.auth-corner.bottom-left { bottom: -2px; left: -2px; }
-.auth-corner.bottom-right { bottom: -2px; right: -2px; }
+
+/* ===========================
+   CLOSE BUTTON
+=========================== */
 
 .close-btn {
   position: absolute;
-  top: 15px;
-  right: 20px;
-  background: transparent;
-  border: none;
-  color: #555;
-  font-family: "Doto", monospace;
-  font-size: 1.5rem;
+  top: 18px;
+  right: 18px;
+  width: 38px;
+  height: 38px;
+  border: 1px solid #2d2d2d;
+  background: #050505;
+  color: #888;
+  border-radius: 50%;
   cursor: pointer;
-  z-index: 10;
-  transition: color 0.3s;
+  transition: 0.25s;
+  font-size: 1rem;
 }
 
 .close-btn:hover {
   color: #fff;
+  border-color: #fff;
+  transform: rotate(90deg);
 }
 
+/* ===========================
+   HEADER
+=========================== */
+
 .auth-modal-header {
-  margin-bottom: 30px;
-  border-bottom: 1px solid #222;
-  padding-bottom: 20px;
+  margin-bottom: 2rem;
 }
 
 .auth-title {
+  margin: 0;
   font-family: "Zen Dots", sans-serif;
-  font-size: 1.5rem;
-  margin: 0 0 15px 0;
-  color: #e8e8e8;
-  text-transform: uppercase;
+  font-size: 3rem;
+  color: white;
+  letter-spacing: 2px;
 }
 
-.auth-tabs {
+.auth-subtitle {
+  margin-top: 0.75rem;
+  color: #8b8b8b;
+  font-size: 0.85rem;
+  font-family: monospace;
+  line-height: 1.6;
+}
+
+/* ===========================
+   FORM
+=========================== */
+
+.auth-form {
   display: flex;
-  gap: 20px;
-}
-
-.auth-tabs span {
-  color: #555;
-  cursor: pointer;
-  font-weight: 700;
-  transition: color 0.3s;
-  font-size: 0.9rem;
-  letter-spacing: 1px;
-}
-
-.auth-tabs span:hover {
-  color: #aaa;
-}
-
-.auth-tabs span.active {
-  color: #fff;
-}
-
-.auth-error {
-  background: #2a0000;
-  border: 1px solid #ff0000;
-  color: #ff4444;
-  padding: 10px;
-  margin-bottom: 20px;
-  font-size: 0.8rem;
-  text-transform: uppercase;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .input-group {
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
 .input-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 0.8rem;
-  color: #888;
+  margin-bottom: 0.7rem;
+  font-family: "Zen Dots", sans-serif;
+  font-size: 0.72rem;
+  color: #fff;
   letter-spacing: 1px;
+  text-transform: uppercase;
 }
+
+/* ===========================
+   INPUTS
+=========================== */
 
 .input-group input {
   width: 100%;
-  background: #0a0a0a;
+  padding: 15px 16px;
+  background: #050505;
+  color: white;
   border: 1px solid #333;
-  color: #fff;
-  padding: 12px;
-  font-family: "Doto", monospace;
-  outline: none;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 0.95rem;
+  transition: 0.25s ease;
   box-sizing: border-box;
 }
 
-.input-group input:focus {
-  border-color: #666;
-  background: #111;
+.input-group input::placeholder {
+  color: #666;
+  font-family: "Zen Dots";
+  font-size: 0.7rem;
+  letter-spacing: 1px;
 }
 
-.auth-submit-btn {
-  width: 100%;
-  background: #e8e8e8;
-  color: #000;
-  border: none;
-  padding: 15px;
-  font-family: "Zen Dots", sans-serif;
-  font-size: 1rem;
-  cursor: pointer;
-  margin-top: 10px;
+.input-group input:hover {
+  border-color: #555;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: white;
+  background: #111;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.08);
+}
+
+/* ===========================
+   INPUT ERRORS
+=========================== */
+
+.input-error {
+  border-color: #ff4444 !important;
+  box-shadow: 0 0 10px rgba(255, 68, 68, 0.15);
+}
+
+.input-error:focus {
+  border-color: #ff4444 !important;
+  box-shadow:
+    0 0 0 1px #ff4444,
+    0 0 16px rgba(255, 68, 68, 0.2);
+}
+
+.field-error {
+  margin-top: 0.6rem;
+  color: #ff5c5c;
+  font-family: "Zen Dots";
+  font-size: 0.58rem;
+  letter-spacing: 1px;
+  line-height: 1.5;
   text-transform: uppercase;
-  transition: opacity 0.3s, transform 0.1s;
+  animation: fadeDown 0.25s ease;
+}
+
+/* ===========================
+   SERVER ERROR
+=========================== */
+
+.auth-error {
+  margin-bottom: 1.5rem;
+  padding: 14px;
+  border-radius: 6px;
+  background: rgba(255, 70, 70, 0.08);
+  border: 1px solid rgba(255, 70, 70, 0.3);
+  color: #ff6464;
+  font-family: "Zen Dots";
+  font-size: 0.62rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  animation: fadeDown 0.25s ease;
+}
+
+/* ===========================
+   SUBMIT BUTTON
+=========================== */
+
+.auth-submit-btn {
+  margin-top: 0.5rem;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid white;
+  border-radius: 6px;
+  background: white;
+  color: black;
+  font-family: "Zen Dots";
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: 0.3s ease;
 }
 
 .auth-submit-btn:hover:not(:disabled) {
-  opacity: 0.9;
-}
-
-.auth-submit-btn:active:not(:disabled) {
-  transform: scale(0.98);
+  background: transparent;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.15);
 }
 
 .auth-submit-btn:disabled {
-  opacity: 0.5;
+  background: #222;
+  border-color: #222;
+  color: #777;
   cursor: not-allowed;
 }
 
+/* ===========================
+   DIVIDER
+=========================== */
+
 .auth-divider {
-  text-align: center;
-  margin: 25px 0;
-  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 2rem 0;
 }
 
-.auth-divider::before {
+.auth-divider::before,
+.auth-divider::after {
   content: "";
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  border-top: 1px solid #222;
-  z-index: 1;
+  flex: 1;
+  height: 1px;
+  background: #2d2d2d;
 }
 
 .auth-divider span {
-  background: #000;
-  padding: 0 10px;
-  color: #555;
-  font-size: 0.8rem;
-  position: relative;
-  z-index: 2;
+  margin: 0 1rem;
+  color: #777;
+  font-family: "Zen Dots";
+  font-size: 0.6rem;
+  letter-spacing: 1px;
 }
+
+/* ===========================
+   GOOGLE BUTTON
+=========================== */
 
 .google-btn {
   width: 100%;
-  background: transparent;
+  padding: 15px;
+  border-radius: 6px;
   border: 1px solid #333;
-  color: #fff;
-  padding: 12px;
-  font-family: "Doto", monospace;
-  font-size: 0.9rem;
-  cursor: pointer;
+  background: #050505;
+  color: white;
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 15px;
-  transition: background 0.3s;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: 0.3s;
+  font-family: "Zen Dots";
+  font-size: 0.72rem;
+  letter-spacing: 1px;
+}
+
+.google-btn img {
+  width: 20px;
+  height: 20px;
 }
 
 .google-btn:hover {
   background: #111;
+  border-color: #666;
+  transform: translateY(-2px);
 }
 
-.google-btn img {
-  width: 18px;
-  height: 18px;
+/* ===========================
+   FOOTER
+=========================== */
+
+.auth-footer {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.auth-footer p {
+  color: #888;
+  margin-bottom: 0.9rem;
+  font-size: 0.85rem;
+  font-family: monospace;
+}
+
+.register-link-btn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-family: "Zen Dots";
+  font-size: 0.72rem;
+  letter-spacing: 1px;
+  transition: 0.25s;
+}
+
+.register-link-btn:hover {
+  color: #bdbdbd;
+}
+
+/* ===========================
+   ANIMATIONS
+=========================== */
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(25px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes overlayFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+
+@media (max-width: 768px) {
+  .auth-modal-box {
+    padding: 2rem 1.5rem;
+  }
+
+  .auth-title {
+    font-size: 1.6rem;
+  }
+
+  .auth-subtitle {
+    font-size: 0.8rem;
+  }
+
+  .input-group label {
+    font-size: 0.65rem;
+  }
+
+  .input-group input {
+    padding: 14px;
+    font-size: 0.9rem;
+  }
+
+  .auth-submit-btn,
+  .google-btn {
+    font-size: 0.8rem;
+    padding: 14px;
+  }
+
+  .register-link-btn {
+    font-size: 0.65rem;
+  }
+
+  .field-error,
+  .auth-error {
+    font-size: 0.55rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-modal-overlay {
+    padding: 1rem;
+  }
+
+  .auth-modal-box {
+    padding: 1.5rem 1.2rem;
+    border-radius: 10px;
+  }
+
+  .auth-title {
+    font-size: 1.35rem;
+  }
+
+  .close-btn {
+    width: 34px;
+    height: 34px;
+  }
+
+  .auth-divider span {
+    font-size: 0.55rem;
+  }
 }
