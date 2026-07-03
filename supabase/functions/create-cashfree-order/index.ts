@@ -6,69 +6,35 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS Preflight perfectly
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const body = await req.json();
-    const { action, order_id, application_id, customer_email, customer_phone, customer_name, amount, return_url, is_dev } = body;
+    const { application_id, customer_email, customer_phone, customer_name, team_id } = await req.json();
 
-    const appId = is_dev 
-      ? Deno.env.get("CASHFREE_TEST_APP_ID")
-      : Deno.env.get("CASHFREE_PROD_APP_ID");
-      
-    const secretKey = is_dev 
-      ? Deno.env.get("CASHFREE_TEST_SECRET_KEY")
-      : Deno.env.get("CASHFREE_PROD_SECRET_KEY");
+    const appId = Deno.env.get("CASHFREE_APP_ID");
+    const secretKey = Deno.env.get("CASHFREE_SECRET_KEY");
 
     if (!appId || !secretKey) {
-        throw new Error(`Cashfree ${is_dev ? 'test' : 'production'} credentials are not configured in environment variables.`);
+      throw new Error("Missing Cashfree API keys in environment variables.");
     }
 
-    if (action === 'verify') {
-      const verifyEndpoint = is_dev 
-        ? `https://sandbox.cashfree.com/pg/orders/${order_id}`
-        : `https://api.cashfree.com/pg/orders/${order_id}`;
-        
-      const verifyRes = await fetch(verifyEndpoint, {
-        method: "GET",
-        headers: {
-          "x-client-id": appId,
-          "x-client-secret": secretKey,
-          "x-api-version": "2023-08-01",
-          "Content-Type": "application/json"
-        }
-      });
-      
-      const orderData = await verifyRes.json();
-      return new Response(JSON.stringify(orderData), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-    }
+    // Cashfree exact amount with standard fee calculation
+    // Base: 199.00
+    // Fee (2%): 3.98
+    // GST (18% on fee): 0.72
+    // Total: 203.70
+    const orderAmount = 203.70;
 
-    const endpoint = is_dev 
-      ? "https://sandbox.cashfree.com/pg/orders" 
-      : "https://api.cashfree.com/pg/orders";
+    // Use sandbox endpoint by default, can switch to prod via env var if needed
+    const apiUrl = Deno.env.get("CASHFREE_ENV") === "production" 
+      ? "https://api.cashfree.com/pg/orders" 
+      : "https://sandbox.cashfree.com/pg/orders";
 
-    const payload = {
-      order_id: application_id.toString(),
-      order_amount: amount,
-      order_currency: "INR",
-      customer_details: {
-        customer_id: `cust_${application_id}`,
-        customer_name: customer_name || "AntiLabs Customer",
-        customer_email: customer_email || "no-reply@antilabs.com",
-        customer_phone: customer_phone || "9999999999"
-      },
-      order_meta: {
-        return_url: return_url ? `${return_url}&order_id={order_id}` : "http://localhost:5173/"
-      },
-      order_note: `Registration #${application_id}`
-    };
-
-    const response = await fetch(endpoint, {
+    // Create the order using Cashfree API
+    const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
         "x-client-id": appId,
@@ -76,7 +42,25 @@ serve(async (req) => {
         "x-api-version": "2023-08-01",
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        order_amount: orderAmount,
+        order_currency: "INR",
+        customer_details: {
+          customer_id: team_id || `cust_${Date.now()}`,
+          customer_name: customer_name || "Hacklabs Participant",
+          customer_email: customer_email || "participant@hacklabs.com",
+          customer_phone: customer_phone || "9999999999" // Cashfree requires a valid 10-digit phone number
+        },
+        order_meta: {
+          return_url: "http://localhost:5173/hacklabs/dashboard", // Update dynamically if needed, but not strictly required for headless checkout modal
+          payment_methods: ""
+        },
+        order_tags: {
+          team_id: team_id || "unknown",
+          customer_name: customer_name,
+          customer_email: customer_email
+        }
+      }),
     });
 
     const data = await response.json();
@@ -86,9 +70,12 @@ serve(async (req) => {
       throw new Error(data.message || "Failed to create Cashfree order");
     }
 
+    // Returns the payment_session_id which frontend will use to open the Cashfree Checkout Modal
     return new Response(JSON.stringify({
+      order_id: data.order_id,
       payment_session_id: data.payment_session_id,
-      order_id: data.order_id
+      amount: data.order_amount,
+      currency: data.order_currency
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

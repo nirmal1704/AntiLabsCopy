@@ -1,0 +1,235 @@
+/* =====================
+   GLOBAL
+===================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --gold: #ffd700;
+  --silver: #c0c0c0;
+  --bronze: #cd7f32;
+}
+
+/* =====================
+   SECTION
+===================== */
+
+.prize-section {
+  width: 95%;
+  max-width: 1000px;
+  margin: 30px auto;
+}
+
+.prize-heading {
+  font-family: "Zen Dots", sans-serif;
+  color: #fff;
+  text-align: center;
+  font-size: clamp(36px, 5vw, 72px);
+  font-weight: 400;
+  margin-bottom: 30px;
+}
+
+/* =====================
+   CONTAINER
+===================== */
+
+.prize-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 0;
+}
+
+/* =====================
+   CARDS
+===================== */
+
+.prize-card {
+  background: #000;
+  position: relative;
+  transition: all 0.35s ease;
+  cursor: default;
+}
+
+.prize-card:hover {
+  transform: translateY(-6px);
+}
+/* =====================
+   SECOND PRIZE
+===================== */
+
+.silver {
+  width: 260px;
+  height: 330px;
+  font-family: "Zen Dots", sans-serif;
+  color: var(--silver);
+  border: 3px solid var(--silver);
+
+  padding: 18px;
+  margin-right: -3px;
+  background-color: rgba(192, 192, 192, 0.08);
+}
+.silver h2 {
+  font-family: "Zen Dots", sans-serif;
+  color: var(--silver);
+}
+
+/* =====================
+   FIRST PRIZE
+===================== */
+
+.gold {
+  width: 290px;
+  height: 450px;
+  font-family: "Zen Dots", sans-serif;
+  color: var(--gold);
+  border: 3px solid var(--gold);
+  padding: 18px;
+  z-index: 2;
+  background-color: rgba(255, 215, 0, 0.08);
+}
+.gold h2 {
+  font-family: "Zen Dots", sans-serif;
+  color: var(--gold);
+}
+
+/* =====================
+   THIRD PRIZE
+===================== */
+
+.bronze {
+  width: 260px;
+  height: 290px;
+  font-family: "Zen Dots", sans-serif;
+  color: #fff;
+  border: 3px solid var(--bronze);
+  color: var(--bronze);
+  padding: 16px;
+  margin-left: -3px;
+  background-color: rgba(205, 127, 50, 0.08);
+}
+.bronze h2 {
+  font-family: "Zen Dots", sans-serif;
+  color: var(--bronze);
+}
+
+/* =====================
+   RANK CIRCLE
+===================== */
+
+.rank-circle {
+  width: 80px;
+  height: 80px;
+
+  border-radius: 50%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  margin: 10px auto 25px;
+
+  font-size: 32px;
+}
+
+.silver .rank-circle {
+  border: 3px solid var(--silver);
+}
+
+.gold .rank-circle {
+  border: 3px solid var(--gold);
+}
+
+.bronze .rank-circle {
+  border: 3px solid var(--bronze);
+}
+
+/* =====================
+   AMOUNT
+===================== */
+
+.amount {
+  text-align: center;
+  font-size: 48px;
+  margin-bottom: 22px;
+}
+
+/* =====================
+   LIST
+===================== */
+
+.prize-card ul {
+  list-style: none;
+}
+
+.prize-card li {
+  font-size: 13px;
+  line-height: 1.7;
+  margin-bottom: 8px;
+}
+
+.prize-card li::before {
+  content: "• ";
+}
+
+.third-prize-list {
+  margin-top: 35px;
+}
+
+/* =====================
+   RESPONSIVE
+===================== */
+
+@media (max-width: 900px) {
+  .prize-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .gold {
+    order: 1;
+  }
+
+  .silver {
+    order: 2;
+  }
+
+  .bronze {
+    order: 3;
+  }
+
+  .silver,
+  .gold,
+  .bronze {
+    width: 90%;
+    max-width: 420px;
+    height: auto;
+    min-height: 250px;
+    margin: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .prize-heading {
+    font-size: 34px;
+  }
+
+  .rank-circle {
+    width: 70px;
+    height: 70px;
+    font-size: 26px;
+  }
+
+  .amount {
+    font-size: 34px;
+  }
+
+  .prize-card li {
+    font-size: 12px;
+  }
+}
