@@ -168,8 +168,9 @@ export default function HacklabsDashboard({
         });
       }
 
+      const isDev = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
       const cashfree = window.Cashfree({
-        mode: "sandbox", // Switch to "production" when going live
+        mode: isDev ? "sandbox" : "production",
       });
 
       const checkoutOptions = {
