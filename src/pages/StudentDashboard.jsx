@@ -348,15 +348,11 @@ export default function StudentDashboard() {
       // Optimistic update
       setProgress(prev => [...prev, activeItem.id]);
 
-      const { error } = await supabase
-        .from('user_progress')
-        .insert([{
-          user_id: user.user_id,
-          lecture_id: activeItem.id
-        }]);
+      const { error } = await supabase.rpc('mark_lecture_complete', {
+        p_lecture_id: activeItem.id
+      });
       
-      // If table missing error, just keep optimistic state
-      if (error && error.code !== '42P01') throw error;
+      if (error) throw error;
 
       // Auto-advance to next video/quiz if available
       const index = orderedItems.findIndex(i => i.type === activeItem.type && i.id === activeItem.id);
@@ -375,51 +371,39 @@ export default function StudentDashboard() {
       if (!activeItem || activeItem.type !== 'quiz') return;
       const quiz = activeItem.data;
       
-      let score = 0;
-      quiz.questions.forEach((q, index) => {
-          if (currentQuizAnswers[index] === q.correctOption) {
-              score++;
-          }
-      });
-
-      const totalQuestions = quiz.questions.length;
-      const percentage = (score / totalQuestions) * 100;
-      const passed = percentage >= 80;
-
-      const resultData = {
-          score,
-          total: totalQuestions,
-          percentage: parseFloat(percentage.toFixed(2)),
-          passed
-      };
-      setQuizResult(resultData);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-
       try {
-          // Submit to DB
-          const { error } = await supabase.from('quiz_submissions').insert([{
-              user_id: user.user_id,
-              quiz_id: quiz.quiz_id,
-              section_id: quiz.section_id,
-              score,
-              total_questions: totalQuestions,
-              percentage: percentage,
-              answers: currentQuizAnswers
-          }]);
-
-          if (error && error.code !== '42P01') {
-              console.error("Error submitting quiz:", error);
-          } else {
-               // Update local state if passed
-              if (passed) {
-                  setQuizSubmissions(prev => {
-                      // Avoid duplicates
-                      if (!prev.some(s => s.quiz_id === quiz.quiz_id && s.passed)) {
-                          return [...prev, { quiz_id: quiz.quiz_id, passed: true }];
-                      }
-                      return prev;
-                  });
+          // Call the secure Edge Function to grade the quiz
+          const { data, error } = await supabase.functions.invoke('grade-quiz', {
+              body: {
+                  quiz_id: quiz.quiz_id,
+                  section_id: quiz.section_id,
+                  answers: currentQuizAnswers
               }
+          });
+
+          if (error) {
+              console.error("Error grading quiz:", error);
+              return;
+          }
+
+          const resultData = {
+              score: data.score,
+              total: data.totalQuestions,
+              percentage: data.percentage,
+              passed: data.passed
+          };
+          
+          setQuizResult(resultData);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+
+          // Update local state if passed
+          if (data.passed) {
+              setQuizSubmissions(prev => {
+                  if (!prev.some(s => s.quiz_id === quiz.quiz_id && s.passed)) {
+                      return [...prev, { quiz_id: quiz.quiz_id, passed: true }];
+                  }
+                  return prev;
+              });
           }
       } catch (err) {
           console.error("Quiz submission exception:", err);
@@ -437,17 +421,13 @@ export default function StudentDashboard() {
 
       setSubmittingCapstone(true);
       try {
-          const { error } = await supabase.from('capstone_project_submissions').insert([{
-              user_id: user.user_id,
-              project_id: activeItem.id,
-              career_id: activeCourse.role_id,
-              student_name: user.name,
-              student_email: user.email,
-              github_url: capstoneGithub,
-              deployed_url: capstoneDeployed,
-              acknowledgement: capstoneAck,
-              status: 'Pending Review'
-          }]);
+          const { error } = await supabase.rpc('submit_capstone_project', {
+              p_project_id: activeItem.id,
+              p_career_id: activeCourse.role_id,
+              p_github_url: capstoneGithub,
+              p_deployed_url: capstoneDeployed,
+              p_acknowledgement: capstoneAck
+          });
           
           if (error) {
               console.error('Error submitting capstone:', error);

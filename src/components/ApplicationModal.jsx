@@ -77,7 +77,7 @@ function FileZone({ label, hint, accept, maxSizeMB, file, onChange, isUploading 
                 <input
                     type="file"
                     accept={accept}
-                    required={!file}
+                    required={true}
                     onChange={onChange}
                     disabled={isUploading}
                     title=""
@@ -762,9 +762,8 @@ export default function ApplicationModal({ role, onClose }) {
 
         setLoading(true);
         try {
-            // Files are already uploaded to Cloudinary, just use the saved URLs
-            const proofUrl = collegeProof.url;
-            const resumeUrl = resume.url;
+            const proofUrl = collegeProof?.url;
+            const resumeUrl = resume?.url;
 
             // ── Step 3: Save to Supabase ──────────────────────
 
@@ -811,7 +810,7 @@ export default function ApplicationModal({ role, onClose }) {
             const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
             
             const orderRes = await fetch(
-                `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-cashfree-order`,
+                `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-course-order`,
                 {
                     method: 'POST',
                     headers: {
@@ -821,10 +820,10 @@ export default function ApplicationModal({ role, onClose }) {
                     },
                     body: JSON.stringify({
                         application_id: applicationId,
+                        promo_code: promoCode, // Send promo code securely instead of raw amount
                         customer_email: formData.email,
                         customer_phone: formData.mobile_number,
                         customer_name: formData.full_name,
-                        amount: finalFees, // Dynamic price synced with database record
                         return_url: `${window.location.origin}/profile?tx_id=${applicationId}`,
                         is_dev: isDev
                     }),

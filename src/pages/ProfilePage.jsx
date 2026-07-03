@@ -93,163 +93,50 @@ export default function ProfilePage() {
 
             if (!txId || !orderId) return;
 
-            const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
             try {
-                // ── Step 1: Verify payment with Cashfree ──────────────
-                const verifyRes = await fetch(
-                    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-cashfree-order`,
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'apikey':        import.meta.env.VITE_SUPABASE_ANON_KEY,
-                            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-                        },
-                        body: JSON.stringify({ action: 'verify', order_id: orderId, is_dev: isDev }),
-                    }
-                );
-                const orderData = await verifyRes.json();
-
-                if (orderData.order_status === 'PAID') {
-                    // ── Step 2: Fetch transaction ─────────────────────
-                    const { data: txData, error: txError } = await supabase
+                let attempts = 0;
+                let isPaid = false;
+                let txData = null;
+                
+                while (attempts < 10 && !isPaid) {
+                    const { data, error } = await supabase
                         .from('transactions')
                         .select('*')
                         .eq('transaction_id', txId)
                         .single();
 
-                    if (txData && !txError) {
-                        if (txData.payment_status !== 'paid') {
-                            // ── Step 3: Mark as paid (triggers DB sync) ──
-                            await supabase
-                                .from('transactions')
-                                .update({ payment_status: 'paid' })
-                                .eq('transaction_id', txId);
-
-                            // ── Step 4: Try RPC for batch/roll assignment ──
-                            let finalRollNumber = null;
-                            let finalBatchName  = null;
-
-                            const { data: rollNumber, error: rpcError } = await supabase.rpc(
-                                'assign_batch_and_roll_number',
-                                { p_transaction_id: parseInt(txId) }
-                            );
-
-                            if (rpcError) {
-                                console.error('RPC failed, using JS fallback insert:', rpcError);
-                                // Fallback: direct insert with explicit columns
-                                const { data: existingReg } = await supabase
-                                    .from('training_registrations')
-                                    .select('registration_id')
-                                    .eq('email', txData.email)
-                                    .maybeSingle();
-
-                                if (!existingReg) {
-                                    const { error: regErr } = await supabase
-                                        .from('training_registrations')
-                                        .insert([{
-                                            user_id:           txData.user_id,
-                                            role_id:           txData.role_id,
-                                            position:          txData.position,
-                                            full_name:         txData.full_name,
-                                            university_name:   txData.university_name,
-                                            college_name:      txData.college_name,
-                                            current_year:      txData.current_year,
-                                            degree_pursuing:   txData.degree_pursuing,
-                                            branch:            txData.branch,
-                                            graduation_year:   txData.graduation_year,
-                                            mobile_number:     txData.mobile_number,
-                                            email:             txData.email,
-                                            college_proof_url: txData.college_proof_url,
-                                            resume_url:        txData.resume_url,
-                                            fees_amount:       txData.fees_amount,
-                                            payment_status:    'paid',
-                                        }]);
-                                    if (regErr) console.error('Fallback insert failed:', regErr);
-                                }
-                            } else {
-                                finalRollNumber = rollNumber || null;
-                            }
-
-                            // ── Step 5: Send enrollment email (non-fatal) ──
-                            try {
-                                if (!finalRollNumber) {
-                                    const { data: regData } = await supabase
-                                        .from('training_registrations')
-                                        .select('roll_number, batch_id')
-                                        .eq('email', txData.email)
-                                        .maybeSingle();
-                                    if (regData) {
-                                        finalRollNumber = regData.roll_number || null;
-                                        if (regData.batch_id) {
-                                            const { data: batchData } = await supabase
-                                                .from('batches')
-                                                .select('batch_name')
-                                                .eq('id', regData.batch_id)
-                                                .maybeSingle();
-                                            finalBatchName = batchData?.batch_name || null;
-                                        }
-                                    }
-                                }
-                                await fetch(
-                                    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-enrollment-email`,
-                                    {
-                                        method: 'POST',
-                                        headers: {
-                                            'Content-Type': 'application/json',
-                                            'apikey':        import.meta.env.VITE_SUPABASE_ANON_KEY,
-                                            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-                                        },
-                                        body: JSON.stringify({
-                                            student_name:    txData.full_name,
-                                            student_email:   txData.email,
-                                            student_phone:   txData.mobile_number,
-                                            student_address: txData.university_name
-                                                ? `${txData.college_name}, ${txData.university_name}, India`
-                                                : `${txData.college_name}, India`,
-                                            program_name:    txData.position,
-                                            transaction_id:  txId,
-                                            fees_amount:     txData.fees_amount,
-                                            roll_number:     finalRollNumber,
-                                            batch_name:      finalBatchName,
-                                            payment_method:  'Online (Cashfree)',
-                                        }),
-                                    }
-                                );
-                            } catch (emailErr) {
-                                console.error('Email send failed (non-fatal):', emailErr);
-                            }
+                    if (!error && data) {
+                        txData = data;
+                        if (data.payment_status === 'paid') {
+                            isPaid = true;
                         }
-
-                        // ── Show success screen, then redirect or reload after 3s ──
-                        if (!user) {
-                            setSuccessMsg('🎉 Payment Successful! Redirecting to complete registration...');
-                            setTimeout(() => {
-                                navigate(`/register?tx_id=${txId}&email=${encodeURIComponent(txData.email)}&name=${encodeURIComponent(txData.full_name)}&phone=${encodeURIComponent(txData.mobile_number)}`);
-                            }, 2000);
-                        } else {
-                            setSuccessMsg('🎉 Payment Successful! Enrollment confirmed. Redirecting...');
-                            setTimeout(() => {
-                                window.location.href = window.location.pathname;
-                            }, 3000);
-                        }
-                        return; // Don't fall through
                     }
+                    if (!isPaid) {
+                        attempts++;
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                    }
+                }
+
+                if (isPaid && txData) {
+                    if (!user) {
+                        setSuccessMsg('Payment Successful! Redirecting to complete registration...');
+                        setTimeout(() => {
+                            navigate(`/register?tx_id=${txId}&email=${encodeURIComponent(txData.email)}&name=${encodeURIComponent(txData.full_name)}&phone=${encodeURIComponent(txData.mobile_number)}`);
+                        }, 2000);
+                    } else {
+                        setSuccessMsg('Payment Successful! Enrollment confirmed. Redirecting...');
+                        setTimeout(() => {
+                            window.location.href = window.location.pathname;
+                        }, 3000);
+                    }
+                    return;
                 } else {
-                    // Payment not completed
-                    const status = orderData.order_status === 'ACTIVE' ? 'pending' : 'failed';
-                    await supabase
-                        .from('transactions')
-                        .update({ payment_status: status })
-                        .eq('transaction_id', txId);
-                    setErrorMsg('Payment was not completed.');
+                    setErrorMsg('Payment verification is taking longer than expected. Please check back in a few minutes or contact support.');
                 }
             } catch (err) {
-                console.error('Failed to verify payment status', err);
-                setErrorMsg('An error occurred while verifying your payment.');
+                setErrorMsg('An error occurred while verifying your payment status.');
             }
 
-            // Clean URL after failed/cancelled payment
             window.history.replaceState({}, '', window.location.pathname);
         };
         checkPayment();

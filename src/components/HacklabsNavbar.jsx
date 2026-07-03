@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { useRef } from "react";
+import { FiChevronDown, FiLogOut, FiHome } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { useAuthModal } from "../context/AuthModalContext";
 import { supabase } from "../supabase";
@@ -8,13 +10,27 @@ import "./HacklabsNavbar.css";
 export default function HacklabsNavbar() {
   const navigate = useNavigate();
   const { openLogin } = useAuthModal();
-  
+
   const [session, setSession] = useState(null);
   const [userName, setUserName] = useState("");
   const [avatarConfig, setAvatarConfig] = useState(null);
   const [isCheckingProfile, setIsCheckingProfile] = useState(true);
   const [isJudge, setIsJudge] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowDropdown(false);
+      }
+    }
 
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -25,7 +41,9 @@ export default function HacklabsNavbar() {
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session) {
         setIsCheckingProfile(true);
@@ -42,7 +60,7 @@ export default function HacklabsNavbar() {
 
   const checkUserStatus = async (userId) => {
     try {
-      const { data: isJudgeUser } = await supabase.rpc('is_hacklabs_judge');
+      const { data: isJudgeUser } = await supabase.rpc("is_hacklabs_judge");
       if (isJudgeUser) {
         setIsJudge(true);
       } else {
@@ -51,7 +69,7 @@ export default function HacklabsNavbar() {
           .select("full_name, profile_photo")
           .eq("auth_id", userId)
           .single();
-          
+
         if (!error && data) {
           setUserName(data.full_name);
           if (data.profile_photo) setAvatarConfig(data.profile_photo);
@@ -63,58 +81,103 @@ export default function HacklabsNavbar() {
       setIsCheckingProfile(false);
     }
   };
-
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setShowDropdown(false);
+    navigate("/hacklabs");
+  };
   return (
     <nav className="hacklabs-navbar">
       <div className="navbar-left navbar-left-wrapper">
         <img
-          src="/hacklabs-logo.png"
+          src="/Hacklabslogo2.png"
           alt="Hacklabs Logo Symbol"
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/hacklabs")}
           className="hacklabs-logo-img"
         />
-        <span
-          onClick={() => navigate("/hacklabs")}
-          className="hacklabs-logo-text"
-        >
-          Hacklabs
-        </span>
       </div>
 
       <div className="navbar-right">
         {isCheckingProfile ? null : session && (isJudge || userName) ? (
           isJudge ? (
-            <button 
-              className="nav-btn judge-view-btn" 
+            <button
+              className="nav-btn judge-view-btn"
               onClick={() => navigate("/hacklabs/judge-dashboard")}
             >
-              Judge View
+              Admin Panel
             </button>
           ) : (
-            <div className="hacklabs-user-badge" onClick={() => navigate("/hacklabs/dashboard")}>
-              <div className={`user-icon ${avatarConfig ? 'has-avatar' : ''}`}>
-                {avatarConfig ? (
-                  <HacklabsAvatar config={avatarConfig} size={32} />
-                ) : (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                  </svg>
-                )}
+            <div className="hacklabs-user-dropdown" ref={dropdownRef}>
+              <div
+                className="hacklabs-user-badge"
+                onClick={() => setShowDropdown((prev) => !prev)}
+              >
+                <div
+                  className={`user-icon ${avatarConfig ? "has-avatar" : ""}`}
+                >
+                  {avatarConfig ? (
+                    <HacklabsAvatar config={avatarConfig} size={32} />
+                  ) : (
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="square"
+                      strokeLinejoin="miter"
+                    >
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                  )}
+                </div>
+
+                <span className="user-name">{userName || "USER_UNKNOWN"}</span>
+
+                <FiChevronDown
+                  className={`dropdown-arrow ${showDropdown ? "open" : ""}`}
+                />
               </div>
-              <span className="user-name">{userName || "USER_UNKNOWN"}</span>
+
+              {showDropdown && (
+                <motion.div
+                  className="profile-dropdown"
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.18 }}
+                >
+                  <button
+                    className="dropdown-item"
+                    onClick={() => {
+                      navigate("/hacklabs/dashboard");
+                      setShowDropdown(false);
+                    }}
+                  >
+                    <FiHome />
+                    <span>Dashboard</span>
+                  </button>
+
+                  <button
+                    className="dropdown-item logout"
+                    onClick={handleLogout}
+                  >
+                    <FiLogOut />
+                    <span>Sign Out</span>
+                  </button>
+                </motion.div>
+              )}
             </div>
           )
         ) : (
           <>
-            <button className="nav-btn" onClick={() => navigate("/hacklabs/register")}>
+            <button
+              className="nav-btn"
+              onClick={() => navigate("/hacklabs/register")}
+            >
               Register
             </button>
 
-            <button
-              className="nav-btn"
-              onClick={openLogin}
-            >
+            <button className="nav-btn" onClick={openLogin}>
               LOGIN
             </button>
           </>
