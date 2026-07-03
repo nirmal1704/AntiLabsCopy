@@ -1,0 +1,136 @@
+.hacklabs-query-section {
+  padding: 6rem 2rem;
+  background-color: #000000;
+  color: #ffffff;
+  font-family: 'Zen Dots', sans-serif;
+  position: relative;
+  z-index: 10;
+  border-top: 1px solid #1a1a1a;
+}
+
+.hacklabs-query-section .query-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+  background: rgba(10, 10, 10, 0.8);
+  border: 1px solid #333333;
+  padding: 3rem;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hacklabs-query-section .query-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, #ffffff, transparent);
+  opacity: 0.3;
+}
+
+.query-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.query-subtitle {
+  color: #a3a3a3;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  font-family: monospace;
+}
+
+.hacklabs-query-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group-row {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.hacklabs-input,
+.hacklabs-textarea {
+  width: 100%;
+  background: #050505;
+  border: 1px solid #333333;
+  color: #ffffff;
+  padding: 1rem 1.5rem;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 0.95rem;
+  transition: all 0.3s;
+  box-sizing: border-box;
+}
+
+.hacklabs-input:focus,
+.hacklabs-textarea:focus {
+  outline: none;
+  border-color: #ffffff;
+  background: #111111;
+}
+
+.hacklabs-input::placeholder,
+.hacklabs-textarea::placeholder {
+  color: #555555;
+  font-family: 'Zen Dots', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+}
+
+.hacklabs-submit-btn {
+  background: #ffffff;
+  color: #000000;
+  border: none;
+  padding: 1.2rem;
+  font-family: 'Zen Dots', sans-serif;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  margin-top: 1rem;
+}
+
+.hacklabs-submit-btn:hover:not(:disabled) {
+  background: #e0e0e0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+}
+
+.hacklabs-submit-btn:disabled {
+  background: #333333;
+  color: #777777;
+  cursor: not-allowed;
+}
+
+.query-message {
+  text-align: center;
+  padding: 1rem;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 0.9rem;
+}
+
+.query-message.success {
+  background: rgba(34, 197, 94, 0.1);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.query-message.error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+@media (max-width: 768px) {
+  .form-group-row {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .hacklabs-query-section .query-wrapper {
+    padding: 2rem 1rem;
+  }
+}
