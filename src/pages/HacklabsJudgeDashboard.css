@@ -327,12 +327,20 @@ body {
   margin-bottom: 0.5rem;
   color: #cccccc;
   font-size: 0.95rem;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .details-card p strong {
   color: #a3a3a3;
   display: inline-block;
-  width: 80px;
+  width: 110px;
+}
+
+.details-card p.link-field strong {
+  display: block;
+  width: auto;
+  margin-bottom: 4px;
 }
 
 .details-card a {

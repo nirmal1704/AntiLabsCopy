@@ -40,16 +40,38 @@ const TimerCircle = ({ value, label }) => {
   );
 };
 
+const calculateTimeLeft = () => {
+  const year = new Date().getFullYear();
+  let targetDate = new Date(`${year}-08-09T00:00:00`);
+  
+  // If August 9 has already passed this year, set for next year
+  if (new Date() > targetDate) {
+    targetDate = new Date(`${year + 1}-08-09T00:00:00`);
+  }
+  
+  const difference = targetDate - new Date();
+
+  if (difference > 0) {
+    return {
+      days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+      hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+      minutes: Math.floor((difference / 1000 / 60) % 60),
+      seconds: Math.floor((difference / 1000) % 60)
+    };
+  }
+
+  return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+};
+
 export default function HacklabsTimer() {
-  const [timeLeft, setTimeLeft] = useState({
-    days: 3,
-    hours: 23,
-    minutes: 59,
-    seconds: 44
-  });
+  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
 
   useEffect(() => {
-    // Timer animation stopped per user request
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
+    
+    return () => clearInterval(timer);
   }, []);
 
   return (

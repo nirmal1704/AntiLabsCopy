@@ -138,10 +138,10 @@ export default function HacklabsJudgeDashboard() {
       </div>
       <div className="details-card">
         <h4>Technical Specs</h4>
-        <p><strong>GitHub:</strong> {item.github_link ? <a href={item.github_link} target="_blank" rel="noreferrer">{item.github_link}</a> : "N/A"}</p>
-        <p><strong>LinkedIn:</strong> {item.linkedin ? <a href={item.linkedin} target="_blank" rel="noreferrer">{item.linkedin}</a> : "N/A"}</p>
-        <p><strong>Portfolio:</strong> {item.portfolio ? <a href={item.portfolio} target="_blank" rel="noreferrer">{item.portfolio}</a> : "N/A"}</p>
-        <p><strong>Resume:</strong> {item.resume_link ? <a href={item.resume_link} target="_blank" rel="noreferrer">View File</a> : "N/A"}</p>
+        <p className="link-field"><strong>GitHub:</strong> {item.github_link ? <a href={item.github_link} target="_blank" rel="noreferrer">{item.github_link}</a> : "N/A"}</p>
+        <p className="link-field"><strong>LinkedIn:</strong> {item.linkedin ? <a href={item.linkedin} target="_blank" rel="noreferrer">{item.linkedin}</a> : "N/A"}</p>
+        <p className="link-field"><strong>Portfolio:</strong> {item.portfolio ? <a href={item.portfolio} target="_blank" rel="noreferrer">{item.portfolio}</a> : "N/A"}</p>
+        <p className="link-field"><strong>Resume:</strong> {item.resume_link ? <a href={item.resume_link} target="_blank" rel="noreferrer">View File</a> : "N/A"}</p>
       </div>
       <div className="details-card">
         <h4>Personal Bio</h4>

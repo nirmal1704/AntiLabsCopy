@@ -95,7 +95,7 @@ export default function HacklabsNavbar() {
             <div className="hacklabs-user-badge" onClick={() => navigate("/hacklabs/dashboard")}>
               <div className={`user-icon ${avatarConfig ? 'has-avatar' : ''}`}>
                 {avatarConfig ? (
-                  <HacklabsAvatar config={avatarConfig} size={32} />
+                  <HacklabsAvatar config={avatarConfig} size={40} />
                 ) : (
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>

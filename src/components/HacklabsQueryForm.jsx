@@ -53,6 +53,7 @@ export default function HacklabsQueryForm() {
 
   return (
     <section className="hacklabs-query-section" id="queries">
+      <h1 className="query-section-heading">//Support Query</h1>
       <div className="hacklabs-container">
         <motion.div 
           className="query-wrapper"
@@ -62,8 +63,7 @@ export default function HacklabsQueryForm() {
           transition={{ duration: 0.6 }}
         >
           <div className="query-header">
-            <h2 className="hacklabs-section-title">HAVE A <span className="highlight-text">QUERY?</span></h2>
-            <p className="query-subtitle">Drop us a message and our support operatives will assist you.</p>
+            <p className="query-subtitle">Drop us a message and we will assist you.</p>
           </div>
           
           <form className="hacklabs-query-form" onSubmit={handleSubmit}>

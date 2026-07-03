@@ -30,11 +30,14 @@
   background: rgba(255, 255, 255, 0.1);
   border: none;
   border-radius: 8px;
-  width: 40px;
-  height: 40px;
+  padding: 0.5rem 1rem;
+  font-family: "Zen Dots", monospace;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 0.4rem;
   color: #fff;
   cursor: pointer;
   transition: transform 0.1s ease, background 0.2s ease;
@@ -122,8 +125,8 @@
 .trait-selector {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  width: 150px;
+  gap: 0.5rem;
+  width: 220px;
   justify-content: space-between;
 }
 
@@ -136,6 +139,8 @@
   text-transform: uppercase;
   display: flex;
   justify-content: center;
+  width: 120px;
+  min-width: 120px;
 }
 
 .color-swatch {
