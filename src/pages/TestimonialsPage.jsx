@@ -7,7 +7,7 @@ import SEO from '../components/SEO';
 import './TestimonialsPage.css';
 
 export default function TestimonialsPage() {
-    const hero = useScrollReveal({ threshold: 0.01 });
+    const { ref: heroRef, visible: heroVisible } = useScrollReveal({ threshold: 0.01 });
 
     return (
         <>
@@ -16,7 +16,7 @@ export default function TestimonialsPage() {
             <main className="tp">
                 <section className="tp__hero">
                     <div className="tp__hero-bg" />
-                    <div ref={hero.ref} className={`tp__hero-content container ${hero.visible ? 'tp__hero-content--in' : ''}`}>
+                    <div ref={heroRef} className={`tp__hero-content container ${heroVisible ? 'tp__hero-content--in' : ''}`}>
                         <span className="section-eyebrow">Client Success</span>
                         <h1 className="tp__hero-h1">Stories of <span className="gradient-text">Transformation</span></h1>
                         <p className="tp__hero-sub">Read what world-class enterprises have to say about partnering with AntiLabs.</p>

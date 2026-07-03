@@ -35,11 +35,6 @@ export default function HacklabsOnboardingPage() {
     resume_link: "",
   });
 
-  const [teamForm, setTeamForm] = useState({
-    name: "",
-    joinCode: "",
-  });
-
   useEffect(() => {
     const savedStep = localStorage.getItem("hacklabs_onboarding_step");
     if (savedStep) setStep(parseInt(savedStep, 10));

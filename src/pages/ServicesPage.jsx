@@ -238,7 +238,7 @@ export default function ServicesPage() {
     };
 
     const [active, setActive] = useState(getInitialTab);
-    const heroReveal = useScrollReveal({ threshold: 0.01 });
+    const { ref: heroRef, visible: heroVisible } = useScrollReveal({ threshold: 0.01 });
 
     // Also react if the URL param changes (e.g. browser back/forward)
     useEffect(() => {
@@ -256,8 +256,8 @@ export default function ServicesPage() {
                 <section className="sp__hero">
                     <div className="sp__hero-bg" />
                     <div
-                        ref={heroReveal.ref}
-                        className={`sp__hero-content container ${heroReveal.visible ? 'sp__hero-content--in' : ''}`}
+                        ref={heroRef}
+                        className={`sp__hero-content container ${heroVisible ? 'sp__hero-content--in' : ''}`}
                     >
                         <span className="section-eyebrow">What We Do</span>
                         <h1 className="sp__hero-h1">

@@ -3,9 +3,7 @@ import "./HacklabsJudges.css";
 import aryaImg from "/hacklabsarya.png";
 import piyushImg from "/hacklabspiyush.png";
 import nirmalImg from "/hacklabsnirmal.png";
-import arnavImg from "/hacklabsarnav.png";
 import kaushImg from "/hacklabskasuh.png";
-import tanishkImg from "/hacklabstanishk.png";
 
 export default function HacklabsJudges() {
   const judges = [

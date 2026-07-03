@@ -41,7 +41,7 @@ const TimerCircle = ({ value, label }) => {
 };
 
 export default function HacklabsTimer() {
-  const [timeLeft, setTimeLeft] = useState({
+  const [timeLeft] = useState({
     days: 3,
     hours: 23,
     minutes: 59,

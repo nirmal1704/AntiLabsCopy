@@ -38,6 +38,7 @@ export default function HacklabsDashboard({
       fetchMembers(false);
     }, 5000);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [team]);
 
   const fetchMembers = async (showLoader = true) => {
@@ -105,7 +106,7 @@ export default function HacklabsDashboard({
     }
   };
 
-  const handleAcceptRequest = async (inviteId, participantId) => {
+  const handleAcceptRequest = async (inviteId) => {
     setLoading(true);
     try {
       const { error } = await supabase.rpc("accept_hacklabs_invite", {

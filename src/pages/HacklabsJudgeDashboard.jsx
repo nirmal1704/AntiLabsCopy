@@ -63,7 +63,7 @@ export default function HacklabsJudgeDashboard() {
   draftsData.forEach(draft => {
     let formData = draft.form_data;
     if (typeof formData === 'string') {
-      try { formData = JSON.parse(formData); } catch (e) { formData = {}; }
+      try { formData = JSON.parse(formData); } catch { formData = {}; }
     }
     formData = formData || {};
     

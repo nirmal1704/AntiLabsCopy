@@ -22,6 +22,7 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
       checkTeamStatus();
     }, 5000);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [participant]);
 
   const checkTeamStatus = async () => {

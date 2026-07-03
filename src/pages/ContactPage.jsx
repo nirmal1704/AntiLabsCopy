@@ -16,7 +16,7 @@ function RevealSection({ children, className = '' }) {
 }
 
 export default function ContactPage() {
-    const hero = useScrollReveal({ threshold: 0.01 });
+    const { ref: heroRef, visible: heroVisible } = useScrollReveal({ threshold: 0.01 });
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -71,8 +71,8 @@ export default function ContactPage() {
                 <section className="cp__hero">
                     <div className="cp__hero-bg" />
                     <div
-                        ref={hero.ref}
-                        className={`cp__hero-content container ${hero.visible ? 'cp__hero-content--in' : ''}`}
+                        ref={heroRef}
+                        className={`cp__hero-content container ${heroVisible ? 'cp__hero-content--in' : ''}`}
                     >
                         <span className="section-eyebrow">Get in Touch</span>
                         <h1 className="cp__hero-h1">

@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import SEO from '../components/SEO';
 import { supabase } from '../supabase';
-import { useAuth } from '../context/AuthContext';
 import ApplicationModal from '../components/ApplicationModal';
 import './CareersPage.css';
 
@@ -154,12 +153,10 @@ function FormattedDescription({ text }) {
 }
 
 export default function CareersPage() {
-    const hero = useScrollReveal({ threshold: 0.01 });
+    const { ref: heroRef, visible: heroVisible } = useScrollReveal({ threshold: 0.01 });
     const [openRoles, setOpenRoles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [applyingRole, setApplyingRole] = useState(null);
-    const { user } = useAuth();
-    const navigate = useNavigate();
 
     const handleApplyClick = (role) => {
         setApplyingRole(role);
@@ -200,8 +197,8 @@ export default function CareersPage() {
                 <section className="cp__hero">
                     <div className="cp__hero-bg" />
                     <div
-                        ref={hero.ref}
-                        className={`cp__hero-content container ${hero.visible ? 'cp__hero-content--in' : ''}`}
+                        ref={heroRef}
+                        className={`cp__hero-content container ${heroVisible ? 'cp__hero-content--in' : ''}`}
                     >
                         <span className="section-eyebrow">Careers at AntiLabs</span>
                         <h1 className="cp__hero-h1">
@@ -226,7 +223,7 @@ export default function CareersPage() {
                             </div>
                         </RevealSection>
                         <div className="cp__perks-grid">
-                            {perks.map((p, i) => (
+                            {perks.map((p) => (
                                 <RevealSection key={p.title}>
                                     <div className="cp__perk-card glass-card">
                                         <i className={`cp__perk-icon ${p.icon}`}></i>

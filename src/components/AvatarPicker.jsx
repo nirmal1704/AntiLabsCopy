@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import HacklabsAvatar from "./HacklabsAvatar";
 import { AVATAR_OPTIONS, migrateLegacyAvatar } from "../utils/avatarUtils";
 import "./AvatarPicker.css";
