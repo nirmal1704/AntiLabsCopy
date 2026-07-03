@@ -133,7 +133,7 @@ export default function ProfilePage() {
                 } else {
                     setErrorMsg('Payment verification is taking longer than expected. Please check back in a few minutes or contact support.');
                 }
-            } catch (err) {
+            } catch {
                 setErrorMsg('An error occurred while verifying your payment status.');
             }
 
