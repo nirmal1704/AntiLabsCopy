@@ -1,0 +1,59 @@
+/* ── Page Layout ────────────────────────────── */
+.tp {
+    padding-top: 80px;
+    /* Account for fixed navbar */
+    min-height: 100vh;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+/* ── Hero ───────────────────────────────────── */
+.tp__hero {
+    position: relative;
+    padding: 100px 0 40px;
+    text-align: center;
+    overflow: hidden;
+}
+
+.tp__hero-bg {
+    position: absolute;
+    top: -50%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at center, rgba(37, 99, 235, 0.05) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.tp__hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 800px;
+    margin: 0 auto;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.tp__hero-content--in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.tp__hero-h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin: 16px 0 24px;
+    letter-spacing: -0.02em;
+}
+
+.tp__hero-sub {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto;
+}

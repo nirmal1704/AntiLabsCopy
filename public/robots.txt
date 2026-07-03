@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /profile
+Disallow: /student-dashboard
+Disallow: /login
+Disallow: /register
+Sitemap: https://antilabs.in/sitemap.xml

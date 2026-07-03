@@ -1,0 +1,199 @@
+.testimonials {
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+}
+
+.testimonials__header {
+    text-align: center;
+    margin-bottom: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.testimonials__marquee-container {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    padding: 20px 0;
+}
+
+.testimonials__marquee-container::before,
+.testimonials__marquee-container::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 80px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.testimonials__marquee-container::before {
+    left: 0;
+    background: linear-gradient(to right, var(--bg) 0%, transparent 100%);
+}
+
+.testimonials__marquee-container::after {
+    right: 0;
+    background: linear-gradient(to left, var(--bg) 0%, transparent 100%);
+}
+
+.testimonials__marquee-track {
+    display: flex;
+    gap: 24px;
+    width: max-content;
+    animation: scroll-marquee 40s linear infinite;
+}
+
+.testimonials__marquee-track:hover {
+    animation-play-state: paused;
+}
+
+@keyframes scroll-marquee {
+    to {
+        transform: translateX(calc(-50% - 12px));
+    }
+}
+
+/* Card — white with shadow */
+.testimonials__card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-sm);
+    padding: 40px 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 380px;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.testimonials__card:hover {
+    border-color: var(--t-color, var(--accent));
+    box-shadow: var(--shadow-md), 0 0 0 2px color-mix(in srgb, var(--t-color, var(--accent)) 15%, transparent);
+    transform: translateY(-8px);
+}
+
+.testimonials__quote {
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-style: italic;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    flex: 1;
+}
+
+/* Author */
+.testimonials__author {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.testimonials__avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 2px solid var(--border-cyan);
+    background: var(--accent-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.testimonials__avatar span {
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.testimonials__author-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.testimonials__name {
+    font-family: var(--font-heading);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.testimonials__role {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.testimonials__company {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .testimonials__card {
+        width: 300px;
+        padding: 32px 28px;
+    }
+}
+
+@media (max-width: 640px) {
+    .testimonials__card {
+        width: 260px;
+        padding: 28px 22px;
+    }
+
+    .testimonials__quote {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .testimonials__card {
+        width: 240px;
+        padding: 24px 18px;
+    }
+
+    .testimonials__marquee-container::before,
+    .testimonials__marquee-container::after {
+        width: 40px;
+    }
+}
+
+/* ── Loading / error / empty states ── */
+.testimonials__state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 60px 24px;
+    color: var(--text-muted);
+    font-size: 15px;
+    text-align: center;
+}
+
+.testimonials__state--error {
+    color: #EF4444;
+}
+
+/* Spinning loader ring */
+.testimonials__spinner {
+    width: 44px;
+    height: 44px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent, #00C8FF);
+    border-radius: 50%;
+    animation: testimonials-spin 0.8s linear infinite;
+}
+
+@keyframes testimonials-spin {
+    to { transform: rotate(360deg); }
+}

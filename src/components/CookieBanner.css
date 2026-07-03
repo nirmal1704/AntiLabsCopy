@@ -1,0 +1,78 @@
+.cookie-banner-overlay {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem;
+  pointer-events: none; /* Let clicks pass through the overlay */
+}
+
+.cookie-banner {
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  pointer-events: auto; /* Re-enable pointer events on the banner itself */
+  margin-bottom: 0;
+}
+
+@media (min-width: 768px) {
+  .cookie-banner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 2rem;
+  }
+}
+
+.cookie-banner-content {
+  flex: 1;
+}
+
+.cookie-banner-content h4 {
+  margin-bottom: 0.5rem;
+  font-size: 1.125rem;
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+}
+
+.cookie-banner-content p {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.cookie-banner-actions {
+  display: flex;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.cookie-btn-decline,
+.cookie-btn-accept {
+  padding: 10px 20px;
+  font-size: 14px;
+}
+
+@media (max-width: 480px) {
+  .cookie-banner-overlay {
+    padding: 1rem;
+  }
+  
+  .cookie-banner-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .cookie-btn-decline,
+  .cookie-btn-accept {
+    width: 100%;
+    justify-content: center;
+  }
+}

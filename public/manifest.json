@@ -1,0 +1,21 @@
+{
+  "name": "AntiLabs",
+  "short_name": "AntiLabs",
+  "description": "AntiLabs delivers enterprise-grade cybersecurity, cloud architecture, and custom software.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "icons": [
+    {
+      "src": "/favicon.jpeg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/favicon.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}

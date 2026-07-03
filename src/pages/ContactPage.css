@@ -1,0 +1,315 @@
+/* ── Page Layout ────────────────────────────── */
+.cp {
+    padding-top: 80px;
+    /* Account for fixed navbar */
+    min-height: 100vh;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+/* ── Reveal Animation ───────────────────────── */
+.cp__reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cp__reveal--in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ── Hero ───────────────────────────────────── */
+.cp__hero {
+    position: relative;
+    padding: 100px 0 80px;
+    text-align: center;
+    overflow: hidden;
+}
+
+.cp__hero-bg {
+    position: absolute;
+    top: -50%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at center, rgba(37, 99, 235, 0.05) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.cp__hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 800px;
+    margin: 0 auto;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.cp__hero-content--in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.cp__hero-h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin: 16px 0 24px;
+    letter-spacing: -0.02em;
+}
+
+.cp__hero-sub {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* ── Form Section ───────────────────────────── */
+.cp__form-section {
+    position: relative;
+    z-index: 1;
+}
+
+.cp__form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 48px;
+    align-items: flex-start;
+}
+
+@media (min-width: 992px) {
+    .cp__form-grid {
+        grid-template-columns: 1fr 1.2fr;
+        gap: 80px;
+    }
+}
+
+.cp__section-h2 {
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 16px 0 24px;
+    letter-spacing: -0.02em;
+}
+
+.cp__info-desc {
+    color: var(--text-secondary);
+    font-size: 1.125rem;
+    line-height: 1.6;
+    margin-bottom: 40px;
+}
+
+.cp__info-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.cp__info-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 24px;
+}
+
+.cp__info-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background-color: rgba(37, 99, 235, 0.1);
+    color: var(--primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.cp__info-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.cp__info-label {
+    font-size: 0.875rem;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+}
+
+.cp__info-link {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.cp__info-link:hover {
+    color: var(--primary-light);
+}
+
+/* ── Form Container ─────────────────────────── */
+.cp__form-container {
+    padding: 32px;
+}
+
+@media (min-width: 768px) {
+    .cp__form-container {
+        padding: 48px;
+    }
+}
+
+.cp__form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.cp__form-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+}
+
+@media (min-width: 768px) {
+    .cp__form-row {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.cp__form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cp__form-group label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.cp__form-group input,
+.cp__form-group textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 1rem; /* 16px - prevents iOS auto-zoom */
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.cp__form-group input:focus,
+.cp__form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    background-color: #ffffff;
+}
+
+.cp__form-group input::placeholder,
+.cp__form-group textarea::placeholder {
+    color: #94a3b8;
+}
+
+.cp__form-group textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.cp__submit-btn {
+    margin-top: 8px;
+    width: 100%;
+    justify-content: center;
+    padding: 16px;
+    font-size: 1.125rem;
+}
+
+/* ── Success Message ────────────────────────── */
+.cp__success-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 400px;
+    animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.cp__success-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #10B981;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.cp__success-icon svg {
+    width: 32px;
+    height: 32px;
+}
+
+.cp__success-message h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.cp__success-message p {
+    color: var(--text-secondary);
+    font-size: 1.125rem;
+}
+
+@media (max-width: 480px) {
+    .cp__hero {
+        padding: 80px 0 52px;
+    }
+
+    .cp__hero-sub {
+        font-size: 1rem;
+    }
+
+    .cp__form-container {
+        padding: 20px 16px;
+    }
+
+    .cp__submit-btn {
+        font-size: 1rem;
+        padding: 14px;
+    }
+
+    .cp__info-desc {
+        font-size: 1rem;
+        margin-bottom: 28px;
+    }
+
+    .cp__section-h2 {
+        font-size: clamp(1.6rem, 6vw, 2.2rem);
+    }
+}

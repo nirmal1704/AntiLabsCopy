@@ -1,0 +1,534 @@
+/* ══════════════════════════════════════════════
+   About Page  (ap = AboutPage namespace)
+   Aesthetic: Premium, Tech-Forward, Clean
+══════════════════════════════════════════════ */
+
+/* ── Reveal utils ─────────────────────────── */
+.ap__reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ap__reveal--in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ── Hero Section ────────────────────────── */
+.ap__hero {
+    position: relative;
+    padding: 160px 0 100px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ap__hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 70% 60% at 10% 60%, rgba(14, 165, 233, 0.08) 0%, transparent 65%),
+        radial-gradient(ellipse 55% 65% at 90% 15%, rgba(123, 97, 255, 0.06) 0%, transparent 60%),
+        linear-gradient(160deg, #f0f4ff 0%, #fafcff 55%, #f4efff 100%);
+    z-index: 0;
+}
+
+.ap__hero-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 24px;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ap__hero-content--in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.ap__hero-h1 {
+    font-family: var(--font-heading);
+    font-size: clamp(34px, 4.5vw, 62px);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+    color: var(--primary);
+}
+
+.ap__hero-sub {
+    font-size: 18px;
+    color: var(--text-secondary);
+    max-width: 680px;
+    line-height: 1.75;
+}
+
+/* ── Shared Headings ────────────────────── */
+.ap__section-h2 {
+    font-family: var(--font-heading);
+    font-size: clamp(28px, 3.2vw, 44px);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    color: var(--primary);
+    line-height: 1.2;
+    margin-top: 12px;
+}
+
+.ap__paragraph {
+    font-size: 15.5px;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    margin-bottom: 16px;
+}
+
+/* ── Founder Story Section ────────────────── */
+.ap__founder-grid {
+    display: grid;
+    grid-template-columns: 4.5fr 7.5fr;
+    gap: 64px;
+    align-items: center;
+}
+
+.ap__founder-visual {
+    display: flex;
+    justify-content: center;
+}
+
+.ap__founder-card-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 360px;
+    border-radius: 24px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 
+        0 4px 30px rgba(0, 0, 0, 0.03),
+        inset 0 1px 1px rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+.ap__founder-image-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #eef2f6;
+    box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.05);
+}
+
+.ap__founder-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: scale(1.02);
+    object-position: center 2%;
+}
+
+
+.ap__founder-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(15, 23, 42, 0.5) 0%, rgba(15, 23, 42, 0) 60%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 24px;
+}
+
+.ap__founder-card-wrap:hover .ap__founder-overlay {
+    opacity: 1;
+}
+
+.ap__founder-socials {
+    display: flex;
+    gap: 12px;
+    transform: translateY(10px);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ap__founder-card-wrap:hover .ap__founder-socials {
+    transform: translateY(0);
+}
+
+.ap__founder-social-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, color 0.2s, transform 0.2s;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.ap__founder-social-btn:hover {
+    background: var(--accent);
+    color: #fff;
+    transform: scale(1.1);
+}
+
+.ap__founder-badge {
+    position: absolute;
+    bottom: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--accent) 0%, #7B61FF 100%);
+    color: #fff;
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    box-shadow: 0 4px 14px rgba(123, 97, 255, 0.3);
+    white-space: nowrap;
+}
+
+.ap__founder-text {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.ap__founder-quote-box {
+    margin: 24px 0 8px;
+    padding: 20px 24px;
+    border-left: 4px solid var(--accent);
+    background: rgba(14, 165, 233, 0.03);
+    border-radius: 0 16px 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ap__founder-quote-text {
+    font-size: 15px;
+    font-style: italic;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.ap__founder-quote-author {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ── Intro Section ────────────────────────── */
+.ap__intro-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 64px;
+    align-items: center;
+}
+
+.ap__paragraph-large {
+    font-size: 19px;
+    font-weight: 500;
+    color: var(--primary);
+    line-height: 1.7;
+    margin-bottom: 20px;
+}
+
+.ap__mission-box {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.06) 0%, rgba(123, 97, 255, 0.04) 100%);
+    border: 1px solid rgba(14, 165, 233, 0.2);
+    border-radius: 24px;
+    padding: 36px;
+    position: relative;
+    box-shadow: 0 4px 24px rgba(14, 165, 233, 0.02);
+}
+
+.ap__mission-title {
+    display: block;
+    font-family: var(--font-heading);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin-bottom: 12px;
+}
+
+.ap__mission-text {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.6;
+    color: var(--primary);
+    margin: 0;
+    font-style: italic;
+}
+
+/* ── Why We Started ───────────────────────── */
+.ap__why-started {
+    background: #fafbff;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+
+.ap__why-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 64px;
+    align-items: center;
+}
+
+.ap__challenges-card {
+    padding: 36px 32px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.ap__challenges-title {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 24px;
+    letter-spacing: -0.015em;
+}
+
+.ap__challenges-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.ap__challenges-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.ap__challenge-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.ap__challenge-text {
+    font-size: 14.5px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* ── Philosophy & Vision ─────────────────── */
+.ap__philosophy-vision {
+    background: #fff;
+}
+
+.ap__pv-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+}
+
+.ap__pv-card {
+    padding: 40px;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ap__pv-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(10, 15, 44, 0.04);
+}
+
+.ap__pv-label {
+    font-family: var(--font-heading);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+}
+
+.ap__pv-card:nth-child(2) .ap__pv-label {
+    color: #7B61FF;
+}
+
+.ap__pv-h3 {
+    font-family: var(--font-heading);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: -0.02em;
+}
+
+.ap__pv-desc {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.75;
+    margin: 0;
+}
+
+/* ── Different Kind of Partner ────────────── */
+.ap__partner-strip {
+    background: #fafbff;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+
+.ap__partner-header {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto 56px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.ap__partner-h2 {
+    font-family: var(--font-heading);
+    font-size: clamp(26px, 3.2vw, 40px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--primary);
+}
+
+.ap__partner-subtitle {
+    font-size: 16px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.ap__partner-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    margin-bottom: 56px;
+}
+
+.ap__partner-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 36px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ap__partner-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(10, 15, 44, 0.04);
+}
+
+.ap__partner-card-num {
+    font-family: var(--font-heading);
+    font-size: 32px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent) 0%, #7B61FF 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.ap__partner-card-title {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.ap__partner-card-desc {
+    font-size: 14.5px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+.ap__partner-footer-text {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.ap__partner-footer-text p {
+    font-size: 15.5px;
+    line-height: 1.8;
+}
+
+/* ── CTA Tagline ─────────────────────────── */
+.ap__cta-tagline {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.95);
+    letter-spacing: 0.05em;
+    margin-top: 16px;
+}
+
+/* ── Responsive Styling ────────────────────── */
+@media (max-width: 991px) {
+    .ap__founder-grid,
+    .ap__intro-grid,
+    .ap__why-grid,
+    .ap__pv-grid,
+    .ap__partner-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+
+    .ap__founder-visual {
+        order: -1;
+    }
+
+    .ap__partner-footer-text {
+        text-align: left;
+    }
+}
+
+@media (max-width: 576px) {
+    .ap__hero {
+        padding: 130px 0 80px;
+    }
+
+    .ap__founder-card-wrap {
+        border-radius: 20px;
+        padding: 8px;
+    }
+
+    .ap__founder-quote-box,
+    .ap__mission-box,
+    .ap__challenges-card,
+    .ap__pv-card,
+    .ap__partner-card {
+        padding: 24px;
+    }
+}

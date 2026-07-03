@@ -1,0 +1,229 @@
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-color, #f4f7fb);
+    /* Fallback to light mode color */
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-page::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at center, rgba(6, 182, 212, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.auth-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 120px 24px 60px;
+    /* space for navbar */
+    position: relative;
+    z-index: 1;
+}
+
+.auth-card {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 48px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    animation: authFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.auth-card--register {
+    max-width: 800px;
+}
+
+@keyframes authFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.auth-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-base, #0f172a);
+    margin-bottom: 12px;
+}
+
+.auth-header p {
+    color: var(--text-muted, #64748b);
+    font-size: 1.05rem;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.auth-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+@media (max-width: 640px) {
+    .auth-form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.auth-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.auth-group--full {
+    grid-column: 1 / -1;
+}
+
+.auth-group label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-base, #1e293b);
+}
+
+.auth-input {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    font-size: 1rem;
+    color: #0f172a;
+    transition: all 0.2s ease;
+    outline: none;
+    font-family: inherit;
+}
+
+.auth-input:focus {
+    border-color: #0ea5e9;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+}
+
+.auth-input::placeholder {
+    color: #94a3b8;
+}
+
+.auth-password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.auth-password-wrapper .auth-input {
+    padding-right: 48px;
+}
+
+.auth-password-toggle {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 4px;
+    transition: color 0.2s;
+}
+
+.auth-password-toggle:hover {
+    color: #0ea5e9;
+}
+
+textarea.auth-input {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.auth-btn {
+    margin-top: 16px;
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    justify-content: center;
+}
+
+.auth-footer {
+    margin-top: 32px;
+    text-align: center;
+    font-size: 0.95rem;
+    color: var(--text-muted, #64748b);
+}
+
+.auth-link {
+    color: #0ea5e9;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.auth-link:hover {
+    color: #0284c7;
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .auth-container {
+        padding: 90px 16px 40px;
+    }
+    .auth-card {
+        padding: 32px 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-container {
+        padding: 70px 16px 30px;
+    }
+    .auth-card {
+        padding: 24px 16px;
+    }
+    .auth-header h1 {
+        font-size: 1.5rem;
+    }
+}
+
+.auth-input.auth-input--readonly {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-muted, #64748b);
+    cursor: not-allowed;
+    border-color: #cbd5e1;
+}
+
+.auth-input.auth-input--readonly:focus {
+    box-shadow: none;
+    border-color: #cbd5e1;
+}

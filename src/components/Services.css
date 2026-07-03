@@ -1,0 +1,194 @@
+/* ============================================================
+   AntiLabs — Services Grid Stylesheet (Scroll Reveal Redesign)
+   ============================================================ */
+
+.services {
+    background: var(--surface);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Rotated side label */
+.services__label {
+    position: absolute;
+    left: -40px;
+    top: 50%;
+    transform: translateX(0) translateY(-50%) rotate(-90deg);
+    transform-origin: center center;
+    white-space: nowrap;
+}
+
+.services__label span {
+    font-family: var(--font-heading);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    opacity: 0.6;
+}
+
+/* Header */
+.services__header {
+    text-align: center;
+    margin-bottom: 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.services__sub {
+    text-align: center;
+    margin: 0 auto;
+}
+
+/* Scroll reveal utility classes for header text */
+.reveal-hidden {
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+/* Grid layout */
+.services__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+/* ============================================================
+   Services Card Redesign: Sequential Scroll Reveal & Hover
+   ============================================================ */
+
+.services__card {
+    padding: 36px 32px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-card);
+    
+    /* Pristine Hidden State: Grid is empty before scroll */
+    opacity: 0;
+    transform: translateY(50px) scale(0.98);
+    
+    /* High-fidelity custom decelerating curves for reveal transitions */
+    transition: 
+        opacity 1.2s cubic-bezier(0.215, 0.61, 0.355, 1), 
+        transform 1.2s cubic-bezier(0.215, 0.61, 0.355, 1),
+        background-color 0.35s ease,
+        border-color 0.35s ease,
+        box-shadow 0.35s ease;
+}
+
+/* Revealed active state when crossing Intersection threshold */
+.services__card--revealed {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* Seamless hover integration that overrides reveal state cleanly */
+.services__card--revealed:hover {
+    border-color: var(--border-cyan);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-8px) scale(1.005);
+}
+
+.services__card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-bright), transparent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s ease;
+}
+
+.services__card--revealed:hover::before {
+    transform: scaleX(1);
+}
+
+.services__card-icon {
+    width: 48px;
+    height: 48px;
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+.services__card-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.services__card-title {
+    font-family: var(--font-heading);
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+}
+
+.services__card-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    flex: 1;
+}
+
+.services__card-link {
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: auto;
+    transition: gap 0.2s ease;
+}
+
+.services__card-link:hover {
+    gap: 8px;
+}
+
+.services__card-arrow {
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+
+.services__card-link:hover .services__card-arrow {
+    transform: translateX(4px);
+}
+
+/* Responsive grid modifications */
+@media (max-width: 1024px) {
+    .services__grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .services__label {
+        display: none;
+    }
+}
+
+@media (max-width: 640px) {
+    .services__grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .services__card {
+        padding: 28px 24px;
+        /* Trigger slide-in faster on narrow viewports */
+        transform: translateY(35px) scale(1);
+    }
+}

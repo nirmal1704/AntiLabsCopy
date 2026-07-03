@@ -1,0 +1,305 @@
+.hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    background: var(--bg);
+}
+
+
+
+/* Light gradient overlay */
+.hero__overlay-navy {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+        radial-gradient(ellipse 80% 70% at 20% 50%, rgba(0, 153, 200, 0.07) 0%, transparent 65%),
+        radial-gradient(ellipse 60% 80% at 90% 20%, rgba(0, 200, 255, 0.05) 0%, transparent 60%),
+        linear-gradient(135deg, #FAFBFF 0%, #EFF4FF 55%, #F5FAFF 100%);
+}
+
+/* Circuit SVG — uses dark navy lines at very low opacity */
+.hero__circuit {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    animation: pulse-glow 5s ease-in-out infinite;
+}
+
+/* Re-tint circuit paths for light bg via CSS filter */
+.hero__circuit path,
+.hero__circuit rect {
+    stroke: rgba(10, 15, 44, 0.07) !important;
+}
+
+.hero__circuit circle {
+    fill: rgba(10, 15, 44, 0.1) !important;
+}
+
+/* Content */
+.hero__content {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    padding-top: 140px;
+    padding-bottom: 100px;
+    display: flex;
+    justify-content: center;
+}
+
+.hero__text {
+    max-width: 680px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    text-align: center;
+}
+
+.hero__eyebrow {
+    color: var(--accent) !important;
+    animation: fadeUp 0.8s 0.1s ease both;
+}
+
+.hero__h1 {
+    font-size: clamp(36px, 4.8vw, 62px);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.04em;
+    color: var(--primary);
+    animation: none;
+}
+
+.hero__h1--accent {
+    /* Gradient navy → cyan on light background */
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-bright) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: inline-block;
+}
+
+.hero__sub {
+    font-size: 17px;
+    color: var(--text-secondary);
+    max-width: 480px;
+    line-height: 1.75;
+}
+
+/* CTAs */
+.hero__ctas {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+/* Secondary button — uses global --accent so it's cyan on light bg */
+
+/* Stats */
+.hero__stats {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.hero__stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0 32px;
+}
+
+.hero__stat:first-child {
+    padding-left: 0;
+}
+
+.hero__stat-value {
+    font-family: var(--font-heading);
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+}
+
+.hero__stat-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+}
+
+.hero__stat-divider {
+    width: 1px;
+    height: 44px;
+    background: var(--border);
+    flex-shrink: 0;
+}
+
+/* Scroll indicator */
+.hero__scroll {
+    position: absolute;
+    bottom: 36px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    z-index: 3;
+    animation: fadeIn 1s 1.2s ease both;
+}
+
+.hero__chevron {
+    width: 22px;
+    height: 22px;
+    color: var(--accent);
+    animation: bounce-down 1.8s ease-in-out infinite;
+}
+
+.hero__scroll-text {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+/* ── Scroll Reveal — 3 steps ── */
+.hero__reveal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    width: 100%;
+    opacity: 0;
+    transform: translateY(36px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.hero__reveal--in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.hero__reveal--delay1 {
+    transition-delay: 0.15s;
+}
+
+.hero__reveal--delay2 {
+    transition-delay: 0.3s;
+}
+
+/* Bottom gradient line — subtle accent line at section boundary */
+.hero__bottom-line {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), var(--accent-bright), transparent);
+    z-index: 4;
+    opacity: 0.5;
+}
+
+/* ---- Floating decoration (right side) ---- */
+.hero__deco {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 45%;
+    max-width: 580px;
+    height: 100%;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+/* Mobile */
+@media (max-width: 1024px) {
+    .hero__deco {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero__content {
+        padding-top: 100px;
+        padding-bottom: 72px;
+    }
+
+    .hero__h1 {
+        font-size: clamp(30px, 8vw, 42px);
+    }
+
+    .hero__sub {
+        font-size: 16px;
+    }
+
+    .hero__stat {
+        padding: 0 18px;
+    }
+
+    .hero__stat-value {
+        font-size: 22px;
+    }
+
+    .hero__ctas {
+        gap: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero__content {
+        padding-top: 90px;
+        padding-bottom: 56px;
+    }
+
+    .hero__h1 {
+        font-size: clamp(26px, 8vw, 36px);
+        letter-spacing: -0.03em;
+    }
+
+    .hero__sub {
+        font-size: 15px;
+        max-width: 100%;
+    }
+
+    .hero__ctas {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+        gap: 10px;
+    }
+
+    .hero__ctas .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .hero__stat-divider {
+        display: none;
+    }
+
+    .hero__stats {
+        gap: 16px;
+    }
+
+    .hero__stat {
+        padding: 0;
+    }
+
+    .hero__scroll {
+        display: none;
+    }
+}

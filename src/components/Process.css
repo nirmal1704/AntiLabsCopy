@@ -1,0 +1,262 @@
+.process {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+
+.process__header {
+    text-align: center;
+    margin-bottom: 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.process__title {
+    margin-top: 4px;
+}
+
+/* Timeline track */
+.process__timeline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0;
+    position: relative;
+}
+
+.process__node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    flex: 1;
+    position: relative;
+}
+
+.process__node-dot {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--card-bg);
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    transition: all 0.3s ease;
+    position: relative;
+    box-shadow: var(--shadow-sm);
+}
+
+.process__node-dot span {
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-muted);
+    transition: color 0.3s;
+}
+
+.process__node--active .process__node-dot {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+    box-shadow: 0 0 0 4px rgba(0, 153, 200, 0.15), var(--shadow-sm);
+}
+
+.process__node--active .process__node-dot span {
+    color: var(--accent);
+}
+
+.process__node:hover:not(.process__node--active) .process__node-dot {
+    border-color: var(--border-cyan);
+    background: var(--accent-dim);
+}
+
+/* Dashed connector line */
+.process__node-line {
+    position: absolute;
+    top: 26px;
+    left: calc(50% + 26px);
+    right: calc(-50% + 26px);
+    height: 2px;
+    background: repeating-linear-gradient(90deg,
+            var(--border-cyan) 0px,
+            var(--border-cyan) 6px,
+            transparent 6px,
+            transparent 14px);
+    z-index: 1;
+}
+
+.process__node:last-child .process__node-line {
+    display: none;
+}
+
+/* Step labels */
+.process__labels {
+    display: flex;
+    justify-content: center;
+    margin-top: 16px;
+    margin-bottom: 40px;
+}
+
+.process__label {
+    flex: 1;
+    font-family: var(--font-heading);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 0 8px;
+    cursor: pointer;
+    transition: color 0.2s;
+    line-height: 1.4;
+}
+
+.process__label--active {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+/* Detail cards */
+.process__detail {
+    position: relative;
+    min-height: 200px;
+}
+
+.process__card {
+    display: none;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    padding: 48px 56px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    animation: fadeIn 0.4s ease;
+}
+
+.process__card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-bright), transparent);
+}
+
+.process__card--active {
+    display: block;
+}
+
+.process__card-num {
+    font-family: var(--font-heading);
+    font-size: 72px;
+    font-weight: 800;
+    color: var(--accent-dim);
+    position: absolute;
+    top: 24px;
+    right: 40px;
+    line-height: 1;
+    user-select: none;
+    /* override to visible colour on light bg */
+    color: rgba(0, 153, 200, 0.08);
+}
+
+.process__card-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+}
+
+.process__card-desc {
+    font-size: 16px;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    max-width: 680px;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .process__timeline {
+        gap: 0;
+    }
+
+    .process__node-dot {
+        width: 40px;
+        height: 40px;
+    }
+
+    .process__node-dot span {
+        font-size: 12px;
+    }
+
+    .process__node-line {
+        top: 20px;
+        left: calc(50% + 20px);
+        right: calc(-50% + 20px);
+    }
+
+    .process__label {
+        font-size: 10px;
+    }
+
+    .process__card {
+        padding: 32px 24px;
+    }
+
+    .process__card-num {
+        font-size: 52px;
+    }
+
+    .process__card-title {
+        font-size: 22px;
+    }
+}
+
+@media (max-width: 540px) {
+    .process__node-dot {
+        width: 34px;
+        height: 34px;
+    }
+
+    .process__node-dot span {
+        font-size: 11px;
+    }
+
+    .process__node-line {
+        top: 17px;
+        left: calc(50% + 17px);
+        right: calc(-50% + 17px);
+    }
+
+    .process__label {
+        font-size: 9px;
+        padding: 0 4px;
+    }
+
+    .process__header {
+        margin-bottom: 48px;
+    }
+}
+
+@media (max-width: 400px) {
+    /* On very small phones, hide labels to prevent overflow */
+    .process__labels {
+        display: none;
+    }
+
+    .process__card {
+        padding: 24px 18px;
+    }
+
+    .process__card-title {
+        font-size: 20px;
+    }
+
+    .process__card-desc {
+        font-size: 14px;
+    }
+}

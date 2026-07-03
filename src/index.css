@@ -1,0 +1,442 @@
+/* ============================================================
+   AntiLabs — Global Design System (LIGHT THEME)
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* Light Theme Colors */
+  --bg: #fafbff;
+  /* page background */
+  --primary: #0a0f2c;
+  /* deep navy — primary text */
+  --accent: #0099c8;
+  /* darker cyan for light-bg accessibility */
+  --accent-bright: #00c8ff;
+  /* kept for decorative/icons */
+  --accent-dim: rgba(0, 153, 200, 0.1);
+  --accent-glow: rgba(0, 153, 200, 0.2);
+  --surface: #f0f4ff;
+  /* light blue-tinted panels */
+  --surface-2: #e4ebff;
+  --card-bg: #ffffff;
+  --text-primary: #0a0f2c;
+  --text-secondary: #3d4a6b;
+  --text-muted: #7b8db0;
+  --border: rgba(10, 15, 44, 0.08);
+  --border-cyan: rgba(0, 153, 200, 0.25);
+  --shadow-sm: 0 2px 12px rgba(10, 15, 44, 0.06);
+  --shadow-md: 0 6px 32px rgba(10, 15, 44, 0.1);
+  --shadow-lg: 0 16px 64px rgba(10, 15, 44, 0.14);
+
+  /* typography */
+  --font-heading: "Space Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
+
+  /* Radius */
+  --radius-card: 8px;
+  --radius-btn: 4px;
+
+  /* Spacing */
+  --section-py: 120px;
+}
+
+html {
+  font-size: 16px;
+}
+.app {
+  min-height: 100vh;
+  transition: background-color 0.3s ease;
+}
+
+.app-light {
+  font-family: var(--font-body);
+  background-color: var(--bg);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Prevent iOS Safari text size adjustment on rotation */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* Suppress mobile tap highlight flash */
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app-dark {
+  background-color: black;
+  color: white;
+}
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Prevent iOS Safari text size adjustment on rotation */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* Suppress mobile tap highlight flash */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ---- Scrollbar ---- */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-cyan);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* ---- Typography ---- */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  line-height: 1.15;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+p {
+  line-height: 1.7;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ---- Buttons ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border-radius: var(--radius-btn);
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--accent-bright);
+  color: var(--primary);
+}
+
+.btn-primary:hover {
+  background: #1ad4ff;
+  box-shadow: 0 4px 20px rgba(0, 200, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+}
+
+.btn-secondary:hover {
+  background: var(--accent-dim);
+  box-shadow: 0 4px 16px rgba(0, 153, 200, 0.15);
+  transform: translateY(-2px);
+}
+
+.btn-lg {
+  padding: 18px 36px;
+  font-size: 16px;
+}
+
+/* ---- Section Utility ---- */
+.section-py {
+  padding-top: var(--section-py);
+  padding-bottom: var(--section-py);
+}
+
+.container {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+
+.section-eyebrow {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.section-title {
+  font-size: clamp(48px, 6vw, 80px);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+
+.section-sub {
+  font-size: 17px;
+  color: var(--text-secondary);
+  line-height: 1.75;
+  max-width: 560px;
+}
+
+/* ---- Card (light) ---- */
+.glass-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: var(--border-cyan);
+  box-shadow:
+    var(--shadow-md),
+    0 0 0 1px var(--border-cyan);
+  transform: translateY(-6px);
+}
+
+/* ---- Gradient text (dark→cyan for light bg) ---- */
+.gradient-text {
+  background: linear-gradient(
+    135deg,
+    var(--accent) 0%,
+    var(--accent-bright) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ---- Animations ---- */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 0.04;
+  }
+
+  50% {
+    opacity: 0.09;
+  }
+}
+
+@keyframes bounce-down {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(8px);
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+
+  33% {
+    transform: translateY(-12px) rotate(3deg);
+  }
+
+  66% {
+    transform: translateY(6px) rotate(-2deg);
+  }
+}
+
+.animate-fade-up {
+  opacity: 0;
+  animation: fadeUp 0.7s ease forwards;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* ---- Divider ---- */
+.cyan-line {
+  width: 64px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  border-radius: 2px;
+}
+
+/* ---- Tag ---- */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-heading);
+  letter-spacing: 0.08em;
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 1px solid var(--border-cyan);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 1024px) {
+  :root {
+    --section-py: 80px;
+  }
+
+  .container {
+    padding: 0 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --section-py: 60px;
+  }
+
+  .container {
+    padding: 0 20px;
+  }
+
+  .btn {
+    padding: 12px 22px;
+    font-size: 14px;
+  }
+
+  .btn-lg {
+    padding: 14px 28px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --section-py: 48px;
+  }
+
+  .container {
+    padding: 0 16px;
+  }
+
+  .section-title {
+    font-size: clamp(36px, 8vw, 56px);
+  }
+
+  .section-sub {
+    font-size: 15px;
+  }
+
+  .btn-lg {
+    padding: 13px 22px;
+    font-size: 14px;
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ── Global Mobile Overrides ── */
+@media (max-width: 768px) {
+  /* Prevent horizontal scrolling */
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
+  /* Make all flex grids break earlier if they have large gaps */
+  .auth-form-grid,
+  .courses-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Scale down large typography */
+  h1 {
+    font-size: 2rem !important;
+  }
+  h2 {
+    font-size: 1.5rem !important;
+    line-height: 1.3 !important;
+  }
+  h3 {
+    font-size: 1.25rem !important;
+  }
+
+  /* Scale down massive inline paddings used across pages */
+  [style*="padding: 40px"],
+  [style*="padding: 48px"],
+  [style*="padding: 32px"] {
+    padding: 20px !important;
+  }
+
+  [style*="padding: 120px"] {
+    padding-top: 80px !important;
+    padding-bottom: 40px !important;
+  }
+
+  /* Fix profile layout */
+  .auth-container > div {
+    gap: 16px !important;
+  }
+}

@@ -1,0 +1,102 @@
+.hacklabs-timer-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1180px;
+  width: 100%;
+  margin: 80px auto;
+  padding: 0 20px;
+  background-color: transparent;
+}
+
+.timer-circle-wrapper {
+  position: relative;
+  width: 170px;
+  height: 170px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.timer-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.timer-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+}
+
+.timer-value {
+  font-size: 50px;
+  font-weight: 400;
+  color: #ffffff;
+  line-height: 1;
+  font-family: 'Zen Dots', sans-serif;
+}
+
+.timer-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-top: 5px;
+  text-transform: capitalize;
+  font-family: 'Zen Dots', sans-serif;
+}
+
+.timer-colon {
+  font-size: 50px;
+  font-weight: 400;
+  color: #ffffff;
+  font-family: 'Zen Dots', sans-serif;
+  margin-top: -22px;
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+  .hacklabs-timer-container {
+    gap: 1.5rem;
+  }
+  .timer-circle-wrapper {
+    width: 140px;
+    height: 140px;
+  }
+  .timer-colon {
+    font-size: 48px;
+    margin-top: -24px;
+  }
+  .timer-value {
+    font-size: 48px;
+  }
+  .timer-label {
+    font-size: 16px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .hacklabs-timer-container {
+    gap: 1rem;
+    margin: 50px 0;
+  }
+  .timer-circle-wrapper {
+    width: 100px;
+    height: 100px;
+  }
+  .timer-colon {
+    display: none;
+  }
+  .timer-value {
+    font-size: 32px;
+  }
+  .timer-label {
+    font-size: 12px;
+  }
+}

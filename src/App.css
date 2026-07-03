@@ -1,0 +1,6 @@
+/* App-level resets and overrides */
+#root {
+  min-height: 100vh;
+}
+
+/* Remove default vite styles */

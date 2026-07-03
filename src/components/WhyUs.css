@@ -1,0 +1,125 @@
+.why {
+    background: var(--bg);
+    overflow: hidden;
+}
+
+.why__inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 780px;
+}
+
+/* Left — light surface */
+.why__left {
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    padding: var(--section-py) 0 var(--section-py) calc(50vw - 660px + 48px);
+    border-right: 1px solid var(--border);
+}
+
+.container-half {
+    max-width: 560px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding-right: 80px;
+}
+
+.why__title {
+    margin-top: 4px;
+}
+
+/* Differentiators list */
+.why__list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 8px;
+}
+
+.why__item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+}
+
+.why__check {
+    flex-shrink: 0;
+    margin-top: 3px;
+}
+
+.why__item-title {
+    font-family: var(--font-heading);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.why__item-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.65;
+}
+
+/* Right — white */
+.why__right {
+    background: var(--card-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--section-py) 60px;
+}
+
+.why__illustration {
+    width: 100%;
+    max-width: 480px;
+}
+
+.why__iso-svg {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 8px 32px rgba(10, 15, 44, 0.08));
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .why__left {
+        padding-left: 48px;
+    }
+
+    .container-half {
+        padding-right: 48px;
+    }
+}
+
+@media (max-width: 900px) {
+    .why__inner {
+        grid-template-columns: 1fr;
+    }
+
+    .why__left {
+        padding: var(--section-py) 32px;
+    }
+
+    .container-half {
+        max-width: 100%;
+        padding-right: 0;
+    }
+
+    .why__right {
+        padding: 60px 32px;
+        border-top: 1px solid var(--border);
+    }
+}
+
+@media (max-width: 768px) {
+    .why__left {
+        padding: var(--section-py) 20px;
+    }
+
+    .why__right {
+        padding: 48px 20px;
+    }
+}

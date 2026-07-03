@@ -1,0 +1,609 @@
+@import url("https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Pliant:ital,wght@0,100..900;1,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap");
+* {
+  /* font-family: "Pliant", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal; */
+  font-family: "Rubik", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
+.landing-content {
+  opacity: 0;
+  background: black;
+  transform: translateY(40px);
+  z-index: 1;
+  transition:
+    opacity 0.9s ease,
+    transform 0.9s ease;
+}
+
+.landing-content--show {
+  opacity: 1;
+
+  transform: translateY(0);
+}
+/* ======================================
+   Hero Section
+====================================== */
+.hero-content h1 {
+  /* font-size: clamp(4rem, 7vw, 7rem); */
+  /* font-size: 40px; */
+  line-height: 0.95;
+  font-family: "Archivo Black", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  color: white;
+  margin-bottom: 2rem;
+}
+
+.hero-content h1 span {
+  font-family: "Archivo Black", sans-serif;
+  /* color: #7c4dff; */
+  color: var(--accent);
+}
+.hacklabs-page {
+  min-height: 80vh;
+  background: black;
+  color: white;
+}
+
+.hacklabs-hero {
+  margin-top: 5%;
+  min-height: 80vh;
+  display: flex;
+  justify-content: center;
+  gap: 45%;
+  align-items: center;
+  padding: 0px;
+}
+.hero-content {
+  max-width: 600px;
+}
+
+.hero-content h1 {
+  font-size: 5rem;
+  line-height: 1;
+  margin-bottom: 1.5rem;
+}
+
+.hero-content p {
+  color: #8888aabb;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.hero-content button {
+  background: linear-gradient(135deg, #7c4dff, #512da8);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-family: "Zen Dots", sans-serif;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: white;
+  padding: 18px 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 20px rgba(124, 77, 255, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+.hero-content button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 35px rgba(124, 77, 255, 0.5);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+.hero-content button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+  transform: skewX(-25deg);
+  transition: all 0.6s ease;
+}
+.hero-content button:hover::after {
+  left: 200%;
+}
+
+.hero-badge {
+  display: inline-flex;
+  padding: 10px 16px;
+  border-radius: 999px;
+  margin-bottom: 1rem;
+  border: 1px solid green;
+  cursor: pointer;
+  background: rgba(124, 77, 255, 0.08);
+  transition: all 0.25s ease;
+  color: green;
+}
+.hero-badge:hover {
+  transform: translateY(-2px);
+
+  box-shadow: 25px 10px 25px rgba(80, 255, 77, 0.35);
+}
+.hero-badge b {
+  padding-left: 4px;
+}
+
+.floating-card {
+  position: absolute;
+  z-index: 1;
+  width: 240px;
+
+  background: var(--accent-dim);
+
+  border: 1px solid rgba(124, 77, 255, 0.2);
+
+  backdrop-filter: blur(20px);
+
+  border-radius: 20px;
+
+  padding: 18px;
+
+  color: var(--accent-bright);
+
+  font-family: monospace;
+
+  z-index: 1;
+}
+
+.card-left {
+  top: 12%;
+  right: 33%;
+  animation: floatCard 6s ease-in-out infinite;
+}
+
+.card-right {
+  top: 30%;
+  right: 0%;
+
+  animation: floatCard 7s ease-in-out infinite;
+}
+
+.card-header {
+  display: flex;
+  gap: 6px;
+
+  margin-bottom: 14px;
+}
+
+.card-header span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+
+  background: var(--accent-glow);
+}
+
+@keyframes floatCard {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.hero-robot {
+  opacity: 0;
+
+  transform: scale(0.6);
+
+  transition:
+    transform 0.8s ease,
+    opacity 0.8s ease;
+}
+
+.hero-robot.arrived {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ======================================
+   STATS SECTION
+====================================== */
+
+.hacklabs-stats {
+  width: min(1400px, 92%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 0.5fr);
+  gap: 22px;
+
+  /* padding-bottom: 50px; */
+}
+
+.stat-card {
+  background: rgba(124, 77, 255, 0.04);
+
+  border: 3px solid rgba(124, 77, 255, 0.15);
+
+  border-radius: 15px;
+  cursor: pointer;
+  padding: 25px 32px;
+
+  backdrop-filter: blur(16px);
+
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+
+  border-color: var(--accent-bright);
+
+  box-shadow: 0 15px 40px rgba(124, 77, 255, 0.15);
+}
+
+.stat-card h3 {
+  font-size: 3rem;
+  line-height: 1;
+  font-family: "Archivo Black", sans-serif;
+
+  color: white;
+
+  margin-bottom: 14px;
+
+  font-weight: 700;
+}
+
+.stat-card p {
+  color: #8d8aa8;
+
+  font-size: 1.1rem;
+}
+
+.Details {
+  background: black;
+}
+/* ======================================
+   ASSISTANT SYSTEM
+====================================== */
+
+.AssistantGroup {
+  z-index: 99;
+  transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* HERO */
+
+.AssistantGroup--hero {
+  position: absolute;
+
+  top: 45%;
+  right: 20%;
+
+  transform: translateY(-50%) scale(1);
+}
+
+/* FLOATING */
+
+.AssistantGroup--floating {
+  position: fixed;
+
+  right: 20px;
+  bottom: 20px;
+
+  transform: scale(0.42);
+
+  transform-origin: bottom right;
+
+  animation: assistantFloat 4s ease-in-out infinite;
+}
+
+@keyframes assistantFloat {
+  0%,
+  100% {
+    transform: scale(0.42) translateY(0);
+  }
+
+  50% {
+    transform: scale(0.42) translateY(-8px);
+  }
+}
+
+/* CARD ATTACHED TO ROBOT */
+
+.assistant-card {
+  position: absolute;
+
+  width: 260px;
+
+  top: -80px;
+  left: -220px;
+
+  transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* FLOATING CARD */
+
+.AssistantGroup--floating .assistant-card {
+  width: 280px;
+
+  top: -35px;
+  left: -215px;
+
+  transform: scale(2);
+}
+
+/* RIGHT CARD */
+
+.card-right {
+  position: absolute;
+
+  top: 50%;
+  right: 5%;
+
+  transform: translateY(-50%);
+
+  animation: floatCard 7s ease-in-out infinite;
+
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease;
+}
+
+.card-right--hide {
+  opacity: 0;
+
+  transform: translateY(-50%) translateX(40px);
+
+  pointer-events: none;
+}
+/* =========================
+   CARD ATTACHED TO ROBOT
+========================= */
+
+.assistant-card {
+  position: absolute;
+
+  width: 260px;
+
+  top: -70px;
+  left: -220px;
+
+  transition: all 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* assistant mode */
+
+.AssistantGroup--floating .assistant-card {
+  width: 340px;
+  top: -40px;
+  left: -250px;
+
+  transform: scale(0.9);
+}
+
+/* =========================
+   RIGHT CARD
+========================= */
+
+.card-right {
+  position: absolute;
+
+  top: 50%;
+  right: 3%;
+
+  transform: translateY(-50%);
+
+  animation: floatCard 7s ease-in-out infinite;
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease;
+}
+
+.card-right--hide {
+  opacity: 0;
+
+  transform: translateY(-50%) translateX(40px);
+
+  pointer-events: none;
+}
+/* ======================================
+   LARGE TABLETS
+====================================== */
+
+@media (max-width: 1200px) {
+  .hacklabs-hero {
+    gap: 8rem;
+    padding: 0 3rem;
+  }
+
+  #robot-hero-slot {
+    width: 450px;
+    height: 450px;
+  }
+
+  .hero-content h1 {
+    font-size: 4.5rem;
+  }
+
+  .hacklabs-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ======================================
+   TABLETS
+====================================== */
+
+@media (max-width: 992px) {
+  .hacklabs-hero {
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+
+    gap: 3rem;
+
+    padding: 8rem 2rem 4rem;
+  }
+
+  .hero-content {
+    max-width: 700px;
+  }
+
+  .hero-content h1 {
+    font-size: 4rem;
+  }
+
+  .hero-content p {
+    margin-inline: auto;
+  }
+
+  .hero-visual {
+    display: none;
+  }
+
+  #robot-hero-slot {
+    display: none;
+  }
+
+  .floating-card {
+    display: none;
+  }
+
+  .hacklabs-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 993px) {
+}
+/* ======================================
+   MOBILE
+====================================== */
+
+@media (max-width: 768px) {
+  .hacklabs-page {
+    min-height: auto;
+  }
+
+  .hacklabs-hero {
+    min-height: auto;
+
+    padding: 7rem 1.5rem 3rem;
+  }
+
+  .hero-content h1 {
+    font-size: 3.2rem;
+    line-height: 1.05;
+  }
+
+  .hero-content p {
+    font-size: 1rem;
+  }
+
+  .hero-content button {
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .hero-badge {
+    font-size: 0.9rem;
+  }
+
+  .hacklabs-stats {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .stat-card {
+    padding: 24px;
+  }
+
+  .stat-card h3 {
+    font-size: 2.5rem;
+  }
+}
+
+/* ======================================
+   SMALL MOBILE
+====================================== */
+
+@media (max-width: 480px) {
+  .hacklabs-hero {
+    padding: 6rem 1rem 2rem;
+  }
+
+  .hero-content h1 {
+    font-size: 2.5rem;
+  }
+
+  .hero-content p {
+    font-size: 0.95rem;
+  }
+
+  .hero-badge {
+    font-size: 0.8rem;
+    padding: 8px 14px;
+  }
+
+  .hero-content button {
+    width: 100%;
+    font-size: 1rem;
+  }
+
+  .stat-card {
+    padding: 20px;
+  }
+
+  .stat-card h3 {
+    font-size: 2rem;
+  }
+
+  .stat-card p {
+    font-size: 0.95rem;
+  }
+}
+/* ======================================
+   TABLET
+====================================== */
+
+@media (max-width: 992px) {
+  .AssistantGroup--floating {
+    position: fixed;
+
+    right: 15px;
+    bottom: 15px;
+
+    transform: scale(0.22);
+
+    transform-origin: bottom right;
+  }
+
+  .assistant-card {
+    display: none;
+  }
+}
+
+/* ======================================
+   MOBILE
+====================================== */
+
+@media (max-width: 768px) {
+  .AssistantGroup--floating {
+    right: 15px;
+    bottom: 15px;
+    transform: scale(0.16);
+  }
+}
+
+/* ======================================
+   SMALL MOBILE
+====================================== */
+
+@media (max-width: 480px) {
+  .AssistantGroup--floating {
+    right: 15px;
+    bottom: 15px;
+    transform: scale(0.1);
+  }
+}
