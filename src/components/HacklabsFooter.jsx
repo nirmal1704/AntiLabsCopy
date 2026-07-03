@@ -8,11 +8,13 @@ export default function Footer() {
       <div className="footer-container">
         <div className="footer-logo footer-logo-wrapper">
           <img
-            src="/Hacklabslogo2.png"
+            src="/hacklabs-logo.png"
             alt="Hacklabs Logo Symbol"
             className="footer-logo-img"
           />
-          <span className="footer-logo-text"></span>
+          <span className="footer-logo-text">
+            Hacklabs
+          </span>
         </div>
 
         {/* Navigation */}

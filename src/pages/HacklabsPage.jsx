@@ -33,7 +33,7 @@ function HacklabsPage() {
         ) : (
           <HacklabsNavbar />
         )}
-        <motion.div
+        <motion.div 
           className="HacklabsLanding"
           initial={{ opacity: 0 }}
           animate={{ opacity: isTransitioning ? 0 : 1 }}
@@ -46,8 +46,8 @@ function HacklabsPage() {
           <HacklabsJudges />
           <HacklabsPrize />
           <HacklabsBenefits />
-          <HacklabsFAQ />
           <HacklabsQueryForm />
+          <HacklabsFAQ />
         </motion.div>
         {!isTransitioning && <HacklabsFooter />}
       </div>

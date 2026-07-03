@@ -6,113 +6,56 @@ import "./HacklabsAuthModal.css";
 
 export default function HacklabsAuthModal() {
   const { isOpen, closeModal } = useAuthModal();
-
-  const navigate = useNavigate();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  const [errors, setErrors] = useState({
-    email: "",
-    password: "",
-  });
-
-  const [error, setError] = useState("");
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (isOpen) {
+      setError(null);
       setEmail("");
       setPassword("");
-      setErrors({
-        email: "",
-        password: "",
-      });
-      setError("");
     }
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  // ==========================
-  // Validation
-  // ==========================
-
-  const validate = () => {
-    const newErrors = {};
-
-    if (!email.trim()) {
-      newErrors.email = "EMAIL ADDRESS IS REQUIRED";
-    } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email)) {
-      newErrors.email = "ENTER A VALID EMAIL ADDRESS";
-    }
-
-    if (!password.trim()) {
-      newErrors.password = "PASSWORD IS REQUIRED";
-    } else if (password.length < 6) {
-      newErrors.password = "PASSWORD MUST BE AT LEAST 6 CHARACTERS";
-    }
-
-    setErrors(newErrors);
-
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // ==========================
-  // Login
-  // ==========================
-
   const handleLogin = async (e) => {
     e.preventDefault();
-
-    setError("");
-
-    if (!validate()) return;
-
+    setError(null);
     setLoading(true);
 
     try {
       const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
+        email,
         password,
       });
-
       if (signInError) throw signInError;
-
+      
       closeModal();
-
       navigate("/hacklabs/dashboard");
     } catch (err) {
-      setError(err.message || "LOGIN FAILED");
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // ==========================
-  // Google Login
-  // ==========================
-
   const handleGoogleLogin = async () => {
-    setError("");
-
     try {
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
+        provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/hacklabs/dashboard`,
-        },
+          redirectTo: `${window.location.origin}/hacklabs/dashboard`
+        }
       });
-
       if (error) throw error;
     } catch (err) {
-      setError(err.message || "GOOGLE LOGIN FAILED");
+      setError(err.message);
     }
   };
-
-  // ==========================
-  // Register
-  // ==========================
 
   const goToRegister = () => {
     closeModal();
@@ -122,85 +65,58 @@ export default function HacklabsAuthModal() {
   return (
     <div className="auth-modal-overlay" onClick={closeModal}>
       <div className="auth-modal-box" onClick={(e) => e.stopPropagation()}>
-        <button className="close-btn" onClick={closeModal}>
-          ✕
-        </button>
+        {/* Corner Cutters */}
+        <span className="auth-corner top-left"></span>
+        <span className="auth-corner top-right"></span>
+        <span className="auth-corner bottom-left"></span>
+        <span className="auth-corner bottom-right"></span>
+
+        <button className="close-btn" onClick={closeModal}>✕</button>
 
         <div className="auth-modal-header">
-          <h2 className="auth-title">LOGIN</h2>
+          <h2 className="auth-title">SYSTEM.LOGIN</h2>
         </div>
 
-        {error && <div className="auth-error">{error.toUpperCase()}</div>}
+        {error && <div className="auth-error">Error: {error}</div>}
 
         <form onSubmit={handleLogin} className="auth-form">
-          {/* EMAIL */}
-
           <div className="input-group">
-            <label>EMAIL ADDRESS</label>
-
-            <input
-              type="email"
-              placeholder="ENTER YOUR EMAIL"
+            <label>EMAIL_ADDRESS</label>
+            <input 
+              type="email" 
+              required 
               value={email}
-              className={errors.email ? "input-error" : ""}
-              onChange={(e) => {
-                setEmail(e.target.value);
-
-                setErrors((prev) => ({
-                  ...prev,
-                  email: "",
-                }));
-
-                setError("");
-              }}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="INPUT_EMAIL"
             />
-
-            {errors.email && (
-              <span className="field-error">{errors.email}</span>
-            )}
           </div>
-
-          {/* PASSWORD */}
-
           <div className="input-group">
-            <label>PASSWORD</label>
-
-            <input
-              type="password"
-              placeholder="••••••••"
+            <label>SECURE_PASSWORD</label>
+            <input 
+              type="password" 
+              required 
               value={password}
-              className={errors.password ? "input-error" : ""}
-              onChange={(e) => {
-                setPassword(e.target.value);
-
-                setErrors((prev) => ({
-                  ...prev,
-                  password: "",
-                }));
-
-                setError("");
-              }}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
             />
-
-            {errors.password && (
-              <span className="field-error">{errors.password}</span>
-            )}
           </div>
-
+          
           <button type="submit" className="auth-submit-btn" disabled={loading}>
-            {loading ? "AUTHENTICATING..." : "LOGIN"}
+            {loading ? "AUTHENTICATING..." : "AUTHENTICATE"}
           </button>
         </form>
 
-        <div className="auth-footer">
-          <p>DON'T HAVE AN ACCOUNT?</p>
+        <div className="auth-divider"><span>OR_CONNECT_VIA</span></div>
 
-          <button
-            type="button"
-            className="register-link-btn"
-            onClick={goToRegister}
-          >
-            REGISTER NOW
+        <button className="google-btn" onClick={handleGoogleLogin} type="button">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+          GOOGLE_OAUTH
+        </button>
+
+        <div className="auth-footer">
+          <p>Don't have an account?</p>
+          <button className="register-link-btn" onClick={goToRegister}>
+            REGISTER_NEW_USER
           </button>
         </div>
       </div>

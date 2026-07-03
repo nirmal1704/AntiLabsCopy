@@ -142,13 +142,17 @@ export default function HacklabsDashboard({
   const handlePayment = async () => {
     setLoading(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const userEmail = session?.user?.email || "";
+
       const { data, error } = await supabase.functions.invoke(
         "create-cashfree-order",
         {
           body: {
             team_id: team.id,
-            customer_name: participant.name,
-            customer_email: participant.email,
+            customer_name: participant.full_name,
+            customer_email: userEmail,
+            customer_phone: participant.mobile_number,
           },
         },
       );
@@ -164,8 +168,9 @@ export default function HacklabsDashboard({
         });
       }
 
+      const isDev = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
       const cashfree = window.Cashfree({
-        mode: "sandbox", // Switch to "production" when going live
+        mode: isDev ? "sandbox" : "production",
       });
 
       const checkoutOptions = {

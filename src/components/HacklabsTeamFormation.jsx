@@ -82,36 +82,126 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
     setLoading(true);
     setError(null);
     try {
-      const teamCode = generateTeamCode();
-      const { data: teamData, error: teamError } = await supabase
+      // 1. Check if team with this name already exists
+      const { data: existingTeam, error: checkError } = await supabase
         .from("hacklabs_teams")
-        .insert({
-          name: teamName,
-          unique_team_code: teamCode,
-          captain_id: participant.auth_id,
-        })
-        .select()
-        .single();
+        .select("*")
+        .eq("name", teamName)
+        .maybeSingle();
 
-      if (teamError) {
-        if (teamError.code === "23505")
-          throw new Error(
-            "This Team Name is already taken! Please choose another.",
-          );
-        throw teamError;
+      if (checkError) throw checkError;
+
+      let teamData;
+      if (existingTeam) {
+        if (existingTeam.payment_status === "paid") {
+          throw new Error("This Team Name is already taken! Please choose another.");
+        }
+        if (existingTeam.captain_id === participant.auth_id) {
+          teamData = existingTeam;
+        } else {
+          throw new Error("This Team Name is already taken! Please choose another.");
+        }
+      } else {
+        const teamCode = generateTeamCode();
+        const { data: newTeam, error: insertError } = await supabase
+          .from("hacklabs_teams")
+          .insert({
+            name: teamName,
+            unique_team_code: teamCode,
+            captain_id: participant.auth_id,
+            payment_status: "pending",
+          })
+          .select()
+          .single();
+
+        if (insertError) {
+          if (insertError.code === "23505") {
+            throw new Error("This Team Name is already taken! Please choose another.");
+          }
+          throw insertError;
+        }
+        teamData = newTeam;
       }
 
-      const { error: partError } = await supabase
-        .from("hacklabs_personal_details")
-        .update({ team_id: teamData.id })
-        .eq("auth_id", participant.auth_id);
+      // 2. Fetch logged-in user email for Cashfree receipt
+      const { data: { session } } = await supabase.auth.getSession();
+      const userEmail = session?.user?.email || "";
 
-      if (partError) throw partError;
+      // 3. Invoke Supabase edge function to create order
+      const { data: orderData, error: orderError } = await supabase.functions.invoke(
+        "create-cashfree-order",
+        {
+          body: {
+            team_id: teamData.id,
+            customer_name: participant.full_name,
+            customer_email: userEmail,
+            customer_phone: participant.mobile_number,
+          },
+        }
+      );
 
-      onTeamUpdated(teamData);
+      if (orderError || !orderData || !orderData.payment_session_id) {
+        throw new Error(orderError?.message || orderData?.error || "Failed to initialize payment gateway.");
+      }
+
+      // 4. Dynamically load Cashfree JS SDK
+      if (!window.Cashfree) {
+        const script = document.createElement("script");
+        script.src = "https://sdk.cashfree.com/js/v3/cashfree.js";
+        await new Promise((resolve, reject) => {
+          script.onload = resolve;
+          script.onerror = () => reject(new Error("Failed to load Cashfree SDK."));
+          document.body.appendChild(script);
+        });
+      }
+
+      const isDev = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+      const cashfree = window.Cashfree({
+        mode: isDev ? "sandbox" : "production",
+      });
+
+      const checkoutOptions = {
+        paymentSessionId: orderData.payment_session_id,
+        redirectTarget: "_modal",
+      };
+
+      cashfree.checkout(checkoutOptions).then(async (result) => {
+        if (result.error) {
+          console.error("Payment error", result.error);
+          setError("Payment failed or cancelled: " + result.error.message);
+          setLoading(false);
+        } else if (result.paymentDetails || result.redirect) {
+          setLoading(true);
+          try {
+            // Update team status to paid and store transaction details
+            const { error: teamUpdateError } = await supabase
+              .from("hacklabs_teams")
+              .update({
+                payment_status: "paid",
+                cashfree_order_id: orderData.order_id,
+              })
+              .eq("id", teamData.id);
+            if (teamUpdateError) throw teamUpdateError;
+
+            // Associate participant with the team
+            const { error: partUpdateError } = await supabase
+              .from("hacklabs_personal_details")
+              .update({ team_id: teamData.id })
+              .eq("auth_id", participant.auth_id);
+            if (partUpdateError) throw partUpdateError;
+
+            onTeamUpdated({ ...teamData, payment_status: "paid" });
+          } catch (updateErr) {
+            console.error(updateErr);
+            setError("Database update failed after payment: " + updateErr.message);
+          } finally {
+            setLoading(false);
+          }
+        }
+      });
+
     } catch (err) {
       setError(err.message);
-    } finally {
       setLoading(false);
     }
   };
