@@ -46,6 +46,36 @@ serve(async (req) => {
         throw new Error(`Cashfree ${is_dev ? 'test' : 'production'} credentials are not configured in environment variables.`);
     }
 
+    // ── Debug User Check Mode ─────────────────────────────
+    if (action === 'check-user') {
+      const { email, phone } = body;
+      const resEmail = await fetch(`${supabaseUrl}/rest/v1/users?email=eq.${encodeURIComponent(email)}`, {
+        method: "GET",
+        headers: {
+          "apikey": supabaseServiceRoleKey,
+          "Authorization": `Bearer ${supabaseServiceRoleKey}`
+        }
+      });
+      const usersEmail = await resEmail.json();
+
+      const resPhone = await fetch(`${supabaseUrl}/rest/v1/users?phone_number=eq.${encodeURIComponent(phone)}`, {
+        method: "GET",
+        headers: {
+          "apikey": supabaseServiceRoleKey,
+          "Authorization": `Bearer ${supabaseServiceRoleKey}`
+        }
+      });
+      const usersPhone = await resPhone.json();
+
+      return new Response(JSON.stringify({
+        usersEmail,
+        usersPhone
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
     // ── Verification Mode ──────────────────────────────────
     if (action === 'verify') {
       const verifyEndpoint = is_dev 
