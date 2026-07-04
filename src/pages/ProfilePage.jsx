@@ -94,8 +94,8 @@ export default function ProfilePage() {
             const orderId = queryParams.get('order_id');
 
             if (!txId || !orderId) return;
-
             const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
             try {
                 // ── Step 1: Verify payment with Cashfree ──────────────
                 const verifyRes = await fetch(
@@ -147,20 +147,13 @@ export default function ProfilePage() {
                         return; // Don't fall through
                     }
                 } else {
-                    // Payment not completed
-                    const status = orderData.order_status === 'ACTIVE' ? 'pending' : 'failed';
-                    await supabase
-                        .from('transactions')
-                        .update({ payment_status: status })
-                        .eq('transaction_id', txId);
-                    setErrorMsg('Payment was not completed.');
+                    setErrorMsg('Payment verification is taking longer than expected. Please check back in a few minutes or contact support.');
                 }
             } catch (err) {
-                console.error('Failed to verify payment status', err);
-                setErrorMsg('An error occurred while verifying your payment.');
+                console.error('Payment verification error:', err);
+                setErrorMsg('An error occurred while verifying your payment status.');
             }
 
-            // Clean URL after failed/cancelled payment
             window.history.replaceState({}, '', window.location.pathname);
         };
         checkPayment();

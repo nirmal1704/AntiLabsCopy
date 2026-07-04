@@ -77,7 +77,7 @@ function FileZone({ label, hint, accept, maxSizeMB, file, onChange, isUploading 
                 <input
                     type="file"
                     accept={accept}
-                    required={!file}
+                    required={true}
                     onChange={onChange}
                     disabled={isUploading}
                     title=""
@@ -724,6 +724,7 @@ export default function ApplicationModal({ role, onClose }) {
                         position: role.title,
                         role_id: role.id || role.posting_id || null,
                         user_id: user?.user_id || null,
+                        promo_code: promoCode,
                         return_url: `${window.location.origin}/profile?tx_id={tx_id}`,
                         is_dev: isDev
                     }),

@@ -19,12 +19,12 @@ serve(async (req) => {
       customer_email, 
       customer_phone, 
       customer_name, 
-      amount, 
       return_url, 
       is_dev,
       position,
       role_id,
-      user_id
+      user_id,
+      promo_code
     } = body;
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
@@ -166,6 +166,60 @@ serve(async (req) => {
       });
     }
 
+    // ── Price Calculation (Server-Side) ───────────────────
+    if (!role_id) {
+      throw new Error("role_id is required");
+    }
+
+    const careerRes = await fetch(`${supabaseUrl}/rest/v1/Careers?posting_id=eq.${role_id}`, {
+      method: "GET",
+      headers: {
+        "apikey": supabaseServiceRoleKey,
+        "Authorization": `Bearer ${supabaseServiceRoleKey}`
+      }
+    });
+
+    if (!careerRes.ok) {
+      throw new Error("Failed to fetch course details from database.");
+    }
+
+    const careerData = await careerRes.json();
+    const career = careerData[0];
+    if (!career) {
+      throw new Error("Course/Role not found in database.");
+    }
+
+    const rawFee = career.registration_fees 
+      ? parseInt(String(career.registration_fees).replace(/\D/g, ''), 10) 
+      : NaN;
+
+    if (isNaN(rawFee) || rawFee <= 0) {
+        throw new Error("Invalid course pricing configuration in database.");
+    }
+
+    let finalAmount = rawFee;
+
+    // Apply promo code if present
+    if (promo_code) {
+        const promoRes = await fetch(`${supabaseUrl}/rest/v1/referral_codes?code=eq.${encodeURIComponent(promo_code.trim().toUpperCase())}&is_active=eq.true`, {
+          method: "GET",
+          headers: {
+            "apikey": supabaseServiceRoleKey,
+            "Authorization": `Bearer ${supabaseServiceRoleKey}`
+          }
+        });
+        if (promoRes.ok) {
+          const promoData = await promoRes.json();
+          const promo = promoData[0];
+          if (promo && promo.discount_percentage) {
+            const discount = parseFloat(promo.discount_percentage);
+            if (!isNaN(discount) && discount > 0 && discount <= 100) {
+              finalAmount = Math.round(rawFee * (1 - discount / 100));
+            }
+          }
+        }
+    }
+
     // ── Transaction Insertion (Server-Side REST API) ──────
     const txRes = await fetch(`${supabaseUrl}/rest/v1/transactions`, {
       method: "POST",
@@ -190,7 +244,7 @@ serve(async (req) => {
         graduation_year: 0,
         college_proof_url: "",
         resume_url: "",
-        fees_amount: amount,
+        fees_amount: finalAmount,
         payment_status: "pending"
       })
     });
@@ -216,7 +270,8 @@ serve(async (req) => {
       : "https://api.cashfree.com/pg/orders";
 
     const payload = {
-      order_amount: amount,
+      order_id: applicationId.toString(), // Match Cashfree order_id with transaction_id as string
+      order_amount: finalAmount,
       order_currency: "INR",
       customer_details: {
         customer_id: `cust_${applicationId}`,
@@ -227,7 +282,7 @@ serve(async (req) => {
       order_meta: {
         return_url: finalReturnUrl ? `${finalReturnUrl}&order_id={order_id}` : "http://localhost:5173/"
       },
-      order_note: `Registration #${applicationId}`
+      order_note: `Course Registration #${applicationId}`
     };
 
     const response = await fetch(endpoint, {
@@ -251,7 +306,8 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       payment_session_id: data.payment_session_id,
       order_id: data.order_id,
-      application_id: applicationId
+      application_id: applicationId,
+      final_amount: finalAmount
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
