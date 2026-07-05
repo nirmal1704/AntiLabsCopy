@@ -12,7 +12,18 @@ serve(async (req) => {
   }
 
   try {
-    const { application_id, customer_email, customer_phone, customer_name, team_id } = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      throw new Error("Malformed JSON or empty request body.");
+    }
+
+    const { application_id, customer_email, customer_phone, customer_name, team_id } = body;
+
+    if (!team_id) {
+      throw new Error("team_id is required to create a Cashfree order.");
+    }
 
     const appId = Deno.env.get("CASHFREE_APP_ID");
     const secretKey = Deno.env.get("CASHFREE_SECRET_KEY");
@@ -29,9 +40,13 @@ serve(async (req) => {
     const orderAmount = 203.70;
 
     // Use sandbox endpoint by default, can switch to prod via env var if needed
-    const apiUrl = Deno.env.get("CASHFREE_ENV") === "production" 
-      ? "https://api.cashfree.com/pg/orders" 
-      : "https://sandbox.cashfree.com/pg/orders";
+    const cashfreeEnv = Deno.env.get("CASHFREE_ENV") || "sandbox";
+    const apiUrl = Deno.env.get("CASHFREE_API_URL") || 
+      (cashfreeEnv === "production" 
+        ? "https://api.cashfree.com/pg/orders" 
+        : "https://sandbox.cashfree.com/pg/orders");
+
+    console.log(`Creating Cashfree order for Team #${team_id} using environment: ${cashfreeEnv}`);
 
     // Create the order using Cashfree API
     const response = await fetch(apiUrl, {
@@ -46,7 +61,7 @@ serve(async (req) => {
         order_amount: orderAmount,
         order_currency: "INR",
         customer_details: {
-          customer_id: team_id || `cust_${Date.now()}`,
+          customer_id: team_id.toString(),
           customer_name: customer_name || "Hacklabs Participant",
           customer_email: customer_email || "participant@hacklabs.com",
           customer_phone: customer_phone || "9999999999" // Cashfree requires a valid 10-digit phone number
@@ -56,9 +71,9 @@ serve(async (req) => {
           payment_methods: ""
         },
         order_tags: {
-          team_id: team_id || "unknown",
-          customer_name: customer_name,
-          customer_email: customer_email
+          team_id: team_id.toString(),
+          customer_name: customer_name || "Unknown",
+          customer_email: customer_email || "Unknown"
         }
       }),
     });
@@ -66,7 +81,7 @@ serve(async (req) => {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("Cashfree API Error:", data);
+      console.error("Cashfree API Error Response:", data);
       throw new Error(data.message || "Failed to create Cashfree order");
     }
 
@@ -80,10 +95,12 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
-  } catch (error) {
+  } catch (error: any) {
+    console.error("Cashfree edge function error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 400,
     });
   }
 });
+

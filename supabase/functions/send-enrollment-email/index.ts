@@ -201,24 +201,39 @@ serve(async (req) => {
   }
 
   try {
-    const body = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      throw new Error("Malformed JSON or empty request body.");
+    }
+
     const {
       student_name, student_email, student_phone, student_address,
       program_name, transaction_id, fees_amount, roll_number, batch_name, payment_method,
     } = body;
 
+    if (!student_email) throw new Error("student_email is required.");
+    if (!transaction_id) throw new Error("transaction_id is required.");
+    if (!program_name) throw new Error("program_name is required.");
+
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     const SUPABASE_URL   = Deno.env.get("SUPABASE_URL");
     const SUPABASE_KEY   = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY not configured.");
+    if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY is not configured.");
+    if (!SUPABASE_URL || !SUPABASE_KEY) {
+      throw new Error("Supabase credentials are not configured in environment variables.");
+    }
 
     // ── Idempotency: skip if already sent ──────────────────
-    if (SUPABASE_URL && SUPABASE_KEY) {
-      const checkRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/invoices?transaction_id=eq.${transaction_id}&email_sent=eq.true&select=invoice_id`,
-        { headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` } }
-      );
+    const checkRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/invoices?transaction_id=eq.${transaction_id}&email_sent=eq.true&select=invoice_id`,
+      { headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` } }
+    );
+    if (!checkRes.ok) {
+      console.warn("Failed to check existing invoices in database:", await checkRes.text());
+    } else {
       const existing = await checkRes.json();
       if (Array.isArray(existing) && existing.length > 0) {
         console.log(`Invoice already sent for transaction ${transaction_id}. Skipping.`);
@@ -239,7 +254,8 @@ serve(async (req) => {
     const taxAmount     = feesNum - baseAmount;
 
     const emailHTML = generateEmail({
-      student_name, program_name, roll_number, batch_name,
+      student_name: student_name || "Antilabs Student",
+      program_name, roll_number, batch_name,
       invoice_number: invoiceNumber, fees_amount: feesNum,
       base_amount: baseAmount, tax_amount: taxAmount,
       enrollment_date: enrollDate, invoice_date: invoiceDate,
@@ -258,10 +274,15 @@ serve(async (req) => {
         let bin = "";
         for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
         attachments.push({ filename: "Antilabs_Training_Program_Instructions.pdf", content: btoa(bin), type: "application/pdf" });
+      } else {
+        console.warn(`PDF fetch returned status ${pdfRes.status}`);
       }
-    } catch (e) { console.warn("PDF fetch failed:", e); }
+    } catch (e: any) { 
+      console.warn("PDF fetch failed:", e.message); 
+    }
 
     // ── Send via Resend ─────────────────────────────────────
+    console.log(`Sending enrollment email to ${student_email} for transaction #${transaction_id}...`);
     const resendRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { "Authorization": `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
@@ -275,25 +296,33 @@ serve(async (req) => {
     });
 
     const resendData = await resendRes.json();
-    if (!resendRes.ok) throw new Error(resendData.message || "Resend error");
+    if (!resendRes.ok) {
+      console.error("Resend API returned error:", resendData);
+      throw new Error(resendData.message || "Resend email delivery failure.");
+    }
 
     // ── Store invoice record ────────────────────────────────
-    if (SUPABASE_URL && SUPABASE_KEY) {
-      await fetch(`${SUPABASE_URL}/rest/v1/invoices`, {
-        method: "POST",
-        headers: {
-          "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}`,
-          "Content-Type": "application/json", "Prefer": "return=minimal",
-        },
-        body: JSON.stringify({
-          invoice_number: invoiceNumber, transaction_id: Number(transaction_id),
-          student_name, student_email, program_name,
-          fees_amount: feesNum, subtotal: baseAmount, tax_amount: taxAmount, grand_total: feesNum,
-          payment_method: payment_method || "Online (Cashfree)",
-          roll_number: roll_number || null, batch_name: batch_name || null,
-          email_sent: true, email_sent_at: new Date().toISOString(),
-        }),
-      });
+    console.log(`Email sent successfully. Creating database invoice record ${invoiceNumber}...`);
+    const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/invoices`, {
+      method: "POST",
+      headers: {
+        "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json", "Prefer": "return=minimal",
+      },
+      body: JSON.stringify({
+        invoice_number: invoiceNumber, transaction_id: Number(transaction_id),
+        student_name: student_name || "Antilabs Student", student_email, program_name,
+        fees_amount: feesNum, subtotal: baseAmount, tax_amount: taxAmount, grand_total: feesNum,
+        payment_method: payment_method || "Online (Cashfree)",
+        roll_number: roll_number || null, batch_name: batch_name || null,
+        email_sent: true, email_sent_at: new Date().toISOString(),
+      }),
+    });
+
+    if (!dbRes.ok) {
+      console.error("Failed to insert invoice record in database:", await dbRes.text());
+    } else {
+      console.log(`Invoice record ${invoiceNumber} created successfully.`);
     }
 
     return new Response(
@@ -301,8 +330,8 @@ serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
 
-  } catch (error) {
-    console.error("send-enrollment-email error:", error);
+  } catch (error: any) {
+    console.error("send-enrollment-email error:", error.message);
     return new Response(
       JSON.stringify({ error: error.message }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
