@@ -12,50 +12,90 @@ export default function HacklabsJudgeDashboard() {
   const [selectedMemberId, setSelectedMemberId] = useState(null);
   
   const [activeTab, setActiveTab] = useState("participants");
+  const [logsFilter, setLogsFilter] = useState("all");
+  const [participantsFilter, setParticipantsFilter] = useState("all");
 
   useEffect(() => {
-    fetchData();
+    let isMounted = true;
+    let timerId;
+
+    const pollData = async () => {
+      if (!isMounted) return;
+      await fetchData(true);
+      if (isMounted) {
+        timerId = setTimeout(pollData, 5000);
+      }
+    };
+
+    // Initial fetch (loud)
+    fetchData().then(() => {
+      if (isMounted) {
+        timerId = setTimeout(pollData, 5000);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timerId);
+    };
   }, []);
 
-  const fetchData = async () => {
+  const fetchData = async (silent = false) => {
     try {
       // Fetch judge data
       const { data: judgeData, error: judgeError } = await supabase.rpc('get_judge_data');
       if (judgeError) throw judgeError;
       setData(judgeData || []);
 
-      // Fetch dropouts (drafts)
-      const { data: drafts, error: draftsError } = await supabase
-        .from('application_drafts')
-        .select('*');
+      const { data: drafts, error: draftsError } = await supabase.rpc('get_hacklabs_drafts');
       if (draftsError) throw draftsError;
       setDraftsData(drafts || []);
 
-      // -- MOCK BACKEND: Fetching from localStorage until you add real backend --
-      // TODO: Replace with your actual backend fetch logic
-      const localQueries = JSON.parse(localStorage.getItem('mockHacklabsQueries') || '[]');
-      setQueriesData([
-        ...localQueries,
-        { id: 'dummy_1', name: 'System User', email: 'system@hacklabs.test', subject: 'System Integration Test', description: 'This is a simulated query placeholder. Real backend is currently detached.', status: 'open', created_at: new Date().toISOString() }
-      ]);
-      // ------------------------------------------------------------------------
+      const { data: queries, error: queriesError } = await supabase
+        .from('hacklabs_queries')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (queriesError) throw queriesError;
+      setQueriesData(queries || []);
 
     } catch (err) {
       console.error("Failed to fetch judge view:", err);
-      alert("Error fetching data. Check permissions or network.");
+      if (!silent) {
+        alert("Error fetching data. Check permissions or network.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  const handleDeleteQuery = async (queryId) => {
+    if (!window.confirm("Are you sure you want to delete this query? It cannot be undone.")) return;
+    try {
+      const { error } = await supabase.from('hacklabs_queries').delete().eq('id', queryId);
+      if (error) throw error;
+      setQueriesData(prev => prev.filter(q => q.id !== queryId));
+      setExpandedId(null);
+    } catch (err) {
+      console.error("Error deleting query:", err);
+      alert("Failed to delete query.");
+    }
+  };
+
   const filteredData = data.filter(item => {
     const term = search.toLowerCase();
-    return (
+    const matchesSearch = (
       (item.full_name && item.full_name.toLowerCase().includes(term)) ||
       (item.unique_user_code && item.unique_user_code.toLowerCase().includes(term)) ||
       (item.team_name && item.team_name.toLowerCase().includes(term)) ||
       (item.unique_team_code && item.unique_team_code.toLowerCase().includes(term))
     );
+    
+    if (!matchesSearch) return false;
+    
+    if (participantsFilter === 'team') return !!item.team_name;
+    if (participantsFilter === 'noteam') return !item.team_name;
+    
+    return true;
   });
 
   const allLogsMap = new Map();
@@ -74,7 +114,7 @@ export default function HacklabsJudgeDashboard() {
       name: formData.full_name || "N/A",
       email: formData.email || "N/A",
       phone: formData.mobile_number || "N/A",
-      status: "DRAFT (Incomplete)",
+      status: formData.current_step ? `STEP ${formData.current_step} (Incomplete)` : "DRAFT (Incomplete)",
       updated_at: draft.updated_at ? new Date(draft.updated_at).toLocaleDateString() : "N/A",
       specs: {
         ...formData,
@@ -102,22 +142,27 @@ export default function HacklabsJudgeDashboard() {
 
   const filteredLogs = allLogsData.filter(log => {
     const term = search.toLowerCase();
-    return log.name.toLowerCase().includes(term) || log.email.toLowerCase().includes(term);
+    const matchesSearch = log.name.toLowerCase().includes(term) || log.email.toLowerCase().includes(term);
+    
+    if (!matchesSearch) return false;
+    if (logsFilter === 'submitted') return log.type === 'Submitted';
+    if (logsFilter === 'unsubmitted') return log.type === 'Draft';
+    return true;
   });
 
   // Grouped logic for teams
   const groupedDataMap = new Map();
   filteredData.forEach(item => {
-    const isLoneWolf = !item.team_name;
-    const groupKey = isLoneWolf ? `team_Lone Wolves` : `team_${item.team_name}`;
+    if (!item.team_name) return; // Skip lone wolves in the teams tab
     
+    const groupKey = `team_${item.team_name}`;
     if (!groupedDataMap.has(groupKey)) {
       groupedDataMap.set(groupKey, {
         id: groupKey,
-        isTeam: true, // we treat lone wolves as a single team
-        team_name: isLoneWolf ? "Lone Wolves" : item.team_name,
-        unique_team_code: isLoneWolf ? "LONE-WOLF" : item.unique_team_code,
-        payment_status: isLoneWolf ? "mixed" : item.payment_status,
+        isTeam: true,
+        team_name: item.team_name,
+        unique_team_code: item.unique_team_code,
+        payment_status: item.payment_status,
         participants: []
       });
     }
@@ -125,7 +170,7 @@ export default function HacklabsJudgeDashboard() {
   });
   const groupedData = Array.from(groupedDataMap.values());
 
-  const paidTeamsData = groupedData.filter(g => g.payment_status === 'paid' && g.team_name !== 'Lone Wolves');
+  const paidTeamsData = groupedData.filter(g => g.payment_status === 'paid');
 
   const renderSpecs = (item) => (
     <div className="details-grid">
@@ -145,6 +190,7 @@ export default function HacklabsJudgeDashboard() {
       </div>
       <div className="details-card">
         <h4>Personal Bio</h4>
+        <p><strong>Email:</strong> {item.email || "N/A"}</p>
         <p><strong>Phone:</strong> {item.mobile_number || "N/A"}</p>
         <p><strong>DOB:</strong> {item.dob || "N/A"}</p>
         <p><strong>Gender:</strong> {item.gender || "N/A"}</p>
@@ -182,14 +228,39 @@ export default function HacklabsJudgeDashboard() {
           </div>
 
           <div className="judge-controls">
-            <div className="search-wrapper">
+            <div className="search-wrapper" style={{ display: 'flex', gap: '1rem', width: '100%', maxWidth: '600px' }}>
               <input 
                 type="text" 
                 placeholder="Search..." 
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="judge-search"
+                style={{ flex: 1 }}
               />
+              {activeTab === 'dropouts' && (
+                <select 
+                  value={logsFilter} 
+                  onChange={(e) => setLogsFilter(e.target.value)}
+                  className="judge-search"
+                  style={{ width: 'auto', minWidth: '150px', backgroundColor: '#111' }}
+                >
+                  <option value="all">All Applications</option>
+                  <option value="submitted">Submitted</option>
+                  <option value="unsubmitted">Incomplete</option>
+                </select>
+              )}
+              {activeTab === 'participants' && (
+                <select 
+                  value={participantsFilter} 
+                  onChange={(e) => setParticipantsFilter(e.target.value)}
+                  className="judge-search"
+                  style={{ width: 'auto', minWidth: '150px', backgroundColor: '#111' }}
+                >
+                  <option value="all">All Participants</option>
+                  <option value="team">In a Team</option>
+                  <option value="noteam">No Team</option>
+                </select>
+              )}
             </div>
             <div className="stats">
               <span>Total: {activeTab === 'participants' ? filteredData.length : activeTab === 'teams' ? groupedData.length : activeTab === 'paid' ? paidTeamsData.length : activeTab === 'queries' ? queriesData.length : filteredLogs.length}</span>
@@ -214,22 +285,22 @@ export default function HacklabsJudgeDashboard() {
                     </thead>
                     <tbody>
                       {filteredData.map(item => (
-                        <React.Fragment key={`p_${item.auth_id}`}>
-                          <tr className={expandedId === `p_${item.auth_id}` ? "expanded-row" : ""}>
-                            <td className="code-mono">{item.unique_user_code}</td>
-                            <td><strong>{item.full_name}</strong></td>
-                            <td><span className={item.team_name ? "team-name-text" : "no-team-text"}>{item.team_name || "Lone Wolf"}</span></td>
-                            <td>
-                              <span className={`status-badge ${item.payment_status}`}>
-                                {item.payment_status?.toUpperCase() || "-"}
-                              </span>
-                            </td>
-                            <td>
-                              <button className="btn-expand" onClick={() => setExpandedId(expandedId === `p_${item.auth_id}` ? null : `p_${item.auth_id}`)}>
-                                {expandedId === `p_${item.auth_id}` ? "Close" : "Specs"}
-                              </button>
-                            </td>
-                          </tr>
+                      <React.Fragment key={`p_${item.auth_id}`}>
+                        <tr className={expandedId === `p_${item.auth_id}` ? "expanded-row" : ""}>
+                          <td className="code-mono">{item.unique_user_code}</td>
+                          <td><strong>{item.full_name}</strong></td>
+                          <td><span className={item.team_name ? "team-name-text" : "no-team-text"}>{item.team_name || "-"}</span></td>
+                          <td>
+                            <span className={`status-badge ${item.payment_status}`}>
+                              {item.payment_status?.toUpperCase() || "-"}
+                            </span>
+                          </td>
+                          <td>
+                            <button className="btn-expand" onClick={() => setExpandedId(expandedId === `p_${item.auth_id}` ? null : `p_${item.auth_id}`)}>
+                              {expandedId === `p_${item.auth_id}` ? "Close" : "Specs"}
+                            </button>
+                          </td>
+                        </tr>
                           {expandedId === `p_${item.auth_id}` && (
                             <tr className="details-row"><td colSpan="5">{renderSpecs(item)}</td></tr>
                           )}
@@ -387,6 +458,13 @@ export default function HacklabsJudgeDashboard() {
                                     <p style={{ marginTop: '1rem' }}>
                                       <strong>Date:</strong> {new Date(query.created_at).toLocaleString()}
                                     </p>
+                                    <button 
+                                      className="primary-btn" 
+                                      style={{ marginTop: '1.5rem', backgroundColor: '#dc3545', borderColor: '#dc3545' }}
+                                      onClick={() => handleDeleteQuery(query.id)}
+                                    >
+                                      Mark as Resolved & Delete
+                                    </button>
                                   </div>
                                 </div>
                               </td>
