@@ -183,7 +183,8 @@ export default function RegisterPage() {
     } catch (error) {
       console.error("Error during registration:", error);
       setErrorMsg(
-        "An error occurred during registration. Please check your details and try again.",
+        error.message ||
+          "An error occurred during registration. Please check your details and try again.",
       );
       setLoading(false);
     }
