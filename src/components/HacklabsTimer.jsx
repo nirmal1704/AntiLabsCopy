@@ -44,7 +44,6 @@ const TimerCircle = ({ value, label }) => {
     </>
   );
 };
-
 export default function HacklabsTimer() {
   const calculateTimeLeft = () => {
     // 7 August 2026, 12:00 PM IST
@@ -98,3 +97,4 @@ export default function HacklabsTimer() {
     </>
   );
 }
+

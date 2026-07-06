@@ -24,6 +24,7 @@
   font-size: 1.25rem;
   font-weight: 500;
   color: #fff;
+  margin-top: 3rem;
   margin-bottom: 2rem;
   letter-spacing: 1px;
 }
@@ -32,14 +33,16 @@
   margin: 0;
   font-family: "Raleway Dots", sans-serif;
   font-weight: 400;
-  font-size: 15vh;
+  -webkit-text-stroke: 1px currentColor;
+  font-size: 17.5vh;
   color: #cfcfcf;
 }
 .hero-left .light {
   margin: 0;
   font-family: "Raleway Dots", sans-serif;
   font-weight: 400;
-  font-size: 15vh;
+  -webkit-text-stroke: 1px currentColor;
+  font-size: 17.5vh;
   color: #cfcfcf9e;
 }
 
@@ -52,52 +55,33 @@
 /* TICKET BUTTON */
 .ticket-btn {
   position: relative;
-  bottom: -100px;
+  bottom: -50px;
   width: 420px;
   height: 140px;
-  border: 2.5px solid #000;
-  outline: none;
+  border: none;
+  outline: 2px solid white;
+  outline-offset: 8px;
   cursor: pointer;
-  background: #e8e8e8;
-  color: #000;
+  background: #ffffff;
+  color: #000000;
   font-family: "Zen Dots", sans-serif;
   font-size: 1.85rem;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: visible; /* important — let corners bleed outside */
-  transition: transform 0.25s ease;
+  transition: all 0.25s ease;
 }
 
 .ticket-btn:hover {
   transform: translateY(-4px);
+  outline-offset: 12px;
+  background: #000000;
+  color: #ffffff;
 }
 
 .corner {
-  position: absolute;
-  width: 28px;
-  height: 28px;
-  background: #000; /* match your PAGE background exactly */
-  z-index: 2;
-}
-
-/* Push corners fully outside so they cut BOTH fill AND border */
-.corner.top-left {
-  top: -10px;
-  left: -10px;
-}
-.corner.top-right {
-  top: -10px;
-  right: -10px;
-}
-.corner.bottom-left {
-  bottom: -10px;
-  left: -10px;
-}
-.corner.bottom-right {
-  bottom: -10px;
-  right: -10px;
+  display: none;
 }
 
 .btn-text {
@@ -142,10 +126,10 @@
   }
 
   .hero-left .dark {
-    font-size: 6rem;
+    font-size: 6.8rem;
   }
   .hero-left .light {
-    font-size: 6rem;
+    font-size: 6.8rem;
   }
 
   .ticket-btn {

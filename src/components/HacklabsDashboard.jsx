@@ -374,9 +374,11 @@ export default function HacklabsDashboard({
                 )}
               </div>
               <div className="member-modal-title">
-                <h2>{selectedMember.name}</h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <h2>{selectedMember.name}</h2>
+                  {selectedMember.isCaptain && <span className="modal-captain-badge">Captain</span>}
+                </div>
                 <p>@{selectedMember.username}</p>
-                {selectedMember.isCaptain && <span className="captain-badge">Captain</span>}
               </div>
             </div>
 

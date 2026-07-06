@@ -16,7 +16,7 @@
 
 .panel-title {
   text-align: center;
-  font-size: 58px;
+  font-size: 48px;
   font-weight: 400;
   color: white;
   margin-bottom: 35px;
@@ -68,7 +68,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 18px;
+  padding: 0;
   overflow: hidden;
 }
 
@@ -135,5 +135,11 @@
 
   .judge-grid-content p {
     font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .panel-title {
+    font-size: 26px;
   }
 }

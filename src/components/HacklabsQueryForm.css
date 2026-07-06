@@ -8,6 +8,15 @@
   border-top: 1px solid #1a1a1a;
 }
 
+.query-section-heading {
+  color: white;
+  font-family: "Zen Dots", sans-serif;
+  text-align: center;
+  font-size: 48px;
+  font-weight: 400;
+  margin-bottom: 35px;
+}
+
 .hacklabs-query-section .query-wrapper {
   max-width: 800px;
   margin: 0 auto;
@@ -34,7 +43,7 @@
 
 .query-subtitle {
   color: #a3a3a3;
-  font-size: 0.9rem;
+  font-size: 1.1rem;
   margin-top: 0.5rem;
   font-family: monospace;
 }
@@ -69,6 +78,10 @@
   outline: none;
   border-color: #ffffff;
   background: #111111;
+}
+
+.hacklabs-textarea {
+  resize: none;
 }
 
 .hacklabs-input::placeholder,
@@ -132,5 +145,8 @@
   }
   .hacklabs-query-section .query-wrapper {
     padding: 2rem 1rem;
+  }
+  .query-section-heading {
+    font-size: 26px;
   }
 }

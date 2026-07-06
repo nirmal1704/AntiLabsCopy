@@ -54,7 +54,7 @@ export default function HacklabsStats() {
         }
       },
       {
-        threshold: 1, // 100% visible
+        threshold: 0.5, // trigger when half visible
       },
     );
 
@@ -75,7 +75,7 @@ export default function HacklabsStats() {
             start={1}
             end={10}
             suffix="K+"
-            duration={4000}
+            duration={1000}
             startAnimation={visible}
           />
         </>
@@ -88,7 +88,7 @@ export default function HacklabsStats() {
           start={0}
           end={48}
           suffix="H"
-          duration={4000}
+          duration={1000}
           startAnimation={visible}
         />
       ),
@@ -96,7 +96,7 @@ export default function HacklabsStats() {
     {
       label: "Members Per Team",
       render: () => (
-        <Counter start={0} end={4} duration={4000} startAnimation={visible} />
+        <Counter start={0} end={4} duration={1000} startAnimation={visible} />
       ),
     },
     {
@@ -107,7 +107,7 @@ export default function HacklabsStats() {
           <Counter
             start={1000}
             end={199}
-            duration={4000}
+            duration={1000}
             startAnimation={visible}
           />
         </>
