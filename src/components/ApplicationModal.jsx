@@ -496,19 +496,10 @@ export default function ApplicationModal({ role, onClose }) {
 
     const [formData, setFormData] = useState({
         full_name: user?.name || '',
-        university_name: '',
-        college_name: '',
-        current_year: '',
-        degree_pursuing: '',
-        branch: '',
-        graduation_year: '',
         mobile_number: user?.phone_number || '',
         email: user?.email || '',
     });
 
-    const [collegeProof, setCollegeProof] = useState(null); // Now stores { name, url } or null
-    const [resume, setResume] = useState(null); // Now stores { name, url } or null
-    const [uploadingType, setUploadingType] = useState(null); // 'proof' or 'resume' or null
     const [termsAccepted, setTermsAccepted] = useState(false);
     const [draftId, setDraftId] = useState(null);
 
@@ -647,12 +638,6 @@ export default function ApplicationModal({ role, onClose }) {
                     if (data.form_data) {
                         setFormData(prev => ({ ...prev, ...data.form_data }));
                     }
-                    if (data.college_proof_url) {
-                        setCollegeProof({ name: 'Previously Uploaded Proof', url: data.college_proof_url });
-                    }
-                    if (data.resume_url) {
-                        setResume({ name: 'Previously Uploaded Resume', url: data.resume_url });
-                    }
                 }
             } catch (err) {
                 console.error('Error fetching draft:', err);
@@ -695,56 +680,7 @@ export default function ApplicationModal({ role, onClose }) {
     const handleChange = (e) =>
         setFormData({ ...formData, [e.target.name]: e.target.value });
 
-    const handleFileChange = async (e, setter, maxSizeMB, type) => {
-        const file = e.target.files[0];
-        if (!file) { setter(null); return; }
-        if (file.size > maxSizeMB * 1024 * 1024) {
-            setError(`File exceeds ${maxSizeMB}MB limit. Please choose a smaller file.`);
-            e.target.value = '';
-            setter(null);
-            return;
-        }
-        setError('');
-        
-        // Upload immediately to Cloudinary to save progress
-        setUploadingType(type);
-        try {
-            const url = await uploadToCloudinary(file);
-            setter({ name: file.name, url });
-            
-            if (type === 'proof') {
-                saveDraft({ college_proof_url: url });
-            } else if (type === 'resume') {
-                saveDraft({ resume_url: url });
-            }
-        } catch (err) {
-            setError(err.message || 'Failed to upload file.');
-            setter(null);
-        } finally {
-            setUploadingType(null);
-        }
-    };
-
-    const uploadToCloudinary = async (file) => {
-        const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-        const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-
-        if (!cloudName || !uploadPreset || cloudName === 'your_cloud_name')
-            throw new Error('Cloudinary configuration missing. Check your .env file.');
-
-        const data = new FormData();
-        data.append('file', file);
-        data.append('upload_preset', uploadPreset);
-
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
-            method: 'POST', body: data,
-        });
-        if (!res.ok) {
-            const err = await res.json();
-            throw new Error(err.error?.message || 'Failed to upload file to Cloudinary');
-        }
-        return (await res.json()).secure_url;
-    };
+    // File uploads and captcha removed from pre-payment modal
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -757,16 +693,9 @@ export default function ApplicationModal({ role, onClose }) {
             return;
         }
         if (!termsAccepted) { setError('You must accept the terms & conditions to proceed.'); return; }
-        if (!collegeProof) { setError('Please upload your college proof document.'); return; }
-        if (!resume) { setError('Please upload your resume.'); return; }
 
         setLoading(true);
         try {
-            const proofUrl = collegeProof?.url;
-            const resumeUrl = resume?.url;
-
-            // ── Step 3: Save to Supabase ──────────────────────
-
             // Use the final (possibly discounted) fee
             const finalFees = currentFee;
 
@@ -775,42 +704,11 @@ export default function ApplicationModal({ role, onClose }) {
                 return str.replace(/<[^>]*>?/gm, '').trim();
             };
 
-            const { data: insertedData, error: dbError } = await supabase.from('transactions').insert([{
-                user_id: user?.user_id || null,
-                position: role.title,
-                role_id: role.id || role.posting_id || null,
-                full_name: sanitizeInput(formData.full_name),
-                university_name: sanitizeInput(formData.university_name),
-                college_name: sanitizeInput(formData.college_name),
-                current_year: formData.current_year ? parseInt(formData.current_year, 10) : null,
-                degree_pursuing: sanitizeInput(formData.degree_pursuing),
-                branch: sanitizeInput(formData.branch),
-                graduation_year: formData.graduation_year ? parseInt(formData.graduation_year) : null,
-                mobile_number: sanitizeInput(formData.mobile_number),
-                email: sanitizeInput(formData.email),
-                college_proof_url: proofUrl,
-                resume_url: resumeUrl,
-                fees_amount: finalFees,
-                payment_status: 'pending'
-            }]).select();
-
-            if (dbError) {
-                if (dbError.code === '23505')
-                    throw new Error('You have already registered for this training program.');
-                if (dbError.code === '23503' && dbError.message?.includes('transactions_user_id_fkey')) {
-                    if (logout) logout();
-                    throw new Error('Your session is invalid or has expired. Please sign out and sign in again.');
-                }
-                throw new Error('An unexpected database error occurred. Please try again later.');
-            }
-
-            const applicationId = insertedData?.[0]?.transaction_id;
-
-            // ── Step 4: Initialize Cashfree Payment ───────────
+            // ── Step 3 & 4: Call Secure Edge Function ───────────────────
             const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
             
             const orderRes = await fetch(
-                `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-course-order`,
+                `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-cashfree-order`,
                 {
                     method: 'POST',
                     headers: {
@@ -819,12 +717,15 @@ export default function ApplicationModal({ role, onClose }) {
                         'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
                     },
                     body: JSON.stringify({
-                        application_id: applicationId,
-                        promo_code: promoCode, // Send promo code securely instead of raw amount
-                        customer_email: formData.email,
-                        customer_phone: formData.mobile_number,
-                        customer_name: formData.full_name,
-                        return_url: `${window.location.origin}/profile?tx_id=${applicationId}`,
+                        customer_email: sanitizeInput(formData.email),
+                        customer_phone: sanitizeInput(formData.mobile_number),
+                        customer_name: sanitizeInput(formData.full_name),
+                        amount: finalFees,
+                        position: role.title,
+                        role_id: role.id || role.posting_id || null,
+                        user_id: user?.user_id || null,
+                        promo_code: promoCode,
+                        return_url: `${window.location.origin}/profile?tx_id={tx_id}`,
                         is_dev: isDev
                     }),
                 }
@@ -832,6 +733,9 @@ export default function ApplicationModal({ role, onClose }) {
 
             const orderData = await orderRes.json();
             if (!orderData.payment_session_id) {
+                if (orderData.error?.includes('duplicate key value') || orderData.error?.includes('already registered')) {
+                    throw new Error('You have already registered for this training program.');
+                }
                 throw new Error(orderData.error || 'Failed to initialize payment gateway.');
             }
 
@@ -946,120 +850,7 @@ export default function ApplicationModal({ role, onClose }) {
                         </div>
                     </div>
 
-                    {/* Academic Info */}
-                    <div className="am__section-label">Academic Details</div>
-
-                    <div className="am__row">
-                        <div className="am__input-group">
-                            <label>University Name</label>
-                            <AutocompleteInput
-                                name="university_name"
-                                value={formData.university_name}
-                                onChange={handleChange}
-                                placeholder="e.g. DAVV, Anna University"
-                                required={false}
-                                suggestions={UNIVERSITY_SUGGESTIONS}
-                                icon={Icon.building}
-                            />
-                        </div>
-                        <div className="am__input-group">
-                            <label>College Name *</label>
-                            <AutocompleteInput
-                                name="college_name"
-                                value={formData.college_name}
-                                onChange={handleChange}
-                                placeholder="e.g. IIPS, IIT Bombay"
-                                required={true}
-                                suggestions={COLLEGE_SUGGESTIONS}
-                                icon={Icon.school}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="am__row">
-                        <div className="am__input-group">
-                            <label>Current Year *</label>
-                            <div className="am__input-wrap am__select-wrap">
-                                <span className="am__input-icon">{Icon.calendar}</span>
-                                <select
-                                    name="current_year"
-                                    required
-                                    value={formData.current_year}
-                                    onChange={handleChange}
-                                    className="am__select"
-                                >
-                                    <option value="">Select year…</option>
-                                    <option value={1}>1st Year</option>
-                                    <option value={2}>2nd Year</option>
-                                    <option value={3}>3rd Year</option>
-                                    <option value={4}>4th Year</option>
-                                    <option value={5}>5th Year</option>
-                                    <option value={0}>Lateral Entry</option>
-                                </select>
-                                <span className="am__select-chevron">▾</span>
-                            </div>
-                        </div>
-                        <div className="am__input-group">
-                            <label>Degree Pursuing *</label>
-                            <AutocompleteInput
-                                name="degree_pursuing"
-                                value={formData.degree_pursuing}
-                                onChange={handleChange}
-                                placeholder="e.g. B.Tech, M.Sc"
-                                required={true}
-                                suggestions={DEGREE_SUGGESTIONS}
-                                icon={Icon.cap}
-                            />
-                        </div>
-                        <div className="am__input-group">
-                            <label>Branch *</label>
-                            <AutocompleteInput
-                                name="branch"
-                                value={formData.branch}
-                                onChange={handleChange}
-                                placeholder="e.g. CSE, ECE, IT"
-                                required={true}
-                                suggestions={BRANCH_SUGGESTIONS}
-                                icon={Icon.building}
-                            />
-                        </div>
-                        <div className="am__input-group">
-                            <label>Graduation Year *</label>
-                            <div className="am__input-wrap">
-                                <input
-                                    type="number" name="graduation_year" required
-                                    placeholder="YYYY" min="2024" max="2035"
-                                    value={formData.graduation_year} onChange={handleChange}
-                                    style={{ paddingLeft: '14px' }}
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Documents */}
-                    <div className="am__section-label">Documents</div>
-
-                    <FileZone
-                        label="College Proof (ID Card, Fee Receipt, etc.) *"
-                        hint="ID Card or Fee Receipt"
-                        accept="application/pdf,image/*"
-                        maxSizeMB={5}
-                        file={collegeProof}
-                        onChange={(e) => handleFileChange(e, setCollegeProof, 5, 'proof')}
-                        isUploading={uploadingType === 'proof'}
-                    />
-
-                    <FileZone
-                        label="Resume *"
-                        hint="PDF only"
-                        accept="application/pdf"
-                        maxSizeMB={7}
-                        file={resume}
-                        onChange={(e) => handleFileChange(e, setResume, 7, 'resume')}
-                        isUploading={uploadingType === 'resume'}
-                    />
-
-                    {/* Terms */}
+                    {/* Consent */}
                     <div className="am__section-label">Consent</div>
 
                     <div className="am__checkbox-group">

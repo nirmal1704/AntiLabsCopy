@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabase';
 import SEO from '../components/SEO';
 import './Auth.css';
+import CompleteRegistrationModal from '../components/CompleteRegistrationModal';
 
 export default function ProfilePage() {
     const { user, login, logout } = useAuth();
@@ -20,6 +21,7 @@ export default function ProfilePage() {
     const [successMsg, setSuccessMsg] = useState('');
     const [trainings, setTrainings] = useState([]);
     const [loadingTrainings, setLoadingTrainings] = useState(true);
+    const [completingReg, setCompletingReg] = useState(null);
 
     const [invoices, setInvoices] = useState([]);
     const [loadingInvoices, setLoadingInvoices] = useState(true);
@@ -92,48 +94,63 @@ export default function ProfilePage() {
             const orderId = queryParams.get('order_id');
 
             if (!txId || !orderId) return;
+            const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
             try {
-                let attempts = 0;
-                let isPaid = false;
-                let txData = null;
-                
-                while (attempts < 10 && !isPaid) {
-                    const { data, error } = await supabase
-                        .from('transactions')
-                        .select('*')
-                        .eq('transaction_id', txId)
-                        .single();
+                // ── Step 1: Verify payment with Cashfree ──────────────
+                const verifyRes = await fetch(
+                    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-cashfree-order`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'apikey':        import.meta.env.VITE_SUPABASE_ANON_KEY,
+                            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+                        },
+                        body: JSON.stringify({ action: 'verify', order_id: orderId, transaction_id: txId, is_dev: isDev }),
+                    }
+                );
+                const orderData = await verifyRes.json();
 
-                    if (!error && data) {
-                        txData = data;
-                        if (data.payment_status === 'paid') {
-                            isPaid = true;
+                if (orderData.order_status === 'PAID') {
+                    // Read transaction data returned from Edge Function to bypass client RLS SELECT constraints
+                    const txData = orderData.transaction;
+
+                    if (txData) {
+                        // The database update to 'paid', batch assignment, and email sending
+                        // have already been executed securely on the backend Edge Function.
+                        // However, we run the local client-side update only if the user is logged in (satisfies RLS)
+                        // as a fallback sync.
+                        if (txData.payment_status !== 'paid' && user) {
+                            try {
+                                await supabase
+                                    .from('transactions')
+                                    .update({ payment_status: 'paid' })
+                                    .eq('transaction_id', txId);
+                            } catch (e) {
+                                console.error('Local fallback update failed:', e);
+                            }
                         }
-                    }
-                    if (!isPaid) {
-                        attempts++;
-                        await new Promise(resolve => setTimeout(resolve, 2000));
-                    }
-                }
 
-                if (isPaid && txData) {
-                    if (!user) {
-                        setSuccessMsg('Payment Successful! Redirecting to complete registration...');
-                        setTimeout(() => {
-                            navigate(`/register?tx_id=${txId}&email=${encodeURIComponent(txData.email)}&name=${encodeURIComponent(txData.full_name)}&phone=${encodeURIComponent(txData.mobile_number)}`);
-                        }, 2000);
-                    } else {
-                        setSuccessMsg('Payment Successful! Enrollment confirmed. Redirecting...');
-                        setTimeout(() => {
-                            window.location.href = window.location.pathname;
-                        }, 3000);
+                        // ── Show success screen, then redirect or reload after 3s ──
+                        if (!user) {
+                            setSuccessMsg('🎉 Payment Successful! Redirecting to complete registration...');
+                            setTimeout(() => {
+                                navigate(`/register?tx_id=${txId}&email=${encodeURIComponent(txData.email)}&name=${encodeURIComponent(txData.full_name)}&phone=${encodeURIComponent(txData.mobile_number)}`);
+                            }, 2000);
+                        } else {
+                            setSuccessMsg('🎉 Payment Successful! Enrollment confirmed. Redirecting...');
+                            setTimeout(() => {
+                                window.location.href = window.location.pathname;
+                            }, 3000);
+                        }
+                        return; // Don't fall through
                     }
-                    return;
                 } else {
                     setErrorMsg('Payment verification is taking longer than expected. Please check back in a few minutes or contact support.');
                 }
             } catch (err) {
+                console.error('Payment verification error:', err);
                 setErrorMsg('An error occurred while verifying your payment status.');
             }
 
@@ -154,6 +171,35 @@ export default function ProfilePage() {
                 residential_address: user.residential_address || '',
                 age: user.age || ''
             });
+
+            const linkPastRegistrations = async (email, userId) => {
+                try {
+                    const { data: paidTxs } = await supabase
+                        .from('transactions')
+                        .select('transaction_id, role_id')
+                        .eq('email', email)
+                        .eq('payment_status', 'paid')
+                        .is('user_id', null);
+
+                    if (paidTxs && paidTxs.length > 0) {
+                        for (const tx of paidTxs) {
+                            await supabase
+                                .from('transactions')
+                                .update({ user_id: userId })
+                                .eq('transaction_id', tx.transaction_id);
+
+                            await supabase
+                                .from('training_registrations')
+                                .update({ user_id: userId })
+                                .eq('email', email)
+                                .eq('role_id', tx.role_id)
+                                .is('user_id', null);
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error linking past transactions:', err);
+                }
+            };
 
             const fetchTrainings = async () => {
                 try {
@@ -191,8 +237,12 @@ export default function ProfilePage() {
                 }
             };
 
-            fetchTrainings();
-            fetchInvoices();
+            const init = async () => {
+                await linkPastRegistrations(user.email, user.user_id);
+                await fetchTrainings();
+                await fetchInvoices();
+            };
+            init();
         }
     }, [user]);
 
@@ -564,56 +614,83 @@ export default function ProfilePage() {
                                 </div>
                             ) : (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                                    {trainings.map((t) => (
-                                        <div key={t.registration_id} style={{ 
-                                            display: 'flex', 
-                                            justifyContent: 'space-between', 
-                                            alignItems: 'center', 
-                                            flexWrap: 'wrap', 
-                                            gap: '24px', 
-                                            padding: '24px 28px', 
-                                            backgroundColor: '#ffffff', 
-                                            borderRadius: '16px', 
-                                            border: '1px solid #e2e8f0', 
-                                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.03)',
-                                            position: 'relative',
-                                            overflow: 'hidden'
-                                        }}>
-                                            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '4px', backgroundColor: '#0ea5e9' }} />
-                                            <div>
-                                                <h4 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#0f172a', marginBottom: '12px', letterSpacing: '-0.01em' }}>{t.position}</h4>
-                                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', fontSize: '0.95rem', color: '#64748b', fontWeight: '500' }}>
-                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                                        <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><path d="M3 21h18M9 8h1m5 0h1M9 12h1m5 0h1M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16" /></svg>
-                                                        {t.college_name}
+                                    {trainings.map((t) => {
+                                        const isIncomplete = !t.college_name || !t.college_proof_url || !t.resume_url;
+                                        return (
+                                            <div key={t.registration_id} style={{ 
+                                                display: 'flex', 
+                                                justifyContent: 'space-between', 
+                                                alignItems: 'center', 
+                                                flexWrap: 'wrap', 
+                                                gap: '24px', 
+                                                padding: '24px 28px', 
+                                                backgroundColor: '#ffffff', 
+                                                borderRadius: '16px', 
+                                                border: '1px solid #e2e8f0', 
+                                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.03)',
+                                                position: 'relative',
+                                                overflow: 'hidden'
+                                            }}>
+                                                <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '4px', backgroundColor: isIncomplete ? '#e11d48' : '#0ea5e9' }} />
+                                                <div>
+                                                    <h4 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#0f172a', marginBottom: '12px', letterSpacing: '-0.01em' }}>{t.position}</h4>
+                                                    {isIncomplete ? (
+                                                        <div style={{ color: '#e11d48', fontWeight: '600', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                                                            Incomplete Enrollment Details: Please complete your academic details to process credentials.
+                                                        </div>
+                                                    ) : (
+                                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', fontSize: '0.95rem', color: '#64748b', fontWeight: '500' }}>
+                                                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                                <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><path d="M3 21h18M9 8h1m5 0h1M9 12h1m5 0h1M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16" /></svg>
+                                                                {t.college_name}
+                                                            </span>
+                                                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                                <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><path d="M22 10l-10-5L2 10l10 5 10-5zM6 12.5V17c0 1.1 2.686 2 6 2s6-.9 6-2v-4.5" /></svg>
+                                                                {t.degree_pursuing}
+                                                            </span>
+                                                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                                <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>
+                                                                Class of {t.graduation_year}
+                                                            </span>
+                                                            {t.roll_number && (
+                                                                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#0ea5e9', fontWeight: 'bold' }}>
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h8"/><path d="M8 11h8"/></svg>
+                                                                    Roll No: {t.roll_number}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', backgroundColor: '#f0fdf4', color: '#15803d', borderRadius: '8px', fontSize: '0.85rem', fontWeight: '600', border: '1px solid #bbf7d0' }}>
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+                                                        Payment Confirmed
                                                     </span>
-                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                                        <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><path d="M22 10l-10-5L2 10l10 5 10-5zM6 12.5V17c0 1.1 2.686 2 6 2s6-.9 6-2v-4.5" /></svg>
-                                                        {t.degree_pursuing}
-                                                    </span>
-                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                                        <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>
-                                                        Class of {t.graduation_year}
-                                                    </span>
-                                                    {t.roll_number && (
-                                                        <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#0ea5e9', fontWeight: 'bold' }}>
-                                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h8"/><path d="M8 11h8"/></svg>
-                                                            Roll No: {t.roll_number}
-                                                        </span>
+                                                    {isIncomplete ? (
+                                                        <button 
+                                                            onClick={() => setCompletingReg(t)}
+                                                            className="btn btn-primary"
+                                                            style={{ 
+                                                                padding: '8px 16px', 
+                                                                fontSize: '0.9rem', 
+                                                                backgroundColor: '#e11d48', 
+                                                                borderColor: '#e11d48',
+                                                                color: '#fff',
+                                                                marginTop: '4px' 
+                                                            }}
+                                                        >
+                                                            Complete Registration
+                                                        </button>
+                                                    ) : (
+                                                        <div style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: '500', marginRight: '4px' }}>
+                                                            Paid: <span style={{ color: '#0f172a', fontWeight: '700' }}>₹{parseInt(t.fees_amount).toLocaleString('en-IN')}</span>
+                                                        </div>
                                                     )}
                                                 </div>
                                             </div>
-                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
-                                                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', backgroundColor: '#f0fdf4', color: '#15803d', borderRadius: '8px', fontSize: '0.85rem', fontWeight: '600', border: '1px solid #bbf7d0' }}>
-                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
-                                                    Payment Confirmed
-                                                </span>
-                                                <div style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: '500', marginRight: '4px' }}>
-                                                    Paid: <span style={{ color: '#0f172a', fontWeight: '700' }}>₹{parseInt(t.fees_amount).toLocaleString('en-IN')}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             )}
                         </div>
@@ -622,6 +699,28 @@ export default function ProfilePage() {
                 </div>
             </main>
             <Footer />
+
+            {completingReg && (
+                <CompleteRegistrationModal
+                    registration={completingReg}
+                    onClose={() => setCompletingReg(null)}
+                    onSuccess={() => {
+                        setCompletingReg(null);
+                        setSuccessMsg('🎉 Registration details updated successfully!');
+                        if (user) {
+                            supabase
+                                .from('training_registrations')
+                                .select('*')
+                                .eq('user_id', user.user_id)
+                                .eq('payment_status', 'paid')
+                                .then(({ data }) => {
+                                    if (data) setTrainings(data);
+                                });
+                        }
+                        setTimeout(() => setSuccessMsg(''), 4000);
+                    }}
+                />
+            )}
         </div>
     );
 }

@@ -155,7 +155,7 @@ export default function RegisterPage() {
                 throw error;
             }
 
-            setSuccessMsg('Registration successful! Please check your email for the 6-digit confirmation code.');
+            setSuccessMsg('Registration successful! Please check your email for the 8-digit confirmation code.');
             setShowOtpStep(true);
             setLoading(false);
         } catch (error) {
