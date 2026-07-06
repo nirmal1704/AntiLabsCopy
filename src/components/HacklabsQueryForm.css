@@ -1,0 +1,313 @@
+@import url("https://fonts.googleapis.com/css2?family=Zen+Dots&display=swap");
+
+.hacklabs-query-section {
+  padding: 6rem 2rem;
+  background: #000;
+  color: #fff;
+  font-family: "Zen Dots", sans-serif;
+  border-top: 1px solid #1a1a1a;
+  position: relative;
+  z-index: 10;
+}
+
+.hacklabs-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.query-wrapper {
+  max-width: 850px;
+  margin: auto;
+  padding: 3rem;
+  background: rgba(8, 8, 8, 0.96);
+  border: 1px solid #2d2d2d;
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(18px);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+}
+
+.query-wrapper::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.9),
+    transparent
+  );
+  opacity: 0.35;
+}
+
+.query-header {
+  text-align: center;
+  margin-bottom: 2.8rem;
+}
+
+.query-header h2 {
+  margin: 0;
+  color: #fff;
+  font-family: "Zen Dots", sans-serif;
+  font-size: 4rem;
+}
+
+.query-subtitle {
+  font-family: "Zen Dots", sans-serif;
+  margin-top: 0.8rem;
+  color: #fff;
+  font-family: monospace;
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+/* ========================= */
+/* FORM */
+/* ========================= */
+
+.hacklabs-query-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+}
+
+.form-group-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.6rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.field label {
+  margin-bottom: 0.7rem;
+  font-size: 0.72rem;
+  color: #fff;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-family: "Zen Dots", sans-serif;
+}
+
+/* ========================= */
+/* INPUTS */
+/* ========================= */
+
+.hacklabs-input,
+.hacklabs-textarea {
+  width: 100%;
+  padding: 15px 18px;
+  border-radius: 6px;
+  border: 1px solid #333;
+  background: #050505;
+  color: #fff;
+  font-size: 0.95rem;
+  font-family: monospace;
+  transition: 0.25s ease;
+  box-sizing: border-box;
+}
+
+.hacklabs-textarea {
+  min-height: 180px;
+  resize: vertical;
+}
+
+.hacklabs-input::placeholder,
+.hacklabs-textarea::placeholder {
+  color: #666;
+  font-size: 0.72rem;
+  letter-spacing: 1px;
+  font-family: "Zen Dots", sans-serif;
+}
+
+.hacklabs-input:hover,
+.hacklabs-textarea:hover {
+  border-color: #555;
+}
+
+.hacklabs-input:focus,
+.hacklabs-textarea:focus {
+  outline: none;
+  background: #111;
+  border-color: #fff;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.08);
+}
+
+/* ========================= */
+/* ERROR INPUT */
+/* ========================= */
+
+.input-error {
+  border-color: #ff4040 !important;
+  box-shadow: 0 0 12px rgba(255, 64, 64, 0.15);
+}
+
+.input-error:focus {
+  border-color: #ff4040 !important;
+  box-shadow:
+    0 0 0 1px #ff4040,
+    0 0 15px rgba(255, 64, 64, 0.18);
+}
+
+.field-error {
+  margin-top: 0.55rem;
+  min-height: 16px;
+  color: #ff4b4b;
+  font-size: 0.58rem;
+  font-family: "Zen Dots", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  line-height: 1.6;
+  animation: errorFade 0.25s ease;
+}
+
+@keyframes errorFade {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========================= */
+/* BUTTON */
+/* ========================= */
+
+.hacklabs-submit-btn {
+  margin-top: 0.5rem;
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid #fff;
+  background: #fff;
+  color: #000;
+  font-family: "Zen Dots", sans-serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: 0.3s ease;
+  text-transform: uppercase;
+}
+
+.hacklabs-submit-btn:hover:not(:disabled) {
+  background: transparent;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.12);
+}
+
+.hacklabs-submit-btn:disabled {
+  background: #222;
+  border-color: #222;
+  color: #777;
+  cursor: not-allowed;
+}
+
+/* ========================= */
+/* MESSAGE */
+/* ========================= */
+
+.query-message {
+  margin-top: 0.5rem;
+  padding: 14px;
+  border-radius: 6px;
+  text-align: center;
+  font-family: "Zen Dots", sans-serif;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  animation: messageFade 0.3s ease;
+}
+
+.query-message.success {
+  color: #4ade80;
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.query-message.error {
+  color: #ff5c5c;
+  background: rgba(255, 70, 70, 0.08);
+  border: 1px solid rgba(255, 70, 70, 0.3);
+}
+
+@keyframes messageFade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========================= */
+/* RESPONSIVE */
+/* ========================= */
+
+@media (max-width: 768px) {
+  .hacklabs-query-section {
+    padding: 4rem 1rem;
+  }
+
+  .query-wrapper {
+    padding: 2rem 1.3rem;
+  }
+
+  .form-group-row {
+    grid-template-columns: 1fr;
+  }
+
+  .query-subtitle {
+    font-size: 0.82rem;
+  }
+
+  .field label {
+    font-size: 0.66rem;
+  }
+
+  .hacklabs-input,
+  .hacklabs-textarea {
+    padding: 14px;
+    font-size: 0.9rem;
+  }
+
+  .hacklabs-textarea {
+    min-height: 160px;
+  }
+
+  .field-error {
+    font-size: 0.52rem;
+  }
+
+  .hacklabs-submit-btn {
+    font-size: 0.82rem;
+    padding: 14px;
+  }
+
+  .query-message {
+    font-size: 0.55rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hacklabs-query-section {
+    padding: 3rem 0.8rem;
+  }
+
+  .query-wrapper {
+    padding: 1.5rem 1rem;
+    border-radius: 10px;
+  }
+
+  .hacklabs-input::placeholder,
+  .hacklabs-textarea::placeholder {
+    font-size: 0.62rem;
+  }
+}

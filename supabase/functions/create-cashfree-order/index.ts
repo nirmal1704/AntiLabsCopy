@@ -6,6 +6,7 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS Preflight perfectly
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -34,16 +35,11 @@ serve(async (req) => {
       throw new Error("Supabase credentials are not configured in edge function environment.");
     }
 
-    const appId = is_dev 
-      ? Deno.env.get("CASHFREE_TEST_APP_ID")
-      : Deno.env.get("CASHFREE_PROD_APP_ID");
-      
-    const secretKey = is_dev 
-      ? Deno.env.get("CASHFREE_TEST_SECRET_KEY")
-      : Deno.env.get("CASHFREE_PROD_SECRET_KEY");
+    const appId = Deno.env.get("CASHFREE_APP_ID");
+    const secretKey = Deno.env.get("CASHFREE_SECRET_KEY");
 
     if (!appId || !secretKey) {
-        throw new Error(`Cashfree ${is_dev ? 'test' : 'production'} credentials are not configured in environment variables.`);
+      throw new Error("Missing Cashfree API keys in environment variables.");
     }
 
     // ── Verification Mode ──────────────────────────────────
@@ -285,7 +281,8 @@ serve(async (req) => {
       order_note: `Course Registration #${applicationId}`
     };
 
-    const response = await fetch(endpoint, {
+    // Create the order using Cashfree API
+    const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
         "x-client-id": appId,
@@ -293,7 +290,25 @@ serve(async (req) => {
         "x-api-version": "2023-08-01",
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        order_amount: orderAmount,
+        order_currency: "INR",
+        customer_details: {
+          customer_id: team_id || `cust_${Date.now()}`,
+          customer_name: customer_name || "Hacklabs Participant",
+          customer_email: customer_email || "participant@hacklabs.com",
+          customer_phone: customer_phone || "9999999999" // Cashfree requires a valid 10-digit phone number
+        },
+        order_meta: {
+          return_url: "http://localhost:5173/hacklabs/dashboard", // Update dynamically if needed, but not strictly required for headless checkout modal
+          payment_methods: ""
+        },
+        order_tags: {
+          team_id: team_id || "unknown",
+          customer_name: customer_name,
+          customer_email: customer_email
+        }
+      }),
     });
 
     const data = await response.json();
@@ -303,7 +318,9 @@ serve(async (req) => {
       throw new Error(data.message || "Failed to create Cashfree order");
     }
 
+    // Returns the payment_session_id which frontend will use to open the Cashfree Checkout Modal
     return new Response(JSON.stringify({
+      order_id: data.order_id,
       payment_session_id: data.payment_session_id,
       order_id: data.order_id,
       application_id: applicationId,

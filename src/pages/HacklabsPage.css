@@ -1,0 +1,9 @@
+/* HacklabsPage CSS */
+
+.dashboard-loading-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+  color: #fff;
+}

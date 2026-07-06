@@ -1,0 +1,387 @@
+@import url("https://fonts.googleapis.com/css2?family=Zen+Dots&display=swap");
+
+.onboarding-page {
+  min-height: 100vh;
+  background: #000;
+  color: #fff;
+  font-family: "Zen Dots", sans-serif;
+  display: flex;
+  justify-content: center;
+}
+
+.onboarding-container {
+  width: 100%;
+  max-width: 1400px;
+  padding: 120px 4rem 4rem;
+  position: relative;
+}
+
+.onboarding-header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.onboarding-header h1 {
+  font-size: clamp(3rem, 7vw, 6rem);
+  font-family: "Zen Dots", sans-serif;
+
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  font-weight: 400;
+}
+
+/* Progress */
+
+.progress-bar {
+  display: flex;
+  justify-content: center;
+  gap: 120px;
+  margin-bottom: 4rem;
+  position: relative;
+}
+
+.progress-bar::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 30%;
+  right: 30%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-50%);
+}
+
+.progress-step {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #000;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: rgba(255, 255, 255, 0.5);
+
+  z-index: 2;
+  position: relative;
+}
+
+.progress-step.active {
+  border-color: white;
+  color: white;
+}
+
+.progress-step.completed {
+  background: white;
+  color: black;
+  border-color: white;
+}
+
+/* Main Form */
+
+.step-content {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 3rem;
+  color: white;
+}
+
+.step-content h2 {
+  font-size: 2.2rem;
+  margin-bottom: 2.5rem;
+  font-weight: 400;
+  color: white;
+  font-family: "Zen Dots", sans-serif;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  padding-bottom: 1rem;
+}
+
+/* Form Grid */
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.input-group.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Labels */
+
+.input-group label {
+  display: block;
+  margin-bottom: 0.8rem;
+
+  color: white;
+  font-size: 1rem;
+  letter-spacing: 1px;
+}
+
+/* Inputs */
+
+.input-group input,
+.input-group select {
+  width: 100%;
+  height: 55px;
+
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+
+  color: white;
+  padding: 0 1rem;
+
+  font-family: "Zen Dots", sans-serif;
+  font-size: 0.9rem;
+
+  outline: none;
+  transition: all 0.3s ease;
+}
+.input-group select {
+  width: 100%;
+  height: 60px;
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  padding: 0 18px;
+  font-family: "Zen Dots", sans-serif;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.input-group select option {
+  background: #000;
+  color: #fff;
+}
+
+.input-group input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+input[type="date"] {
+  color-scheme: dark;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+  border-color: white;
+}
+
+/* Avatar Section */
+
+.avatar-builder-mini {
+  display: flex;
+  gap: 2rem;
+
+  padding: 2rem;
+  margin-bottom: 2.5rem;
+
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.avatar-preview {
+  min-width: 180px;
+  min-height: 180px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.avatar-controls-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* Buttons */
+
+.btn-group {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 3rem;
+  padding-top: 2rem;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.btn-primary {
+  min-width: 240px;
+  height: 70px;
+
+  background: #ececec;
+  color: black;
+
+  border: none;
+
+  font-family: "Zen Dots", sans-serif;
+  font-size: 1rem;
+
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-3px);
+}
+
+.btn-primary:disabled {
+  background: #666;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  min-width: 180px;
+  height: 70px;
+
+  background: transparent;
+  color: white;
+
+  border: 1px solid rgba(255, 255, 255, 0.3);
+
+  font-family: "Zen Dots", sans-serif;
+
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  border-color: white;
+}
+
+/* Error */
+
+.error-box {
+  margin-bottom: 2rem;
+  padding: 1rem;
+
+  background: rgba(255, 0, 0, 0.08);
+  border: 1px solid red;
+
+  color: #ff6b6b;
+}
+
+/* Team Cards */
+
+.team-options {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.team-card {
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.team-card h3 {
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.skip-btn {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.skip-btn button {
+  background: none;
+  border: none;
+
+  color: rgba(255, 255, 255, 0.6);
+
+  text-decoration: underline;
+  cursor: pointer;
+
+  font-family: "Zen Dots", sans-serif;
+}
+
+.skip-btn button:hover {
+  color: white;
+}
+
+/* Mobile */
+
+@media (max-width: 900px) {
+  .onboarding-container {
+    padding: 100px 1.5rem 2rem;
+  }
+
+  .onboarding-container::after {
+    display: none;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .avatar-builder-mini {
+    flex-direction: column;
+  }
+
+  .avatar-controls-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .progress-bar {
+    gap: 40px;
+  }
+
+  .progress-step {
+    width: 45px;
+    height: 45px;
+  }
+
+  .btn-group {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+  }
+}
+.hacklabs-error {
+  margin-top: 8px;
+  color: #ff4444;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  animation: errorFade 0.3s ease;
+}
+
+.input-error {
+  border: 1px solid #ff4444 !important;
+  box-shadow: 0 0 12px rgba(255, 68, 68, 0.25);
+}
+
+@keyframes errorFade {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.onboarding-error-box {
+  background: #7f1d1d;
+  color: #fca5a5;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.btn-group-right {
+  justify-content: flex-end;
+}

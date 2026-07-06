@@ -1,0 +1,134 @@
+@import url("https://fonts.googleapis.com/css2?family=Zen+Dots&display=swap");
+
+.faq-section {
+  background: #000;
+  color: #fff;
+  padding: 80px 6vw;
+  font-family: "Zen Dots", sans-serif;
+}
+
+.faq-wrapper {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 100px;
+  align-items: start;
+}
+
+/* LEFT SIDE STICKY */
+.faq-left {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.faq-left h1 {
+  color: #fff;
+  font-size: clamp(4rem, 8vw, 8rem);
+  font-weight: 500;
+  letter-spacing: -4px;
+  margin: 0;
+}
+
+/* RIGHT SIDE SCROLLS NORMALLY */
+.faq-right {
+  width: 100%;
+}
+
+.faq-item {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.faq-question {
+  width: 100%;
+  background: transparent;
+  border: none;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 32px 0;
+
+  cursor: pointer;
+  text-align: left;
+
+  color: #fff;
+  font-family: "Zen Dots", sans-serif;
+}
+
+.faq-question span {
+  font-size: clamp(1.4rem, 2vw, 3rem);
+  line-height: 1.3;
+}
+
+.faq-icon {
+  font-size: 2.5rem;
+  color: rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+  margin-left: 24px;
+}
+
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition:
+    max-height 0.2s ease-out,
+    padding 0.2s ease-out;
+}
+
+.faq-answer.active {
+  max-height: 200px;
+  padding-bottom: 24px;
+  transition:
+    max-height 0.2s ease-in,
+    padding 0.2s ease-in;
+}
+
+.faq-answer p {
+  max-width: 800px;
+  font-size: 1rem;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+}
+
+/* TABLET */
+@media (max-width: 1200px) {
+  .faq-wrapper {
+    grid-template-columns: 220px 1fr;
+    gap: 60px;
+  }
+}
+
+/* MOBILE */
+@media (max-width: 900px) {
+  .faq-section {
+    padding: 80px 24px;
+  }
+
+  .faq-wrapper {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .faq-left {
+    position: static;
+    height: auto;
+    justify-content: flex-start;
+  }
+
+  .faq-left h1 {
+    font-size: 4rem;
+  }
+
+  .faq-question span {
+    font-size: 1.2rem;
+  }
+
+  .faq-icon {
+    font-size: 2rem;
+  }
+}
