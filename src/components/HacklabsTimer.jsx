@@ -45,10 +45,10 @@ const TimerCircle = ({ value, label }) => {
   );
 };
 
-export default function HacklabsTimer() {
+export default function HacklabsTimer({ Coming }) {
   const calculateTimeLeft = () => {
     // 7 August 2026, 12:00 PM IST
-    const targetDate = new Date("2026-08-07T12:00:00+05:30");
+    const targetDate = new Date(2026, 6, 11, 0, 0, 0);
     const now = new Date();
 
     const difference = targetDate - now;
@@ -82,18 +82,20 @@ export default function HacklabsTimer() {
 
   return (
     <>
-      <h1 className="timer-heading">// Registration Ends In</h1>
-      <div className="hacklabs-timer-container">
-        <TimerCircle value={timeLeft.days} label="Days" />
-        <span className="timer-colon">:</span>
+      <div className={Coming}>
+        <h1 className="timer-heading">// Registration Starts In</h1>
+        <div className="hacklabs-timer-container">
+          <TimerCircle value={timeLeft.days} label="Days" />
+          <span className="timer-colon">:</span>
 
-        <TimerCircle value={timeLeft.hours} label="Hours" />
-        <span className="timer-colon">:</span>
+          <TimerCircle value={timeLeft.hours} label="Hours" />
+          <span className="timer-colon">:</span>
 
-        <TimerCircle value={timeLeft.minutes} label="Mins" />
-        <span className="timer-colon">:</span>
+          <TimerCircle value={timeLeft.minutes} label="Mins" />
+          <span className="timer-colon">:</span>
 
-        <TimerCircle value={timeLeft.seconds} label="Secs" />
+          <TimerCircle value={timeLeft.seconds} label="Secs" />
+        </div>
       </div>
     </>
   );

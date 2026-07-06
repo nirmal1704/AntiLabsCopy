@@ -55,8 +55,9 @@
 }
 
 .query-subtitle {
+  font-family: "Zen Dots", sans-serif;
   margin-top: 0.8rem;
-  color: #8b8b8b;
+  color: #fff;
   font-family: monospace;
   font-size: 0.9rem;
   line-height: 1.7;

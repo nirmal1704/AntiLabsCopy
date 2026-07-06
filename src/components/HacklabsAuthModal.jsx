@@ -81,32 +81,11 @@ export default function HacklabsAuthModal() {
 
       closeModal();
 
-      navigate("/hacklabs/dashboard");
+      navigate("/hacklabs/coming");
     } catch (err) {
       setError(err.message || "LOGIN FAILED");
     } finally {
       setLoading(false);
-    }
-  };
-
-  // ==========================
-  // Google Login
-  // ==========================
-
-  const handleGoogleLogin = async () => {
-    setError("");
-
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/hacklabs/dashboard`,
-        },
-      });
-
-      if (error) throw error;
-    } catch (err) {
-      setError(err.message || "GOOGLE LOGIN FAILED");
     }
   };
 

@@ -23,7 +23,7 @@ export default function HacklabsRegisterPage() {
     // If they already have an active session, skip auth and go straight to onboarding
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate("/hacklabs/onboarding");
+        navigate("/hacklabs/coming");
       }
     });
   }, [navigate]);
@@ -79,7 +79,7 @@ export default function HacklabsRegisterPage() {
       if (authError) throw authError;
 
       if (data?.session) {
-        navigate("/hacklabs/onboarding");
+        navigate("/hacklabs/coming");
       } else {
         setShowOtp(true);
         setResendTimer(60);
@@ -105,7 +105,7 @@ export default function HacklabsRegisterPage() {
       if (verifyError) throw verifyError;
 
       if (data?.session) {
-        navigate("/hacklabs/onboarding");
+        navigate("/hacklabs/coming");
       }
     } catch (err) {
       setError(err.message);
@@ -145,9 +145,7 @@ export default function HacklabsRegisterPage() {
           <div className="register-form-section register-form-section-full">
             {!showOtp ? (
               <>
-                <h3 className="register-section-title">
-                  Establish Identity
-                </h3>
+                <h3 className="register-section-title">Establish Identity</h3>
                 <form onSubmit={handleRegister} className="register-form">
                   <div className="input-group">
                     <label>Full Name</label>
@@ -230,9 +228,7 @@ export default function HacklabsRegisterPage() {
               </>
             ) : (
               <>
-                <h3 className="register-section-title">
-                  Verify Comm-Link
-                </h3>
+                <h3 className="register-section-title">Verify Comm-Link</h3>
                 <p className="register-otp-message">
                   A 6-digit security code has been Sent to {formData.email}.
                 </p>
