@@ -17,8 +17,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 40px;
+  padding: 0 32px;
   box-sizing: border-box;
+  overflow: visible;
 }
 .hacklabs-logo-text {
   font-family: "Zen Dots", sans-serif;
@@ -278,11 +279,13 @@
 
 @media (max-width: 768px) {
   .hacklabs-navbar {
-    padding: 0 20px;
+    padding: 0 16px;
+    position: relative;
+    height: 70px;
   }
 
   .navbar-logo {
-    height: 50px;
+    height: 70px;
   }
 
   .nav-btn {
@@ -291,10 +294,6 @@
 
   .navbar-right {
     gap: 12px;
-  }
-
-  .user-name {
-    display: none; /* Hide name on mobile to save space */
   }
 }
 @media (width <= 768px) {
@@ -314,8 +313,8 @@
 }
 
 .hacklabs-logo-img {
-  width: 300px;
-  height: 100px;
+  height: 72px;
+  width: auto;
   cursor: pointer;
   mix-blend-mode: screen;
 }
@@ -323,4 +322,177 @@
 .judge-view-btn {
   border-color: #10b981 !important;
   color: #10b981 !important;
+}
+/* -------------------- */
+/* Mobile Hamburger */
+/* -------------------- */
+
+.mobile-menu-toggle {
+  display: none;
+}
+
+.hamburger-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.7rem;
+  cursor: pointer;
+  backdrop-filter: blur(14px);
+  transition: all 0.25s ease;
+}
+
+.hamburger-btn:hover {
+  border-color: #fff;
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .mobile-menu-toggle {
+    display: flex;
+    align-items: center;
+  }
+
+  .navbar-right {
+    position: absolute;
+    top: calc(100% + 14px);
+    right: 16px;
+
+    width: 260px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+
+    padding: 18px;
+
+    border-radius: 20px;
+
+    background: rgba(8, 8, 12, 0.92);
+    backdrop-filter: blur(22px);
+
+    border: 1px solid #fff;
+
+    transform: translateY(-12px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    transition: all 0.3s ease;
+
+    z-index: 999;
+  }
+
+  .navbar-right.open {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .navbar-right .nav-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .hacklabs-user-dropdown {
+    width: 100%;
+  }
+
+  .hacklabs-user-badge {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .profile-dropdown {
+    position: static;
+    margin-top: 12px;
+    width: 100%;
+    box-shadow: none;
+  }
+}
+@media (max-width: 768px) {
+  .desktop-visible {
+    position: static !important;
+
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+
+    width: auto !important;
+    padding: 0 !important;
+
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    transform: none !important;
+
+    overflow: visible !important;
+  }
+
+  .desktop-visible .hacklabs-user-dropdown {
+    position: relative;
+    width: auto;
+  }
+
+  .desktop-visible .profile-dropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+
+    width: 220px;
+
+    z-index: 99999;
+  }
+  .hacklabs-logo-img {
+    height: 52px;
+    width: auto;
+  }
+}
+/* ===========================
+   Judge Actions
+=========================== */
+
+.judge-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ff6d6d;
+}
+
+.logout-btn:hover {
+  color: #ff3b3b;
+}
+
+@media (max-width: 768px) {
+  .judge-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logout-btn span {
+    display: none;
+  }
+
+  .logout-btn svg {
+    font-size: 20px;
+  }
 }

@@ -7,6 +7,10 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
   const [joinCode, setJoinCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [errors, setErrors] = useState({
+    teamName: "",
+    joinCode: "",
+  });
   const [invites, setInvites] = useState([]);
   const [view, setView] = useState("home");
 
@@ -23,7 +27,43 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
     }, 5000);
     return () => clearInterval(interval);
   }, [participant]);
+  const validateCreateTeam = () => {
+    const newErrors = {};
 
+    if (!teamName.trim()) {
+      newErrors.teamName = "TEAM NAME IS REQUIRED";
+    } else if (teamName.trim().length < 3) {
+      newErrors.teamName = "TEAM NAME MUST CONTAIN AT LEAST 3 CHARACTERS";
+    } else if (teamName.trim().length > 30) {
+      newErrors.teamName = "TEAM NAME CANNOT EXCEED 30 CHARACTERS";
+    } else if (!/^[A-Za-z0-9 ]+$/.test(teamName.trim())) {
+      newErrors.teamName = "ONLY LETTERS, NUMBERS AND SPACES ARE ALLOWED";
+    }
+
+    setErrors((prev) => ({
+      ...prev,
+      teamName: newErrors.teamName || "",
+    }));
+
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateJoinCode = () => {
+    const newErrors = {};
+
+    if (!joinCode.trim()) {
+      newErrors.joinCode = "TEAM CODE IS REQUIRED";
+    } else if (!/^HL-TEAM-[A-Z0-9]{6}$/.test(joinCode.trim())) {
+      newErrors.joinCode = "ENTER A VALID TEAM CODE";
+    }
+
+    setErrors((prev) => ({
+      ...prev,
+      joinCode: newErrors.joinCode || "",
+    }));
+
+    return Object.keys(newErrors).length === 0;
+  };
   const checkTeamStatus = async () => {
     if (!participant) return;
     try {
@@ -32,7 +72,7 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
         .select("team_id")
         .eq("auth_id", participant.auth_id)
         .single();
-        
+
       if (!error && data && data.team_id && !participant.team_id) {
         const { data: teamData } = await supabase
           .from("hacklabs_teams")
@@ -78,6 +118,9 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
 
   const handleCreateTeam = async (e) => {
     e.preventDefault();
+    setError(null);
+
+    if (!validateCreateTeam()) return;
     if (!teamName) return;
     setLoading(true);
     setError(null);
@@ -94,12 +137,16 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
       let teamData;
       if (existingTeam) {
         if (existingTeam.payment_status === "paid") {
-          throw new Error("This Team Name is already taken! Please choose another.");
+          throw new Error(
+            "This Team Name is already taken! Please choose another.",
+          );
         }
         if (existingTeam.captain_id === participant.auth_id) {
           teamData = existingTeam;
         } else {
-          throw new Error("This Team Name is already taken! Please choose another.");
+          throw new Error(
+            "This Team Name is already taken! Please choose another.",
+          );
         }
       } else {
         const teamCode = generateTeamCode();
@@ -116,7 +163,9 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
 
         if (insertError) {
           if (insertError.code === "23505") {
-            throw new Error("This Team Name is already taken! Please choose another.");
+            throw new Error(
+              "This Team Name is already taken! Please choose another.",
+            );
           }
           throw insertError;
         }
@@ -124,24 +173,28 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
       }
 
       // 2. Fetch logged-in user email for Cashfree receipt
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       const userEmail = session?.user?.email || "";
 
       // 3. Invoke Supabase edge function to create order
-      const { data: orderData, error: orderError } = await supabase.functions.invoke(
-        "create-cashfree-order",
-        {
+      const { data: orderData, error: orderError } =
+        await supabase.functions.invoke("create-cashfree-order", {
           body: {
             team_id: teamData.id,
             customer_name: participant.full_name,
             customer_email: userEmail,
             customer_phone: participant.mobile_number,
           },
-        }
-      );
+        });
 
       if (orderError || !orderData || !orderData.payment_session_id) {
-        throw new Error(orderError?.message || orderData?.error || "Failed to initialize payment gateway.");
+        throw new Error(
+          orderError?.message ||
+            orderData?.error ||
+            "Failed to initialize payment gateway.",
+        );
       }
 
       // 4. Dynamically load Cashfree JS SDK
@@ -150,12 +203,15 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
         script.src = "https://sdk.cashfree.com/js/v3/cashfree.js";
         await new Promise((resolve, reject) => {
           script.onload = resolve;
-          script.onerror = () => reject(new Error("Failed to load Cashfree SDK."));
+          script.onerror = () =>
+            reject(new Error("Failed to load Cashfree SDK."));
           document.body.appendChild(script);
         });
       }
 
-      const isDev = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+      const isDev =
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1";
       const cashfree = window.Cashfree({
         mode: isDev ? "sandbox" : "production",
       });
@@ -193,13 +249,14 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
             onTeamUpdated({ ...teamData, payment_status: "paid" });
           } catch (updateErr) {
             console.error(updateErr);
-            setError("Database update failed after payment: " + updateErr.message);
+            setError(
+              "Database update failed after payment: " + updateErr.message,
+            );
           } finally {
             setLoading(false);
           }
         }
       });
-
     } catch (err) {
       setError(err.message);
       setLoading(false);
@@ -208,6 +265,9 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
 
   const handleJoinRequest = async (e) => {
     e.preventDefault();
+    setError(null);
+
+    if (!validateJoinCode()) return;
     if (!joinCode) return;
     setLoading(true);
     setError(null);
@@ -254,7 +314,7 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
         .select("*")
         .eq("unique_team_code", teamNameCode.unique_team_code)
         .single();
-        
+
       if (teamError) throw teamError;
 
       onTeamUpdated(fullTeam);
@@ -266,8 +326,7 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
   };
   return (
     <div className="team-formation-container">
-      {error && <div className="formation-error">{error}</div>}
-
+      {error && <div className="formation-error">{error.toUpperCase()}</div>}
       {view === "home" && (
         <div className="team-home">
           <h1>Team</h1>
@@ -305,21 +364,36 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
           <form className="team-form" onSubmit={handleCreateTeam}>
             <label>Enter Team Name :</label>
 
-            <input
-              type="text"
-              value={teamName}
-              onChange={(e) => setTeamName(e.target.value)}
-              required
-            />
+            <div className="field">
+              <input
+                type="text"
+                value={teamName}
+                className={errors.teamName ? "input-error" : ""}
+                onChange={(e) => {
+                  setTeamName(e.target.value);
+
+                  setErrors((prev) => ({
+                    ...prev,
+                    teamName: "",
+                  }));
+
+                  setError(null);
+                }}
+              />
+
+              {errors.teamName && (
+                <span className="field-error">{errors.teamName}</span>
+              )}
+            </div>
 
             <div className="form-actions">
-              <button type="submit">
+              <button type="submit" className="primary-btn">
                 {loading ? "Creating..." : "Create"}
               </button>
 
               <button
                 type="button"
-                className="back-btn"
+                className="back-btn secondary-btn"
                 onClick={() => setView("home")}
               >
                 Back
@@ -336,12 +410,27 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
           <form className="join-form" onSubmit={handleJoinRequest}>
             <label>Enter Team ID:</label>
 
-            <input
-              type="text"
-              value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-              required
-            />
+            <div className="field">
+              <input
+                type="text"
+                value={joinCode}
+                className={errors.joinCode ? "input-error" : ""}
+                onChange={(e) => {
+                  setJoinCode(e.target.value.toUpperCase());
+
+                  setErrors((prev) => ({
+                    ...prev,
+                    joinCode: "",
+                  }));
+
+                  setError(null);
+                }}
+              />
+
+              {errors.joinCode && (
+                <span className="field-error">{errors.joinCode}</span>
+              )}
+            </div>
 
             <button type="submit">{loading ? "..." : "Join"}</button>
           </form>
@@ -356,7 +445,7 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
           </div>
 
           <button
-            className="back-btn bottom-back"
+            className="back-btn bottom-back secondary-btn"
             onClick={() => setView("home")}
           >
             Back

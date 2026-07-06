@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useRef } from "react";
 import { FiChevronDown, FiLogOut, FiHome } from "react-icons/fi";
+import { FiMenu, FiX } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuthModal } from "../context/AuthModalContext";
@@ -11,7 +12,7 @@ import "./HacklabsNavbar.css";
 export default function HacklabsNavbar() {
   const navigate = useNavigate();
   const { openLogin } = useAuthModal();
-
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [session, setSession] = useState(null);
   const [userName, setUserName] = useState("");
   const [avatarConfig, setAvatarConfig] = useState(null);
@@ -85,8 +86,10 @@ export default function HacklabsNavbar() {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setShowDropdown(false);
+    setMobileMenuOpen(false);
     navigate("/hacklabs");
   };
+  const isLoggedIn = session && (isJudge || userName);
   return (
     <nav className="hacklabs-navbar">
       <div className="navbar-left navbar-left-wrapper">
@@ -98,15 +101,38 @@ export default function HacklabsNavbar() {
         />
       </div>
 
-      <div className="navbar-right">
-        {isCheckingProfile ? null : session && (isJudge || userName) ? (
+      {/* Show hamburger ONLY when logged out */}
+      {!isLoggedIn && (
+        <div className="mobile-menu-toggle">
+          <button
+            className="hamburger-btn"
+            onClick={() => setMobileMenuOpen((prev) => !prev)}
+          >
+            {mobileMenuOpen ? <FiX /> : <FiMenu />}
+          </button>
+        </div>
+      )}
+
+      <div
+        className={`navbar-right ${
+          !isLoggedIn ? (mobileMenuOpen ? "open" : "") : "desktop-visible"
+        }`}
+      >
+        {isCheckingProfile ? null : isLoggedIn ? (
           isJudge ? (
-            <button
-              className="nav-btn judge-view-btn"
-              onClick={() => navigate("/hacklabs/judge-dashboard")}
-            >
-              Admin Panel
-            </button>
+            <div className="judge-actions">
+              <button
+                className="nav-btn judge-view-btn"
+                onClick={() => navigate("/hacklabs/judge-dashboard")}
+              >
+                Admin Panel
+              </button>
+
+              <button className="nav-btn logout-btn" onClick={handleLogout}>
+                <FiLogOut />
+                <span>Logout</span>
+              </button>
+            </div>
           ) : (
             <div className="hacklabs-user-dropdown" ref={dropdownRef}>
               <div
@@ -173,12 +199,21 @@ export default function HacklabsNavbar() {
           <>
             <button
               className="nav-btn"
-              onClick={() => navigate("/hacklabs/register")}
+              onClick={() => {
+                navigate("/hacklabs/register");
+                setMobileMenuOpen(false);
+              }}
             >
               Register
             </button>
 
-            <button className="nav-btn" onClick={openLogin}>
+            <button
+              className="nav-btn"
+              onClick={() => {
+                openLogin();
+                setMobileMenuOpen(false);
+              }}
+            >
               LOGIN
             </button>
           </>
