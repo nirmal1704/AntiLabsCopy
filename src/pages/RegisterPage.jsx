@@ -133,6 +133,16 @@ export default function RegisterPage() {
         setLoading(true);
 
         try {
+            // Check if the email already exists in the database
+            const { data: emailExists, error: rpcError } = await supabase
+                .rpc('check_email_exists', { p_email: formData.email });
+
+            if (rpcError) {
+                console.warn('check_email_exists RPC error (continuing registration):', rpcError);
+            } else if (emailExists) {
+                throw new Error('This email address is already registered. Please log in or use a different email.');
+            }
+
             const { error } = await supabase.auth.signUp({
                 email: formData.email,
                 password: formData.password,
@@ -160,7 +170,7 @@ export default function RegisterPage() {
             setLoading(false);
         } catch (error) {
             console.error('Error during registration:', error);
-            setErrorMsg('An error occurred during registration. Please check your details and try again.');
+            setErrorMsg(error.message || 'An error occurred during registration. Please check your details and try again.');
             setLoading(false);
         }
     };
