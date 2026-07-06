@@ -66,6 +66,22 @@ export default function HacklabsRegisterPage() {
     setError(null);
 
     try {
+      // Check if the email already exists in the database
+      const { data: emailExists, error: rpcError } = await supabase.rpc(
+        "check_email_exists",
+        { p_email: formData.email },
+      );
+
+      if (rpcError) {
+        console.warn(
+          "check_email_exists RPC error (continuing registration):",
+          rpcError,
+        );
+      } else if (emailExists) {
+        throw new Error(
+          "This email address is already registered. Please log in or use a different email.",
+        );
+      }
       const { data, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
