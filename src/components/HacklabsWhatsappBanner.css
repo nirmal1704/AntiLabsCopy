@@ -1,0 +1,53 @@
+@import url("https://fonts.googleapis.com/css2?family=Zen+Dots&display=swap");
+
+/* .banner {
+  padding-bottom: 2rem;
+} */
+.hacklabs-whatsapp-banner {
+  width: min(1100px, 95%);
+  margin: 4rem auto;
+  padding: 2rem 1.5rem;
+  border: 3px solid rgba(255, 255, 255, 0.75);
+  background: #000;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.hacklabs-whatsapp-text {
+  margin: 0;
+  font-family: "Zen Dots", sans-serif;
+  font-size: clamp(1.2rem, 3vw, 3rem);
+  color: #fff;
+  line-height: 1.35;
+  letter-spacing: 0.03em;
+}
+
+.hacklabs-whatsapp-link {
+  color: #fff;
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 6px;
+  transition: opacity 0.3s ease;
+}
+
+.hacklabs-whatsapp-link:hover {
+  opacity: 0.75;
+  color: rgb(183, 181, 181);
+}
+
+@media (max-width: 768px) {
+  .hacklabs-whatsapp-banner {
+    padding: 1.4rem 1rem;
+    border-width: 2px;
+  }
+
+  .hacklabs-whatsapp-text {
+    line-height: 1.45;
+    font-size: clamp(1rem, 5vw, 1.6rem);
+  }
+
+  .hacklabs-whatsapp-link {
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+  }
+}
