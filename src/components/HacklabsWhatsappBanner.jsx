@@ -1,19 +1,29 @@
 import React from "react";
+import { FaWhatsapp } from "react-icons/fa";
 import "./HacklabsWhatsappBanner.css";
 
 const HacklabsWhatsappBanner = () => {
   return (
-    <div className="banner">
-      <div className="hacklabs-whatsapp-banner">
-        <p className="hacklabs-whatsapp-text">Join Whatsapp Group</p>
+    <div className="hacklabs-whatsapp-banner">
+      <a
+        href="https://chat.whatsapp.com/KH2urHU2eh9FQWSf9j3TF5"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="hacklabs-whatsapp-icon"
+        aria-label="Join WhatsApp Group"
+      >
+        <FaWhatsapp />
+      </a>
 
-        <p className="hacklabs-whatsapp-text">
+      <div className="hacklabs-whatsapp-content">
+        <h2>Join Whatsapp Group</h2>
+
+        <p>
           To Get Updates{" "}
           <a
             href="https://chat.whatsapp.com/KH2urHU2eh9FQWSf9j3TF5"
             target="_blank"
             rel="noopener noreferrer"
-            className="hacklabs-whatsapp-link"
           >
             Click here
           </a>
