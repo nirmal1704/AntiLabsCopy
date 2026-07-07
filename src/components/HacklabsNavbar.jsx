@@ -125,7 +125,7 @@ export default function HacklabsNavbar() {
       </div>
 
       {/* Show hamburger ONLY when logged out */}
-      {!isLoggedIn && (
+      {/* {!isLoggedIn && (
         <div className="mobile-menu-toggle">
           <button
             className="hamburger-btn"
@@ -134,7 +134,7 @@ export default function HacklabsNavbar() {
             {mobileMenuOpen ? <FiX /> : <FiMenu />}
           </button>
         </div>
-      )}
+      )} */}
 
       <div
         className={`navbar-right ${
@@ -151,18 +151,18 @@ export default function HacklabsNavbar() {
                 Admin Panel
               </button>
 
-              <button className="nav-btn logout-btn" onClick={handleLogout}>
+              {/* <button className="nav-btn logout-btn" onClick={handleLogout}>
                 <FiLogOut />
                 <span>Logout</span>
-              </button>
+              </button> */}
             </div>
           ) : (
             //Temporary Code
             <>
-              <button className="nav-btn logout-btn" onClick={handleLogout}>
+              {/* <button className="nav-btn logout-btn" onClick={handleLogout}>
                 <FiLogOut />
                 <span>Logout</span>
-              </button>
+              </button> */}
             </>
             //
             //Temporary Comment
@@ -229,7 +229,7 @@ export default function HacklabsNavbar() {
           )
         ) : (
           <>
-            <button
+            {/* <button
               className="nav-btn"
               onClick={() => {
                 navigate("/hacklabs/register");
@@ -247,7 +247,7 @@ export default function HacklabsNavbar() {
               }}
             >
               LOGIN
-            </button>
+            </button> */}
           </>
         )}
       </div>
