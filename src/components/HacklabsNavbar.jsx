@@ -157,7 +157,15 @@ export default function HacklabsNavbar() {
               </button>
             </div>
           ) : (
-            <></>
+            //Temporary Code
+            <>
+              <button className="nav-btn logout-btn" onClick={handleLogout}>
+                <FiLogOut />
+                <span>Logout</span>
+              </button>
+            </>
+            //
+            //Temporary Comment
             //   <div className="hacklabs-user-dropdown" ref={dropdownRef}>
             //     <div
             //       className="hacklabs-user-badge"
