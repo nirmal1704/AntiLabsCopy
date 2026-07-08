@@ -2,6 +2,7 @@
 -- This script safely drops existing tables and creates the entire schema, policies, and functions.
 
 -- 0. Reset Existing Tables and Views
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 DROP VIEW IF EXISTS public.hacklabs_judge_view CASCADE;
 DROP TABLE IF EXISTS public.hacklabs_invitations CASCADE;
 DROP TABLE IF EXISTS public.hacklabs_academic_info CASCADE;
@@ -211,6 +212,19 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION public.update_user_password(new_password text)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  -- Requires pgcrypto extension
+  UPDATE auth.users
+  SET encrypted_password = crypt(new_password, gen_salt('bf'))
+  WHERE id = auth.uid();
+END;
+$$;
+
 -- 9. Row Level Security (RLS) Policies
 
 -- Personal Details
@@ -267,3 +281,32 @@ CREATE POLICY "Users can insert own requests or captain invites" ON public.hackl
     OR
     (type = 'invite' AND EXISTS (SELECT 1 FROM public.hacklabs_teams WHERE id = team_id AND captain_id = auth.uid()))
   );
+
+-- RPC: Preview Team by Code (Bypass RLS for preview)
+CREATE OR REPLACE FUNCTION public.preview_team_by_code(p_team_code text)
+RETURNS TABLE (
+    id uuid,
+    name text,
+    unique_team_code text,
+    captain_name text,
+    member_names text[]
+)
+SECURITY DEFINER
+AS 
+BEGIN
+    RETURN QUERY
+    SELECT 
+        t.id,
+        t.name,
+        t.unique_team_code,
+        c.full_name AS captain_name,
+        ARRAY(
+            SELECT p.full_name 
+            FROM hacklabs_personal_details p 
+            WHERE p.team_id = t.id AND p.auth_id != t.captain_id
+        ) AS member_names
+    FROM hacklabs_teams t
+    LEFT JOIN hacklabs_personal_details c ON t.captain_id = c.auth_id
+    WHERE t.unique_team_code = p_team_code;
+END;
+ LANGUAGE plpgsql;

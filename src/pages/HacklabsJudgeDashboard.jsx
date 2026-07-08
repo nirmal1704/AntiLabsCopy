@@ -15,9 +15,17 @@ export default function HacklabsJudgeDashboard() {
 
   useEffect(() => {
     fetchData();
+
+    // Auto-update dashboard every 10 seconds
+    const interval = setInterval(() => {
+      fetchData(false); // Fetch silently without setting loading to true
+    }, 10000);
+
+    return () => clearInterval(interval);
   }, []);
 
-  const fetchData = async () => {
+  const fetchData = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     try {
       // Fetch judge data
       const { data: judgeData, error: judgeError } = await supabase.rpc('get_judge_data');
@@ -25,26 +33,37 @@ export default function HacklabsJudgeDashboard() {
       setData(judgeData || []);
 
       // Fetch dropouts (drafts)
-      const { data: drafts, error: draftsError } = await supabase
-        .from('application_drafts')
-        .select('*');
+      const { data: drafts, error: draftsError } = await supabase.rpc('get_hacklabs_drafts');
       if (draftsError) throw draftsError;
       setDraftsData(drafts || []);
 
-      // -- MOCK BACKEND: Fetching from localStorage until you add real backend --
-      // TODO: Replace with your actual backend fetch logic
-      const localQueries = JSON.parse(localStorage.getItem('mockHacklabsQueries') || '[]');
-      setQueriesData([
-        ...localQueries,
-        { id: 'dummy_1', name: 'System User', email: 'system@hacklabs.test', subject: 'System Integration Test', description: 'This is a simulated query placeholder. Real backend is currently detached.', status: 'open', created_at: new Date().toISOString() }
-      ]);
-      // ------------------------------------------------------------------------
+      // Fetch support queries from Supabase
+      const { data: queries, error: queriesError } = await supabase
+        .from('hacklabs_queries')
+        .select('*')
+        .order('created_at', { ascending: false });
+        
+      if (queriesError) throw queriesError;
+      setQueriesData(queries || []);
 
     } catch (err) {
       console.error("Failed to fetch judge view:", err);
-      alert("Error fetching data. Check permissions or network.");
+      // Silently catch errors on background refreshes
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
+    }
+  };
+
+  const handleDeleteQuery = async (queryId) => {
+    if (!window.confirm("Are you sure you want to delete this query? It cannot be undone.")) return;
+    try {
+      const { error } = await supabase.from('hacklabs_queries').delete().eq('id', queryId);
+      if (error) throw error;
+      setQueriesData(prev => prev.filter(q => q.id !== queryId));
+      setExpandedId(null);
+    } catch (err) {
+      console.error("Error deleting query:", err);
+      alert("Failed to delete query.");
     }
   };
 
@@ -108,16 +127,17 @@ export default function HacklabsJudgeDashboard() {
   // Grouped logic for teams
   const groupedDataMap = new Map();
   filteredData.forEach(item => {
-    const isLoneWolf = !item.team_name;
-    const groupKey = isLoneWolf ? `team_Lone Wolves` : `team_${item.team_name}`;
+    if (!item.team_name) return; // Skip lone wolves for Teams tab
+    
+    const groupKey = `team_${item.team_name}`;
     
     if (!groupedDataMap.has(groupKey)) {
       groupedDataMap.set(groupKey, {
         id: groupKey,
-        isTeam: true, // we treat lone wolves as a single team
-        team_name: isLoneWolf ? "Lone Wolves" : item.team_name,
-        unique_team_code: isLoneWolf ? "LONE-WOLF" : item.unique_team_code,
-        payment_status: isLoneWolf ? "mixed" : item.payment_status,
+        isTeam: true,
+        team_name: item.team_name,
+        unique_team_code: item.unique_team_code,
+        payment_status: item.payment_status,
         participants: []
       });
     }
@@ -208,7 +228,6 @@ export default function HacklabsJudgeDashboard() {
                         <th>Code</th>
                         <th>Name</th>
                         <th>Team</th>
-                        <th>Payment</th>
                         <th>Action</th>
                       </tr>
                     </thead>
@@ -219,11 +238,6 @@ export default function HacklabsJudgeDashboard() {
                             <td className="code-mono">{item.unique_user_code}</td>
                             <td><strong>{item.full_name}</strong></td>
                             <td><span className={item.team_name ? "team-name-text" : "no-team-text"}>{item.team_name || "Lone Wolf"}</span></td>
-                            <td>
-                              <span className={`status-badge ${item.payment_status}`}>
-                                {item.payment_status?.toUpperCase() || "-"}
-                              </span>
-                            </td>
                             <td>
                               <button className="btn-expand" onClick={() => setExpandedId(expandedId === `p_${item.auth_id}` ? null : `p_${item.auth_id}`)}>
                                 {expandedId === `p_${item.auth_id}` ? "Close" : "Specs"}
@@ -387,6 +401,13 @@ export default function HacklabsJudgeDashboard() {
                                     <p style={{ marginTop: '1rem' }}>
                                       <strong>Date:</strong> {new Date(query.created_at).toLocaleString()}
                                     </p>
+                                    <button 
+                                      className="primary-btn" 
+                                      style={{ marginTop: '1.5rem', backgroundColor: '#dc3545', borderColor: '#dc3545' }}
+                                      onClick={() => handleDeleteQuery(query.id)}
+                                    >
+                                      Mark as Resolved & Delete
+                                    </button>
                                   </div>
                                 </div>
                               </td>
