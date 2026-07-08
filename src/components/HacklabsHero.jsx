@@ -8,14 +8,15 @@ export default function HacklabsHero() {
   const { openLogin } = useAuthModal();
 
   const handleJoinClick = async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (session) {
-      navigate("/hacklabs/coming");
-    } else {
-      openLogin();
-    }
+    // const {
+    //   data: { session },
+    // } = await supabase.auth.getSession();
+    // if (session) {
+    //   navigate("/hacklabs/coming");
+    // } else {
+    //   openLogin();
+    // }
+    navigate("/hacklabs/coming");
   };
 
   return (
