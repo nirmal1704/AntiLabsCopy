@@ -81,7 +81,7 @@ export default function HacklabsAuthModal() {
 
       closeModal();
 
-      navigate("/hacklabs/coming");
+      navigate("/hacklabs/dashboard");
     } catch (err) {
       setError(err.message || "LOGIN FAILED");
     } finally {

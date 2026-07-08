@@ -58,6 +58,7 @@
   color: white;
   margin: 0;
   margin-bottom: 2rem;
+  font-family: "Zen Dots", sans-serif;
 }
 
 .register-form-section h3 {
@@ -167,7 +168,7 @@
   .input-group input {
     max-width: 100%;
   }
-  
+
   .register-form {
     width: 100%;
     max-width: 400px;
