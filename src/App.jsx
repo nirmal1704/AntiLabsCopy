@@ -17,6 +17,9 @@ import CookieBanner from "./components/CookieBanner";
 import { AuthModalProvider } from "./context/AuthModalContext";
 
 // Lazy loaded pages
+const HacklabsComingSoon = lazy(
+  () => import("./components/HacklabsComingSoon"),
+);
 const ServicesPage = lazy(() => import("./pages/ServicesPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const HacklabsPage = lazy(() => import("./pages/HacklabsPage"));
@@ -24,9 +27,13 @@ const HacklabsDashboardPage = lazy(
   () => import("./pages/HacklabsDashboardPage"),
 );
 const HacklabsRegisterPage = lazy(() => import("./pages/HacklabsRegisterPage"));
-const HacklabsOnboardingPage = lazy(() => import("./pages/HacklabsOnboardingPage"));
+const HacklabsOnboardingPage = lazy(
+  () => import("./pages/HacklabsOnboardingPage"),
+);
 const HacklabsAvatarPage = lazy(() => import("./pages/HacklabsAvatarPage"));
-const HacklabsJudgeDashboard = lazy(() => import("./pages/HacklabsJudgeDashboard"));
+const HacklabsJudgeDashboard = lazy(
+  () => import("./pages/HacklabsJudgeDashboard"),
+);
 const HacklabsAuthModal = lazy(() => import("./components/HacklabsAuthModal"));
 const CareersPage = lazy(() => import("./pages/CareersPage"));
 const ContactPage = lazy(() => import("./pages/ContactPage"));
@@ -96,58 +103,68 @@ export default function App() {
         <AuthModalProvider>
           <ScrollToTop />
           <CookieBanner />
-        <Suspense fallback={<PageLoader />}>
-          <div
-            className={
-              location.pathname.startsWith("/hacklabs")
-                ? "app app-dark"
-                : "app app-light"
-            }
-          >
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/services" element={<ServicesPage />} />
-              <Route path="/hacklabs" element={<HacklabsPage />} />
-              <Route
-                path="/hacklabs/dashboard"
-                element={<HacklabsDashboardPage />}
-              />
-              <Route
-                path="/hacklabs/register"
-                element={<HacklabsRegisterPage />}
-              />
-              <Route
-                path="/hacklabs/onboarding"
-                element={<HacklabsOnboardingPage />}
-              />
-              <Route
-                path="/hacklabs/id-card"
-                element={<HacklabsAvatarPage />}
-              />
-              <Route
-                path="/hacklabs/judge-dashboard"
-                element={<HacklabsJudgeDashboard />}
-              />
-              <Route path="/careers" element={<CareersPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/testimonials" element={<TestimonialsPage />} />
-              <Route path="/terms" element={<TermsPage />} />
-              <Route path="/privacy" element={<TermsPage />} />
-              <Route path="/refund" element={<TermsPage />} />
-              <Route path="/employment" element={<TermsPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/student-dashboard" element={<StudentDashboard />} />
-              <Route path="/blogs" element={<BlogsPage />} />
-              <Route path="/blogs/:slug" element={<BlogSinglePage />} />
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </div>
-          <HacklabsAuthModal />
-        </Suspense>
+          <Suspense fallback={<PageLoader />}>
+            <div
+              className={
+                location.pathname.startsWith("/hacklabs")
+                  ? "app app-dark"
+                  : "app app-light"
+              }
+            >
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/services" element={<ServicesPage />} />
+                <Route path="/hacklabs" element={<HacklabsPage />} />
+                <Route
+                  path="/hacklabs/dashboard"
+                  element={<HacklabsDashboardPage />}
+                />
+                <Route
+                  path="/hacklabs/coming"
+                  element={<HacklabsComingSoon />}
+                />
+                <Route
+                  path="/hacklabs/register"
+                  element={<HacklabsRegisterPage />}
+                />
+                <Route
+                  path="/hacklabs/onboarding"
+                  element={<HacklabsOnboardingPage />}
+                />
+                <Route
+                  path="/hacklabs/id-card"
+                  element={<HacklabsAvatarPage />}
+                />
+                <Route
+                  path="/hacklabs/judge-dashboard"
+                  element={<HacklabsJudgeDashboard />}
+                />
+                <Route path="/careers" element={<CareersPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/testimonials" element={<TestimonialsPage />} />
+                <Route path="/terms" element={<TermsPage />} />
+                <Route path="/privacy" element={<TermsPage />} />
+                <Route path="/refund" element={<TermsPage />} />
+                <Route path="/employment" element={<TermsPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route
+                  path="/forgot-password"
+                  element={<ForgotPasswordPage />}
+                />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route
+                  path="/student-dashboard"
+                  element={<StudentDashboard />}
+                />
+                <Route path="/blogs" element={<BlogsPage />} />
+                <Route path="/blogs/:slug" element={<BlogSinglePage />} />
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </div>
+            <HacklabsAuthModal />
+          </Suspense>
         </AuthModalProvider>
       </ErrorBoundary>
     </>
