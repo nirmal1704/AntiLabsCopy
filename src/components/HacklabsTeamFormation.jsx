@@ -5,6 +5,8 @@ import "./HacklabsTeamFormation.css";
 export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
   const [teamName, setTeamName] = useState("");
   const [joinCode, setJoinCode] = useState("");
+  const [searchedTeam, setSearchedTeam] = useState(null);
+  const [fetchingTeam, setFetchingTeam] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [errors, setErrors] = useState({
@@ -266,42 +268,45 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
 
   const handleJoinRequest = async (e) => {
     e.preventDefault();
+
     setError(null);
 
     if (!validateJoinCode()) return;
-    if (!joinCode) return;
-    setLoading(true);
-    setError(null);
+
+    setFetchingTeam(true);
+
     try {
       const { data: teamData, error: teamError } = await supabase
         .from("hacklabs_teams")
-        .select("id")
-        .eq("unique_team_code", joinCode)
+        .select(
+          `
+    id,
+    name,
+    unique_team_code,
+    captain_id,
+    captain:hacklabs_personal_details!hacklabs_teams_captain_id_fkey(
+      full_name
+    )
+  `,
+        )
+        .eq("unique_team_code", joinCode.trim())
         .single();
 
-      if (teamError || !teamData)
+      if (teamError || !teamData) {
         throw new Error("Team not found. Please check the code.");
+      }
 
-      const { error: inviteError } = await supabase
-        .from("hacklabs_invitations")
-        .insert({
-          team_id: teamData.id,
-          participant_auth_id: participant.auth_id,
-          type: "request",
-          status: "pending",
-        });
-
-      if (inviteError) throw inviteError;
-
-      alert("Request sent successfully! Wait for the captain to accept.");
-      setJoinCode("");
+      setSearchedTeam({
+        ...teamData,
+        captain_name: teamData.captain?.full_name,
+      });
     } catch (err) {
+      setSearchedTeam(null);
       setError(err.message);
     } finally {
-      setLoading(false);
+      setFetchingTeam(false);
     }
   };
-
   const handleAcceptInvite = async (inviteId, teamNameCode) => {
     setLoading(true);
     try {
@@ -436,14 +441,44 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
             <button type="submit">{loading ? "..." : "Join"}</button>
           </form>
 
-          <h2 className="details-heading">Team Details :-</h2>
+          {fetchingTeam && (
+            <div className="team-loading">
+              <p>Fetching team details...</p>
+            </div>
+          )}
 
-          <div className="team-members">
-            <div className="member-row">Captain</div>
-            <div className="member-row">Empty Slot</div>
-            <div className="member-row">Empty Slot</div>
-            <div className="member-row">Empty Slot</div>
-          </div>
+          {searchedTeam && (
+            <>
+              <h2 className="details-heading">Team Details :-</h2>
+
+              <div className="team-members">
+                <div className="member-row">
+                  <strong>Team Name :</strong> {searchedTeam.name}
+                </div>
+
+                <div className="member-row">
+                  <strong>Team Code :</strong> {searchedTeam.unique_team_code}
+                </div>
+
+                <div className="member-row">
+                  <strong>Captain :</strong>{" "}
+                  {searchedTeam.captain_name || "Loading..."}
+                </div>
+
+                <div className="member-row">Empty Slot</div>
+                <div className="member-row">Empty Slot</div>
+                <div className="member-row">Empty Slot</div>
+              </div>
+
+              <button
+                className="primary-btn"
+                onClick={handleSendJoinRequest}
+                disabled={loading}
+              >
+                {loading ? "Sending..." : "Send Join Request"}
+              </button>
+            </>
+          )}
 
           <button
             className="back-btn bottom-back secondary-btn"

@@ -1,0 +1,130 @@
+@import url("https://fonts.googleapis.com/css2?family=Zen+Dots&display=swap");
+
+.hacklabs-whatsapp-banner {
+  width: min(900px, 95%);
+  margin: 4rem auto;
+  padding: 1.3rem 2rem;
+
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+
+  background: #000;
+  border: 3px solid rgba(255, 255, 255, 0.75);
+  box-sizing: border-box;
+}
+
+.hacklabs-whatsapp-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  text-decoration: none;
+  transition:
+    transform 0.3s ease,
+    color 0.3s ease;
+}
+
+.hacklabs-whatsapp-icon svg {
+  font-size: clamp(4rem, 8vw, 6.5rem);
+}
+
+.hacklabs-whatsapp-icon:hover {
+  transform: scale(1.08);
+  color: #25d366;
+}
+
+.hacklabs-whatsapp-content {
+  flex: 1;
+  min-width: 0;
+  font-family: "Zen Dots", sans-serif;
+  color: #fff;
+}
+
+.hacklabs-whatsapp-content h2,
+.hacklabs-whatsapp-content p {
+  text-align: right;
+  margin: 0;
+  font-family: "Zen Dots", sans-serif;
+  color: #fff;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.hacklabs-whatsapp-content h2 {
+  font-size: clamp(20px, 2.5vw, 30px);
+  line-height: 1.2;
+}
+
+.hacklabs-whatsapp-content p {
+  margin-top: 0.5rem;
+  font-size: clamp(16px, 2vw, 24px);
+  line-height: 1.2;
+}
+
+.hacklabs-whatsapp-content a {
+  color: #fff;
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 6px;
+  transition: opacity 0.3s ease;
+  white-space: nowrap;
+}
+
+.hacklabs-whatsapp-content a:hover {
+  opacity: 0.8;
+  color: rgb(185, 185, 185);
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+  .hacklabs-whatsapp-banner {
+    width: min(700px, 95%);
+    gap: 1.5rem;
+    padding: 1.2rem;
+  }
+
+  .hacklabs-whatsapp-icon svg {
+    font-size: 4.5rem;
+  }
+
+  .hacklabs-whatsapp-content h2 {
+    font-size: 2.5vw !important;
+  }
+
+  .hacklabs-whatsapp-content p {
+    font-size: 1.8vw !important;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .hacklabs-whatsapp-banner {
+    width: 92vw;
+    gap: 3vw;
+    padding: 4vw;
+  }
+
+  .hacklabs-whatsapp-icon {
+    margin-right: 1vw;
+  }
+
+  .hacklabs-whatsapp-icon svg {
+    font-size: 10vw !important;
+  }
+
+  .hacklabs-whatsapp-content h2 {
+    font-size: 3vw !important;
+  }
+
+  .hacklabs-whatsapp-content p {
+    font-size: 2.2vw !important;
+    line-height: 1.5;
+  }
+
+  .hacklabs-whatsapp-content a {
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1px;
+  }
+}

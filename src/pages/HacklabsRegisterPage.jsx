@@ -20,7 +20,6 @@ export default function HacklabsRegisterPage() {
   const [otp, setOtp] = useState("");
 
   useEffect(() => {
-    // If they already have an active session, skip auth and go straight to onboarding
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         navigate("/hacklabs/coming");
@@ -45,9 +44,7 @@ export default function HacklabsRegisterPage() {
   };
 
   const passwordValid = formData.password.length >= 6;
-
   const passwordsMatch = formData.password === formData.confirmPassword;
-
   const formValid =
     formData.name.trim() !== "" &&
     formData.email.trim() !== "" &&
@@ -56,39 +53,30 @@ export default function HacklabsRegisterPage() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-
     if (!formValid) {
       setError("Please fill all fields correctly.");
       return;
     }
-
     setLoading(true);
     setError(null);
 
     try {
-      // Check if the email already exists in the database
       const { data: emailExists, error: rpcError } = await supabase.rpc(
         "check_email_exists",
         { p_email: formData.email },
       );
 
       if (rpcError) {
-        console.warn(
-          "check_email_exists RPC error (continuing registration):",
-          rpcError,
-        );
+        console.warn("RPC error:", rpcError);
       } else if (emailExists) {
-        throw new Error(
-          "This email address is already registered. Please log in or use a different email.",
-        );
+        throw new Error("This email address is already registered.");
       }
+
       const { data, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
-          data: {
-            full_name: formData.name,
-          },
+          data: { full_name: formData.name },
         },
       });
 
@@ -106,6 +94,7 @@ export default function HacklabsRegisterPage() {
       setLoading(false);
     }
   };
+
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -134,15 +123,15 @@ export default function HacklabsRegisterPage() {
     if (resendTimer > 0) return;
     setLoading(true);
     setError(null);
+
     try {
       const { error } = await supabase.auth.resend({
         type: "signup",
         email: formData.email,
       });
-      if (error) throw error;
 
+      if (error) throw error;
       setResendTimer(60);
-      alert("A new verification code has been sent to your email.");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -153,19 +142,16 @@ export default function HacklabsRegisterPage() {
   return (
     <div className="register-page">
       <HacklabsNavbar />
-
       <div className="register-container">
         {error && <div className="register-error">{error}</div>}
-
         <div className="register-layout">
-          <div className="register-form-section register-form-section-full">
+          <div className="register-form-section">
             {!showOtp ? (
               <>
                 <h3 className="register-section-title">Establish Identity</h3>
-                <form onSubmit={handleRegister} className="register-form">
+                <form id="register-form" onSubmit={handleRegister} className="register-form">
                   <div className="input-group">
-                    <label>Full Name</label>
-
+                    <label>FULL NAME</label>
                     <input
                       type="text"
                       name="name"
@@ -175,10 +161,8 @@ export default function HacklabsRegisterPage() {
                       required
                     />
                   </div>
-
                   <div className="input-group">
-                    <label>Email Address</label>
-
+                    <label>EMAIL ADDRESS</label>
                     <input
                       type="email"
                       name="email"
@@ -188,88 +172,55 @@ export default function HacklabsRegisterPage() {
                       required
                     />
                   </div>
-
                   <div className="input-group">
-                    <label>Enter Password</label>
-
+                    <label>ENTER PASSWORD</label>
                     <input
                       type="password"
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
                       placeholder="••••••••"
-                      className={
-                        formData.password && !passwordValid ? "input-error" : ""
-                      }
+                      className={formData.password && !passwordValid ? "input-error" : ""}
                     />
-
                     {formData.password && !passwordValid && (
-                      <span className="field-error">
-                        Password must be at least 6 characters
-                      </span>
+                      <span className="field-error">Password must be at least 6 characters</span>
                     )}
                   </div>
-
                   <div className="input-group">
-                    <label>Confirm Password</label>
-
+                    <label>CONFIRM PASSWORD</label>
                     <input
                       type="password"
                       name="confirmPassword"
                       value={formData.confirmPassword}
                       onChange={handleChange}
                       placeholder="••••••••"
-                      className={
-                        formData.confirmPassword && !passwordsMatch
-                          ? "input-error"
-                          : ""
-                      }
+                      className={formData.confirmPassword && !passwordsMatch ? "input-error" : ""}
                     />
-
                     {formData.confirmPassword && !passwordsMatch && (
-                      <span className="field-error">
-                        Passwords do not match
-                      </span>
+                      <span className="field-error">Passwords do not match</span>
                     )}
                   </div>
-
-                  <button
-                    type="submit"
-                    className="register-submit-btn"
-                    disabled={!formValid || loading}
-                  >
-                    {loading ? "PROCESSING..." : "Create Account"}
-                  </button>
                 </form>
               </>
             ) : (
               <>
                 <h3 className="register-section-title">Verify Comm-Link</h3>
                 <p className="register-otp-message">
-                  A 6-digit security code has been Sent to {formData.email}.
+                  A 6-digit security code has been sent to {formData.email}.
                 </p>
-                <form onSubmit={handleVerifyOtp} className="register-form">
+                <form id="verify-otp-form" onSubmit={handleVerifyOtp} className="register-form">
                   <div className="input-group">
-                    <label>One Time Password</label>
+                    <label>ONE TIME PASSWORD</label>
                     <input
                       type="text"
                       required
                       value={otp}
                       onChange={(e) => setOtp(e.target.value)}
-                      placeholder="00000000"
-                      maxLength="8"
+                      placeholder="000000"
+                      maxLength="6"
                       className="register-otp-input"
                     />
                   </div>
-
-                  <button
-                    type="submit"
-                    className="register-submit-btn"
-                    disabled={loading}
-                  >
-                    {loading ? "VERIFYING..." : "Submit OTP"}
-                  </button>
-
                   <div className="register-resend-wrapper">
                     <button
                       type="button"
@@ -285,6 +236,18 @@ export default function HacklabsRegisterPage() {
                 </form>
               </>
             )}
+          </div>
+          
+          <div className="register-info-section">
+            <h1 className="register-large-text">Register</h1>
+            <button
+              type="submit"
+              form={!showOtp ? "register-form" : "verify-otp-form"}
+              className="register-submit-btn"
+              disabled={(!showOtp && !formValid) || loading}
+            >
+              {loading ? "PROCESSING..." : (!showOtp ? "Create Account" : "Submit OTP")}
+            </button>
           </div>
         </div>
       </div>

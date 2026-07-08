@@ -25,7 +25,6 @@
 
 .hacklabs-container {
   max-width: 1200px;
-}
   margin: 0 auto;
 }
 
@@ -170,7 +169,6 @@
 .input-error {
   border-color: #ff4040 !important;
   box-shadow: 0 0 12px rgba(255, 64, 64, 0.15);
-}
 }
 
 .input-error:focus {

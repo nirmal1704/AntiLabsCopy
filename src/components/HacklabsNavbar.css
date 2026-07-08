@@ -315,7 +315,7 @@
 }
 
 .hacklabs-logo-img {
-  height: 72px;
+  height: 85px;
   width: auto;
   cursor: pointer;
   mix-blend-mode: screen;
@@ -458,7 +458,7 @@
     z-index: 99999;
   }
   .hacklabs-logo-img {
-    height: 52px;
+    height: 65px;
     width: auto;
   }
 }
