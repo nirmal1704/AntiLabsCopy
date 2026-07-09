@@ -36,7 +36,16 @@
   margin-bottom: 40px;
   transition: 0.3s ease;
 }
-
+.Join-btn {
+  height: 65px;
+  padding: 10px;
+  margin-right: 20px;
+  font-family: "Zen Dots", sans-serif;
+  font-size: clamp(1.2rem, 3vw, 2rem);
+  cursor: pointer;
+  margin-bottom: 40px;
+  transition: 0.3s ease;
+}
 .primary-btn {
   background: #fff;
   color: #000;
@@ -106,6 +115,7 @@
   display: flex;
   align-items: center;
   gap: 20px;
+  padding-top: 20px;
 }
 /* JOIN FORM */
 
@@ -246,6 +256,19 @@
   text-transform: uppercase;
 }
 
+.formation-success {
+  margin-bottom: 1.5rem;
+  padding: 14px;
+  border-radius: 6px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #86efac;
+  font-family: "Zen Dots", sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
 /* MOBILE */
 
 @media (max-width: 768px) {
@@ -262,6 +285,9 @@
   .secondary-btn {
     height: 80px;
     font-size: 1rem;
+  }
+  .Join-btn {
+    margin-top: 20px;
   }
 
   .join-form {
@@ -282,5 +308,17 @@
   .member-row {
     padding-left: 20px;
     min-height: 65px;
+  }
+  .bottom-back {
+    margin-top: 10px;
+  }
+  .join-form input {
+    font-size: 25px;
+  }
+
+  .formation-error,
+  .formation-success {
+    padding: 12px;
+    font-size: 0.7rem;
   }
 }

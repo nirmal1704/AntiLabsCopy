@@ -32,7 +32,7 @@
 
 .payment-banner p {
   margin: 0;
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Zen Dots", sans-serif;
 }
 
 .pay-btn {
@@ -57,7 +57,7 @@
   border-radius: 8px;
   max-width: 600px;
   margin: 0 auto 40px;
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Zen Dots", sans-serif;
 }
 
 .members-grid {
@@ -118,6 +118,17 @@
   font-weight: bold;
 }
 
+.modal-captain-badge {
+  background: #0ea5e9;
+  color: #000;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: bold;
+  height: fit-content;
+}
+
 /* ADD MEMBER */
 
 .add-btn {
@@ -162,19 +173,47 @@
 
 .hacklabs-modal-overlay {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.8);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  font-family: "Zen Dots", sans-serif;
+}
+.copy-success {
+  margin: -8px 0 18px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: rgba(0, 255, 136, 0.12);
+  border: 1px solid #00ff88;
+  color: #00ff88;
+  text-align: center;
+  font-size: 0.95rem;
+  font-family: "Zen Dots", sans-serif;
+
+  font-weight: 600;
+  animation: copyFade 0.3s ease;
+}
+
+@keyframes copyFade {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .hacklabs-modal {
   background: #111;
   padding: 30px;
-  border-radius: 12px;
-  border: 1px solid #333;
+  border: 1px solid #ffffff7b;
   width: 90%;
   max-width: 400px;
   font-family: "Space Grotesk", sans-serif;
@@ -184,12 +223,17 @@
 
 .hacklabs-modal h3 {
   margin-top: 0;
-  font-size: 1.5rem;
+  font-size: 2rem;
+  color: #fff;
+  margin-bottom: 20px;
+  font-family: "Zen Dots", sans-serif;
 }
 
 .hacklabs-modal p {
   color: #aaa;
   margin-bottom: 20px;
+  font-size: 1rem;
+  font-family: "Zen Dots", sans-serif;
 }
 
 .hacklabs-modal input {
@@ -201,6 +245,7 @@
   border-radius: 6px;
   margin-bottom: 20px;
   font-size: 1rem;
+  font-family: "Zen Dots", sans-serif;
 }
 
 .modal-actions {
@@ -215,6 +260,7 @@
   border-radius: 6px;
   cursor: pointer;
   font-weight: bold;
+  font-family: "Zen Dots", sans-serif;
 }
 
 .cancel-btn {
@@ -231,7 +277,7 @@
 .modal-error {
   color: #ff4444;
   margin-bottom: 15px;
-  background: rgba(255,0,0,0.1);
+  background: rgba(255, 0, 0, 0.1);
   padding: 10px;
   border-radius: 4px;
 }
@@ -255,6 +301,9 @@
 @media (max-width: 768px) {
   .dashboard {
     margin-top: 0px;
+  }
+  .default-user-icon {
+    font-size: 30px;
   }
   .team-title {
     font-size: 2.5rem;
@@ -315,7 +364,9 @@
   .dashboard {
     padding: 20px 12px;
   }
-
+  .default-user-icon {
+    font-size: 30px;
+  }
   .team-title {
     font-size: 2rem;
     margin-bottom: 30px;
@@ -493,7 +544,9 @@
   font-size: 0.9rem;
   border-radius: 6px;
   cursor: pointer;
-  transition: transform 0.2s, background 0.2s;
+  transition:
+    transform 0.2s,
+    background 0.2s;
 }
 
 .create-avatar-btn:hover {
@@ -558,13 +611,11 @@
   cursor: pointer;
 }
 
-.empty-avatar {
-  color: #ffffff;
-  font-size: 7rem;
-  font-family: "Zen Dots", sans-serif;
-  opacity: 0.5;
+.default-user-icon {
+  font-size: 170px;
+  color: #fff;
+  opacity: 0.75;
 }
-
 .loading-text {
   text-align: center;
   color: #94a3b8;
@@ -572,29 +623,33 @@
 }
 
 .no-avatar-captain {
-  background: #0ea5e9;
+  background: #fff;
 }
 
 .no-avatar-member {
-  background: #334155;
+  background: #fff;
 }
 
 .requests-section {
   margin-top: 2rem;
-  background: #151b2b;
+  background: black;
   padding: 1.5rem;
   border-radius: 8px;
+  border: 1px solid white;
 }
 
 .requests-section-title {
-  color: #94a3b8;
+  color: #fff;
   margin-bottom: 1rem;
+  font-family: "Zen Dots", sans-serif;
 }
 
 .requests-list {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  font-family: "Zen Dots", sans-serif;
+  border: 1px solid white;
 }
 
 .request-card {
@@ -604,6 +659,7 @@
   background: #0b0f19;
   padding: 1rem;
   border-radius: 6px;
+  font-family: "Zen Dots", sans-serif;
 }
 
 .pending-reply-badge {
@@ -615,12 +671,13 @@
 }
 
 .accept-btn {
-  background: #0ea5e9;
-  color: #fff;
+  background: #fff;
+  color: black;
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 4px;
   cursor: pointer;
+  font-family: "Zen Dots", sans-serif;
 }
 
 .team-roster-loading {
@@ -628,17 +685,19 @@
   color: #94a3b8;
   text-align: center;
   grid-column: 1 / -1;
+  font-family: "Zen Dots", sans-serif;
 }
 
 .team-code-box-wrapper {
   margin-top: 2rem;
-  background: #0f172a;
+  background: black;
   padding: 1rem 2rem;
   border-radius: 8px;
-  border: 1px dashed #38bdf8;
+  border: 1px dashed #fff;
   margin-bottom: 2rem;
   text-align: center;
   display: inline-block;
+  font-family: "Zen Dots", sans-serif;
 }
 
 .team-code-label {
@@ -650,7 +709,7 @@
 }
 
 .team-code-value {
-  color: #38bdf8;
+  color: #fff;
   font-size: 1.5rem;
   letter-spacing: 4px;
   font-weight: bold;

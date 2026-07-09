@@ -207,6 +207,7 @@ export default function HacklabsOnboardingPage() {
           dob: personal.dob,
           gender: personal.gender,
           unique_user_code: personal.unique_user_code,
+          email: user.email,
           profile_photo: null,
         });
       if (pErr) throw pErr;

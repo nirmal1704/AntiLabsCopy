@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "../supabase";
 import "./HacklabsTeamFormation.css";
 
 export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
   const [teamName, setTeamName] = useState("");
   const [joinCode, setJoinCode] = useState("");
+  const [searchedTeam, setSearchedTeam] = useState(null);
+  const [fetchingTeam, setFetchingTeam] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState("");
   const [errors, setErrors] = useState({
     teamName: "",
     joinCode: "",
@@ -180,12 +184,15 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
 
       // 3. Invoke Supabase edge function to create order
       const { data: orderData, error: orderError } =
-        await supabase.functions.invoke("create-cashfree-order", {
+        await supabase.functions.invoke("create-hacklabs-order", {
           body: {
             team_id: teamData.id,
             customer_name: participant.full_name,
             customer_email: userEmail,
             customer_phone: participant.mobile_number,
+            is_dev:
+              window.location.hostname === "localhost" ||
+              window.location.hostname === "127.0.0.1",
           },
         });
 
@@ -265,34 +272,60 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
 
   const handleJoinRequest = async (e) => {
     e.preventDefault();
+
     setError(null);
+    setSuccessMessage("");
 
     if (!validateJoinCode()) return;
-    if (!joinCode) return;
+
+    setFetchingTeam(true);
+
+    try {
+      const { data: teamData, error: teamError } = await supabase
+        .rpc("preview_team_by_code", { p_team_code: joinCode.trim() })
+        .single();
+
+      if (teamError || !teamData) {
+        throw new Error("Team not found. Please check the code.");
+      }
+
+      setSearchedTeam({
+        ...teamData,
+        captain_name: teamData.captain_name,
+        member_names: teamData.member_names || [],
+      });
+    } catch (err) {
+      setSearchedTeam(null);
+      setError(err.message);
+    } finally {
+      setFetchingTeam(false);
+    }
+  };
+
+  const handleSendJoinRequest = async () => {
+    if (!searchedTeam) return;
     setLoading(true);
     setError(null);
     try {
-      const { data: teamData, error: teamError } = await supabase
-        .from("hacklabs_teams")
-        .select("id")
-        .eq("unique_team_code", joinCode)
-        .single();
-
-      if (teamError || !teamData)
-        throw new Error("Team not found. Please check the code.");
-
       const { error: inviteError } = await supabase
         .from("hacklabs_invitations")
         .insert({
-          team_id: teamData.id,
+          team_id: searchedTeam.id,
           participant_auth_id: participant.auth_id,
           type: "request",
           status: "pending",
         });
 
-      if (inviteError) throw inviteError;
+      if (inviteError) {
+        if (inviteError.code === "23505")
+          throw new Error("You have already sent a request to this team.");
+        throw inviteError;
+      }
 
-      alert("Request sent successfully! Wait for the captain to accept.");
+      setSuccessMessage(
+        "Request sent successfully. Wait for the captain to accept.",
+      );
+      setSearchedTeam(null);
       setJoinCode("");
     } catch (err) {
       setError(err.message);
@@ -326,7 +359,17 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
   };
   return (
     <div className="team-formation-container">
-      {error && <div className="formation-error">{error.toUpperCase()}</div>}
+      {error && (
+        <div className="formation-error">
+          {error.toUpperCase()}{" "}
+          <Link to="/hacklabs/#query-section" className="formation-error-link">
+            You can also raise a query
+          </Link>
+        </div>
+      )}{" "}
+      {successMessage && (
+        <div className="formation-success">{successMessage}</div>
+      )}
       {view === "home" && (
         <div className="team-home">
           <h1>Team</h1>
@@ -356,7 +399,6 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
           )}
         </div>
       )}
-
       {view === "create" && (
         <div className="team-screen">
           <h1>Create Team</h1>
@@ -386,9 +428,13 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
               )}
             </div>
 
+            <div className="fee-explanation">
+              <p>Team Registration requires a one-time fee of ₹199.</p>
+            </div>
+
             <div className="form-actions">
               <button type="submit" className="primary-btn">
-                {loading ? "Creating..." : "Create"}
+                {loading ? "Processing..." : "Register Team"}
               </button>
 
               <button
@@ -402,7 +448,6 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
           </form>
         </div>
       )}
-
       {view === "join" && (
         <div className="team-screen">
           <h1>Join Team</h1>
@@ -432,17 +477,57 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
               )}
             </div>
 
-            <button type="submit">{loading ? "..." : "Join"}</button>
+            <button type="submit">{loading ? "..." : "Fetch Team"}</button>
           </form>
 
-          <h2 className="details-heading">Team Details :-</h2>
+          {fetchingTeam && (
+            <div className="team-loading">
+              <p>Fetching team details...</p>
+            </div>
+          )}
 
-          <div className="team-members">
-            <div className="member-row">Captain</div>
-            <div className="member-row">Empty Slot</div>
-            <div className="member-row">Empty Slot</div>
-            <div className="member-row">Empty Slot</div>
-          </div>
+          {searchedTeam && (
+            <>
+              <h2 className="details-heading">Team Details :-</h2>
+
+              <div className="team-members">
+                <div className="member-row">
+                  <strong>Team Name :</strong> {searchedTeam.name}
+                </div>
+
+                <div className="member-row">
+                  <strong>Team Code :</strong> {searchedTeam.unique_team_code}
+                </div>
+
+                <div className="member-row">
+                  <strong>Captain :</strong>{" "}
+                  {searchedTeam.captain_name || "Hidden (Privacy settings)"}
+                </div>
+
+                {searchedTeam.member_names?.map((memberName, idx) => (
+                  <div key={idx} className="member-row">
+                    <strong>Member {idx + 1} :</strong> {memberName}
+                  </div>
+                ))}
+
+                {Array.from({
+                  length: 3 - (searchedTeam.member_names?.length || 0),
+                }).map((_, idx) => (
+                  <div key={`empty-${idx}`} className="member-row">
+                    Empty Slot
+                  </div>
+                ))}
+              </div>
+
+              <button
+                className="Join-btn primary-btn"
+                onClick={handleSendJoinRequest}
+                disabled={loading}
+              >
+                {loading ? "Sending..." : "Send Join Request"}
+              </button>
+            </>
+          )}
 
           <button
             className="back-btn bottom-back secondary-btn"

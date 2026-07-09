@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { supabase } from "../supabase";
 import "./HacklabsQueryForm.css";
 
 export default function HacklabsQueryForm() {
@@ -101,50 +102,24 @@ export default function HacklabsQueryForm() {
     setLoading(true);
 
     try {
-      const existingQueries = JSON.parse(
-        localStorage.getItem("mockHacklabsQueries") || "[]",
-      );
+      const { error } = await supabase.from("hacklabs_queries").insert([
+        {
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          subject: `[Hacklabs] ${formData.subject.trim()}`,
+          description: formData.description.trim(),
+          status: "open",
+        },
+      ]);
 
-      const newQuery = {
-        id: Date.now().toString(),
-        name: formData.name.trim(),
-        email: formData.email.trim(),
-        subject: `[Hacklabs] ${formData.subject.trim()}`,
-        description: formData.description.trim(),
-        status: "open",
-        created_at: new Date().toISOString(),
-      };
+      if (error) throw error;
 
-      localStorage.setItem(
-        "mockHacklabsQueries",
-        JSON.stringify([...existingQueries, newQuery]),
-      );
+      setLoading(false);
+      setMessage("QUERY SUBMITTED SUCCESSFULLY. OUR TEAM WILL CONTACT YOU SOON.");
+      setFormData({ name: "", email: "", subject: "", description: "" });
+      setErrors({ name: "", email: "", subject: "", description: "" });
 
-      setTimeout(() => {
-        setLoading(false);
-
-        setMessage(
-          "QUERY SUBMITTED SUCCESSFULLY. OUR TEAM WILL CONTACT YOU SOON.",
-        );
-
-        setFormData({
-          name: "",
-          email: "",
-          subject: "",
-          description: "",
-        });
-
-        setErrors({
-          name: "",
-          email: "",
-          subject: "",
-          description: "",
-        });
-
-        setTimeout(() => {
-          setMessage("");
-        }, 5000);
-      }, 1000);
+      setTimeout(() => setMessage(""), 5000);
     } catch (error) {
       console.error(error);
 

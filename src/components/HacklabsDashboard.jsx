@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase";
 import HacklabsAvatar from "./HacklabsAvatar";
+import { FaRegCircleUser } from "react-icons/fa6";
+import { HiOutlineUserCircle } from "react-icons/hi2";
 import "./HacklabsDashboard.css";
 
 export default function HacklabsDashboard({
@@ -18,11 +20,28 @@ export default function HacklabsDashboard({
   const [inviteError, setInviteError] = useState(null);
   const [requests, setRequests] = useState([]);
   const [selectedMember, setSelectedMember] = useState(null);
-  const [selectedMemberDetails, setSelectedMemberDetails] = useState({ loading: false, tech: null, acad: null });
+  const [copied, setCopied] = useState(false);
+  const [selectedMemberDetails, setSelectedMemberDetails] = useState({
+    loading: false,
+    tech: null,
+    acad: null,
+  });
   const navigate = useNavigate();
 
   const isCaptain = team?.captain_id === participant?.auth_id;
+  const copyTeamCode = async () => {
+    try {
+      await navigator.clipboard.writeText(team?.unique_team_code);
 
+      setCopied(true);
+
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 780);
     window.addEventListener("resize", handleResize);
@@ -38,6 +57,7 @@ export default function HacklabsDashboard({
       fetchMembers(false);
     }, 5000);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [team]);
 
   const fetchMembers = async (showLoader = true) => {
@@ -66,9 +86,9 @@ export default function HacklabsDashboard({
         .from("hacklabs_invitations")
         .select(
           `
-          id, type, status,
-          participant:hacklabs_personal_details(auth_id, full_name, unique_user_code)
-        `,
+            id, type, status,
+            participant:hacklabs_personal_details(auth_id, full_name, unique_user_code)
+          `,
         )
         .eq("team_id", team.id)
         .eq("status", "pending");
@@ -80,32 +100,7 @@ export default function HacklabsDashboard({
     }
   };
 
-  const handleInvite = async (e) => {
-    e.preventDefault();
-    if (!inviteCode) return;
-    setLoading(true);
-    setInviteError(null);
-
-    try {
-      const { error: rpcError } = await supabase.rpc("invite_user_by_code", {
-        target_user_code: inviteCode,
-        source_team_id: team.id,
-      });
-
-      if (rpcError) throw rpcError;
-
-      alert("Invite sent successfully!");
-      setShowModal(false);
-      setInviteCode("");
-      fetchRequests();
-    } catch (err) {
-      setInviteError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAcceptRequest = async (inviteId, participantId) => {
+  const handleAcceptRequest = async (inviteId) => {
     setLoading(true);
     try {
       const { error } = await supabase.rpc("accept_hacklabs_invite", {
@@ -129,12 +124,20 @@ export default function HacklabsDashboard({
     } else if (member.type === "filled") {
       setSelectedMember(member);
       setSelectedMemberDetails({ loading: true, tech: null, acad: null });
-      
+
       const [{ data: tech }, { data: acad }] = await Promise.all([
-        supabase.from("hacklabs_technical_info").select("*").eq("auth_id", member.id).single(),
-        supabase.from("hacklabs_academic_info").select("*").eq("auth_id", member.id).single()
+        supabase
+          .from("hacklabs_technical_info")
+          .select("*")
+          .eq("auth_id", member.id)
+          .single(),
+        supabase
+          .from("hacklabs_academic_info")
+          .select("*")
+          .eq("auth_id", member.id)
+          .single(),
       ]);
-      
+
       setSelectedMemberDetails({ loading: false, tech, acad });
     }
   };
@@ -142,17 +145,22 @@ export default function HacklabsDashboard({
   const handlePayment = async () => {
     setLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       const userEmail = session?.user?.email || "";
 
       const { data, error } = await supabase.functions.invoke(
-        "create-cashfree-order",
+        "create-hacklabs-order",
         {
           body: {
             team_id: team.id,
             customer_name: participant.full_name,
             customer_email: userEmail,
             customer_phone: participant.mobile_number,
+            is_dev:
+              window.location.hostname === "localhost" ||
+              window.location.hostname === "127.0.0.1",
           },
         },
       );
@@ -168,7 +176,9 @@ export default function HacklabsDashboard({
         });
       }
 
-      const isDev = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+      const isDev =
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1";
       const cashfree = window.Cashfree({
         mode: isDev ? "sandbox" : "production",
       });
@@ -179,10 +189,10 @@ export default function HacklabsDashboard({
       };
 
       cashfree.checkout(checkoutOptions).then(async (result) => {
-        if(result.error){
+        if (result.error) {
           console.error("Payment error", result.error);
           alert("Payment failed: " + result.error.message);
-        } else if(result.paymentDetails || result.redirect){
+        } else if (result.paymentDetails || result.redirect) {
           await supabase
             .from("hacklabs_teams")
             .update({
@@ -240,7 +250,7 @@ export default function HacklabsDashboard({
       {isCaptain && team?.payment_status === "pending" && (
         <div className="payment-banner">
           <p>Your team registration is pending payment.</p>
-          
+
           <div className="fee-breakdown">
             <h4>Payment Summary</h4>
             <div className="fee-row">
@@ -274,15 +284,13 @@ export default function HacklabsDashboard({
 
       {team?.payment_status === "paid" && (
         <div className="payment-success-banner">
-          <p>✓ Team registration is fully paid and confirmed.</p>
+          <p>Your Team is Registered. Add your Team Members </p>
         </div>
       )}
 
       <div className="members-grid">
         {isFetchingMembers ? (
-          <div className="team-roster-loading">
-            Loading team roster...
-          </div>
+          <div className="team-roster-loading">Loading team roster...</div>
         ) : (
           displayMembers.map((member, idx) => (
             <div
@@ -298,9 +306,7 @@ export default function HacklabsDashboard({
                     {member.avatar_config ? (
                       <HacklabsAvatar config={member.avatar_config} size={80} />
                     ) : (
-                      <div className="empty-avatar">
-                        ?
-                      </div>
+                      <HiOutlineUserCircle className="default-user-icon" />
                     )}
                   </div>
                 )}
@@ -317,65 +323,93 @@ export default function HacklabsDashboard({
         )}
       </div>
       <div className="team-code-box-wrapper">
-        <p className="team-code-label">
-          Share this code to invite members
-        </p>
-        <span className="team-code-value">
-          {team?.unique_team_code}
-        </span>
+        <p className="team-code-label">Share this code to invite members</p>
+        <span className="team-code-value">{team?.unique_team_code}</span>
       </div>
 
       {showModal && (
         <div className="hacklabs-modal-overlay">
           <div className="hacklabs-modal">
-            <h3>Invite Member</h3>
-            <p>
-              Enter the Unique User Code of your friend to invite them to{" "}
-              {team.name}.
-            </p>
-            {inviteError && <div className="modal-error">{inviteError}</div>}
-            <form onSubmit={handleInvite}>
-              <input
-                type="text"
-                placeholder="HL-XXXXXX"
-                value={inviteCode}
-                onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                required
-              />
-              <div className="modal-actions">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="cancel-btn"
-                >
-                  Cancel
-                </button>
-                <button type="submit" disabled={loading} className="invite-btn">
-                  Send Invite
-                </button>
-              </div>
-            </form>
+            <h3>Invite Members</h3>
+            <p>Share this code with your friends To join the Team.</p>
+            <div
+              className="team-code-display"
+              style={{
+                background: "#1a1a1a",
+                padding: "15px",
+                borderRadius: "8px",
+                fontSize: "1.5rem",
+                fontWeight: "bold",
+                margin: "20px 0",
+                letterSpacing: "2px",
+                textAlign: "center",
+                userSelect: "all",
+              }}
+            >
+              {team?.unique_team_code}
+            </div>
+            {copied && (
+              <div className="copy-success"> Code Copied Successfully!</div>
+            )}
+            <div className="modal-actions">
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                className="cancel-btn"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={copyTeamCode}
+                className="invite-btn"
+              >
+                Copy Code
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {selectedMember && (
-        <div className="hacklabs-modal-overlay" onClick={(e) => { if (e.target.className === 'hacklabs-modal-overlay') setSelectedMember(null); }}>
+        <div
+          className="hacklabs-modal-overlay"
+          onClick={(e) => {
+            if (e.target.className === "hacklabs-modal-overlay")
+              setSelectedMember(null);
+          }}
+        >
           <div className="hacklabs-member-modal">
-            <button className="close-modal-btn" onClick={() => setSelectedMember(null)}>✕</button>
-            
+            <button
+              className="close-modal-btn"
+              onClick={() => setSelectedMember(null)}
+            >
+              ✕
+            </button>
+
             <div className="member-modal-header">
               <div className="member-modal-avatar">
                 {selectedMember.avatar_config ? (
-                  <HacklabsAvatar config={selectedMember.avatar_config} size={100} />
+                  <HacklabsAvatar
+                    config={selectedMember.avatar_config}
+                    size={100}
+                  />
                 ) : (
-                  <div className={`no-avatar-placeholder ${selectedMember.isCaptain ? 'no-avatar-captain' : 'no-avatar-member'}`} />
+                  <div
+                    className={`no-avatar-placeholder ${selectedMember.isCaptain ? "no-avatar-captain" : "no-avatar-member"}`}
+                  />
                 )}
               </div>
               <div className="member-modal-title">
-                <h2>{selectedMember.name}</h2>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  <h2>{selectedMember.name}</h2>
+                  {selectedMember.isCaptain && (
+                    <span className="modal-captain-badge">Captain</span>
+                  )}
+                </div>
                 <p>@{selectedMember.username}</p>
-                {selectedMember.isCaptain && <span className="captain-badge">Captain</span>}
               </div>
             </div>
 
@@ -386,35 +420,75 @@ export default function HacklabsDashboard({
                 <div className="member-details-grid">
                   <div className="detail-section">
                     <h4>ACADEMIC PROFILE</h4>
-                    <p><strong>College:</strong> {selectedMemberDetails.acad?.college_name || "N/A"}</p>
-                    <p><strong>Branch:</strong> {selectedMemberDetails.acad?.branch || "N/A"}</p>
-                    <p><strong>Year:</strong> {selectedMemberDetails.acad?.year_of_study || "N/A"}</p>
+                    <p>
+                      <strong>College:</strong>{" "}
+                      {selectedMemberDetails.acad?.college_name || "N/A"}
+                    </p>
+                    <p>
+                      <strong>Branch:</strong>{" "}
+                      {selectedMemberDetails.acad?.branch || "N/A"}
+                    </p>
+                    <p>
+                      <strong>Year:</strong>{" "}
+                      {selectedMemberDetails.acad?.year_of_study || "N/A"}
+                    </p>
                   </div>
-                  
+
                   <div className="detail-section">
                     <h4>TECH STACK</h4>
                     {selectedMemberDetails.tech?.github_link && (
-                      <p><strong>GitHub:</strong> <a href={selectedMemberDetails.tech.github_link} target="_blank" rel="noreferrer">View Profile</a></p>
+                      <p>
+                        <strong>GitHub:</strong>{" "}
+                        <a
+                          href={selectedMemberDetails.tech.github_link}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          View Profile
+                        </a>
+                      </p>
                     )}
                     {selectedMemberDetails.tech?.linkedin && (
-                      <p><strong>LinkedIn:</strong> <a href={selectedMemberDetails.tech.linkedin} target="_blank" rel="noreferrer">View Profile</a></p>
+                      <p>
+                        <strong>LinkedIn:</strong>{" "}
+                        <a
+                          href={selectedMemberDetails.tech.linkedin}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          View Profile
+                        </a>
+                      </p>
                     )}
                     {selectedMemberDetails.tech?.portfolio && (
-                      <p><strong>Portfolio:</strong> <a href={selectedMemberDetails.tech.portfolio} target="_blank" rel="noreferrer">View Portfolio</a></p>
+                      <p>
+                        <strong>Portfolio:</strong>{" "}
+                        <a
+                          href={selectedMemberDetails.tech.portfolio}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          View Portfolio
+                        </a>
+                      </p>
                     )}
                   </div>
                 </div>
               )}
             </div>
-            
-            {!selectedMember.avatar_config && selectedMember.id === participant?.auth_id && (
-              <div className="member-modal-footer">
-                <p>You haven't configured your Hacker ID yet.</p>
-                <button className="create-avatar-btn" onClick={() => navigate("/hacklabs/id-card")}>
-                  Create Hacker ID
-                </button>
-              </div>
-            )}
+
+            {!selectedMember.avatar_config &&
+              selectedMember.id === participant?.auth_id && (
+                <div className="member-modal-footer">
+                  <p>You haven't configured your Avatar yet.</p>
+                  <button
+                    className="create-avatar-btn"
+                    onClick={() => navigate("/hacklabs/id-card")}
+                  >
+                    Create Avatar
+                  </button>
+                </div>
+              )}
           </div>
         </div>
       )}
@@ -441,18 +515,16 @@ export default function HacklabsDashboard({
                   <div>
                     {req.type === "invite" ? (
                       <>
-                        You invited <strong>{pName}</strong> (@{pCode}) to join.
+                        You invited <strong>{pName}</strong> to join.
                       </>
                     ) : (
                       <>
-                        <strong>{pName}</strong> (@{pCode}) wants to join your team.
+                        <strong>{pName}</strong> wants to join your team.
                       </>
                     )}
                   </div>
                   {req.type === "invite" ? (
-                    <span className="pending-reply-badge">
-                      Pending Reply
-                    </span>
+                    <span className="pending-reply-badge">Pending Reply</span>
                   ) : (
                     <button
                       onClick={() => handleAcceptRequest(req.id, pId)}
