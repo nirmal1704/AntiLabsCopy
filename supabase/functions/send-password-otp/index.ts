@@ -43,7 +43,7 @@ serve(async (req) => {
         "content-type": "application/json"
       },
       body: JSON.stringify({
-        sender: { name: "HackLabs", email: "reddyrnirmalkumar@gmail.com" },
+        sender: { name: "HackLabs by AntiLabs", email: "noreply@antilabs.in" },
         to: [{ email: email }],
         subject: "Hacklabs - Reset your Password",
         htmlContent: `<!DOCTYPE html>

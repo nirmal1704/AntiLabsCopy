@@ -26,7 +26,7 @@ serve(async (req) => {
       type: "signup",
       email: email,
       password: password,
-      data: { full_name: full_name || "" }
+      data: { full_name: full_name || "", is_hacklabs: true }
     });
 
     if (error) throw error;
@@ -45,7 +45,7 @@ serve(async (req) => {
         "content-type": "application/json"
       },
       body: JSON.stringify({
-        sender: { name: "HackLabs", email: "reddyrnirmalkumar@gmail.com" },
+        sender: { name: "HackLabs by AntiLabs", email: "noreply@antilabs.in" },
         to: [{ email: email }],
         subject: "Hacklabs - Verify your Email",
         htmlContent: `<!DOCTYPE html>
