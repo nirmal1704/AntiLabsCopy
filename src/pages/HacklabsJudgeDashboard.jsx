@@ -16,55 +16,56 @@ export default function HacklabsJudgeDashboard() {
   const [participantsFilter, setParticipantsFilter] = useState("all");
 
   useEffect(() => {
-    let isMounted = true;
-    let timerId;
+    fetchData();
 
-    const pollData = async () => {
-      if (!isMounted) return;
-      await fetchData(true);
-      if (isMounted) {
-        timerId = setTimeout(pollData, 5000);
-      }
-    };
+    // Auto-update dashboard every 10 seconds
+    const interval = setInterval(() => {
+      fetchData(false); // Fetch silently without setting loading to true
+    }, 10000);
 
-    // Initial fetch (loud)
-    fetchData().then(() => {
-      if (isMounted) {
-        timerId = setTimeout(pollData, 5000);
-      }
-    });
-
-    return () => {
-      isMounted = false;
-      clearTimeout(timerId);
-    };
+    return () => clearInterval(interval);
   }, []);
 
-  const fetchData = async (silent = false) => {
+  const fetchData = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     try {
       // Fetch judge data
       const { data: judgeData, error: judgeError } = await supabase.rpc('get_judge_data');
       if (judgeError) throw judgeError;
       setData(judgeData || []);
 
+      // Fetch dropouts (drafts)
       const { data: drafts, error: draftsError } = await supabase.rpc('get_hacklabs_drafts');
       if (draftsError) throw draftsError;
       setDraftsData(drafts || []);
 
+      // Fetch support queries from Supabase
       const { data: queries, error: queriesError } = await supabase
         .from('hacklabs_queries')
         .select('*')
         .order('created_at', { ascending: false });
+        
       if (queriesError) throw queriesError;
       setQueriesData(queries || []);
 
     } catch (err) {
       console.error("Failed to fetch judge view:", err);
-      if (!silent) {
-        alert("Error fetching data. Check permissions or network.");
-      }
+      // Silently catch errors on background refreshes
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
+    }
+  };
+
+  const handleDeleteQuery = async (queryId) => {
+    if (!window.confirm("Are you sure you want to delete this query? It cannot be undone.")) return;
+    try {
+      const { error } = await supabase.from('hacklabs_queries').delete().eq('id', queryId);
+      if (error) throw error;
+      setQueriesData(prev => prev.filter(q => q.id !== queryId));
+      setExpandedId(null);
+    } catch (err) {
+      console.error("Error deleting query:", err);
+      alert("Failed to delete query.");
     }
   };
 
@@ -153,7 +154,9 @@ export default function HacklabsJudgeDashboard() {
   // Grouped logic for teams
   const groupedDataMap = new Map();
   filteredData.forEach(item => {
-    if (!item.team_name) return; // Skip lone wolves in the teams tab
+    if (!item.team_name) return; // Skip lone wolves for Teams tab
+    
+    const groupKey = `team_${item.team_name}`;
     
     const groupKey = `team_${item.team_name}`;
     if (!groupedDataMap.has(groupKey)) {
@@ -279,28 +282,22 @@ export default function HacklabsJudgeDashboard() {
                         <th>Code</th>
                         <th>Name</th>
                         <th>Team</th>
-                        <th>Payment</th>
                         <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredData.map(item => (
-                      <React.Fragment key={`p_${item.auth_id}`}>
-                        <tr className={expandedId === `p_${item.auth_id}` ? "expanded-row" : ""}>
-                          <td className="code-mono">{item.unique_user_code}</td>
-                          <td><strong>{item.full_name}</strong></td>
-                          <td><span className={item.team_name ? "team-name-text" : "no-team-text"}>{item.team_name || "-"}</span></td>
-                          <td>
-                            <span className={`status-badge ${item.payment_status}`}>
-                              {item.payment_status?.toUpperCase() || "-"}
-                            </span>
-                          </td>
-                          <td>
-                            <button className="btn-expand" onClick={() => setExpandedId(expandedId === `p_${item.auth_id}` ? null : `p_${item.auth_id}`)}>
-                              {expandedId === `p_${item.auth_id}` ? "Close" : "Specs"}
-                            </button>
-                          </td>
-                        </tr>
+                        <React.Fragment key={`p_${item.auth_id}`}>
+                          <tr className={expandedId === `p_${item.auth_id}` ? "expanded-row" : ""}>
+                            <td className="code-mono">{item.unique_user_code}</td>
+                            <td><strong>{item.full_name}</strong></td>
+                            <td><span className={item.team_name ? "team-name-text" : "no-team-text"}>{item.team_name || "Lone Wolf"}</span></td>
+                            <td>
+                              <button className="btn-expand" onClick={() => setExpandedId(expandedId === `p_${item.auth_id}` ? null : `p_${item.auth_id}`)}>
+                                {expandedId === `p_${item.auth_id}` ? "Close" : "Specs"}
+                              </button>
+                            </td>
+                          </tr>
                           {expandedId === `p_${item.auth_id}` && (
                             <tr className="details-row"><td colSpan="5">{renderSpecs(item)}</td></tr>
                           )}

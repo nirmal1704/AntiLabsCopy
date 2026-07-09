@@ -119,6 +119,7 @@ export default function HacklabsQueryForm() {
       setMessage("QUERY SUBMITTED SUCCESSFULLY. OUR TEAM WILL CONTACT YOU SOON.");
       setFormData({ name: "", email: "", subject: "", description: "" });
       setErrors({ name: "", email: "", subject: "", description: "" });
+
       setTimeout(() => setMessage(""), 5000);
     } catch (error) {
       console.error(error);
