@@ -4,8 +4,9 @@
   align-items: center;
   gap: 2rem;
   width: 100%;
-  max-width: 400px;
+  min-width: 100%;
   margin: 0 auto;
+  background: #0f172a;
 }
 
 .avatar-card-wrapper {
@@ -20,7 +21,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  transition:
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .randomize-btn {
@@ -40,7 +43,9 @@
   gap: 0.4rem;
   color: #fff;
   cursor: pointer;
-  transition: transform 0.1s ease, background 0.2s ease;
+  transition:
+    transform 0.1s ease,
+    background 0.2s ease;
 }
 
 .randomize-btn:hover {
@@ -59,7 +64,9 @@
 }
 
 .avatar-svg {
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .avatar-svg.animating {
@@ -68,7 +75,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .avatar-svg, .avatar-card-wrapper, .randomize-btn, .callsign-text {
+  .avatar-svg,
+  .avatar-card-wrapper,
+  .randomize-btn,
+  .callsign-text {
     transition: none !important;
     animation: none !important;
   }
@@ -90,8 +100,14 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .trait-controls {
@@ -125,11 +141,10 @@
 .trait-selector {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  width: 220px;
   justify-content: space-between;
+  gap: 0.5rem;
+  width: min(220px, 100%);
 }
-
 .trait-value {
   flex: 1;
   text-align: center;
@@ -147,7 +162,7 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.2);
+  border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .arrow-btn {
@@ -176,4 +191,78 @@
 
 .arrow-btn-white {
   color: #ffffff;
+}
+/* Prevent any overflow */
+.avatar-picker-module,
+.avatar-card-wrapper,
+.avatar-display,
+.avatar-svg {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.avatar-svg svg {
+  width: 100% !important;
+  height: auto !important;
+}
+@media (max-width: 768px) {
+  .avatar-picker-module {
+    max-width: 100%;
+  }
+
+  .avatar-card-wrapper {
+    padding: 1.25rem;
+  }
+
+  .randomize-btn {
+    top: 1rem;
+    right: 1rem;
+    font-size: 0.65rem;
+    padding: 0.45rem 0.8rem;
+  }
+
+  .trait-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.8rem;
+  }
+
+  .trait-selector {
+    width: 100%;
+  }
+
+  .trait-value {
+    min-width: 0;
+    width: auto;
+    font-size: 0.72rem;
+  }
+
+  .arrow-btn {
+    min-width: 36px;
+    min-height: 36px;
+  }
+}
+@media (max-width: 480px) {
+  .avatar-card-wrapper {
+    padding: 1rem;
+  }
+
+  .randomize-btn {
+    font-size: 0.6rem;
+  }
+
+  .trait-label {
+    font-size: 0.65rem;
+  }
+
+  .trait-value {
+    font-size: 0.65rem;
+  }
+
+  .callsign-text {
+    font-size: 0.8rem;
+  }
 }

@@ -190,7 +190,9 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
             customer_email: userEmail,
             customer_phone: participant.mobile_number,
             return_url: `${window.location.origin}/hacklabs/dashboard`,
-            is_dev: window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+            is_dev:
+              window.location.hostname === "localhost" ||
+              window.location.hostname === "127.0.0.1",
           },
         });
 
@@ -314,10 +316,9 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
     setFetchingTeam(true);
 
     try {
-      const { data: teamData, error: teamError } = await supabase.rpc(
-        "preview_team_by_code",
-        { p_team_code: joinCode.trim() }
-      ).single();
+      const { data: teamData, error: teamError } = await supabase
+        .rpc("preview_team_by_code", { p_team_code: joinCode.trim() })
+        .single();
 
       if (teamError || !teamData) {
         throw new Error("Team not found. Please check the code.");
@@ -351,7 +352,8 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
         });
 
       if (inviteError) {
-        if (inviteError.code === "23505") throw new Error("You have already sent a request to this team.");
+        if (inviteError.code === "23505")
+          throw new Error("You have already sent a request to this team.");
         throw inviteError;
       }
 
@@ -454,10 +456,10 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
             <div className="fee-explanation">
               <p>Team Registration requires a one-time fee of ₹199.</p>
             </div>
-            
+
             <div className="form-actions">
               <button type="submit" className="primary-btn">
-                {loading ? "Processing..." : "Pay ₹199 & Create Team"}
+                {loading ? "Processing..." : "Register Team"}
               </button>
 
               <button
@@ -501,7 +503,7 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
               )}
             </div>
 
-            <button type="submit">{loading ? "..." : "Join"}</button>
+            <button type="submit">{loading ? "..." : "Fetch Team"}</button>
           </form>
 
           {fetchingTeam && (
@@ -534,13 +536,17 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
                   </div>
                 ))}
 
-                {Array.from({ length: 3 - (searchedTeam.member_names?.length || 0) }).map((_, idx) => (
-                  <div key={`empty-${idx}`} className="member-row">Empty Slot</div>
+                {Array.from({
+                  length: 3 - (searchedTeam.member_names?.length || 0),
+                }).map((_, idx) => (
+                  <div key={`empty-${idx}`} className="member-row">
+                    Empty Slot
+                  </div>
                 ))}
               </div>
 
               <button
-                className="primary-btn"
+                className="Join-btn primary-btn"
                 onClick={handleSendJoinRequest}
                 disabled={loading}
               >
