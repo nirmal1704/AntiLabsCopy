@@ -151,13 +151,14 @@ export default function HacklabsDashboard({
       const userEmail = session?.user?.email || "";
 
       const { data, error } = await supabase.functions.invoke(
-        "create-hacklabs-order",
+        "create-cashfree-order",
         {
           body: {
             team_id: team.id,
             customer_name: participant.full_name,
             customer_email: userEmail,
             customer_phone: participant.mobile_number,
+            return_url: `${window.location.origin}/hacklabs/dashboard`,
             is_dev:
               window.location.hostname === "localhost" ||
               window.location.hostname === "127.0.0.1",

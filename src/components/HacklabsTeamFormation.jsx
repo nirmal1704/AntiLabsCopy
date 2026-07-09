@@ -183,12 +183,13 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
 
       // 3. Invoke Supabase edge function to create order
       const { data: orderData, error: orderError } =
-        await supabase.functions.invoke("create-hacklabs-order", {
+        await supabase.functions.invoke("create-cashfree-order", {
           body: {
             team_id: teamData.id,
             customer_name: participant.full_name,
             customer_email: userEmail,
             customer_phone: participant.mobile_number,
+            return_url: `${window.location.origin}/hacklabs/dashboard`,
             is_dev:
               window.location.hostname === "localhost" ||
               window.location.hostname === "127.0.0.1",
