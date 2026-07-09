@@ -52,7 +52,7 @@ serve(async (req) => {
     const webhookUrl = supabaseUrl ? `${supabaseUrl}/functions/v1/hacklabs-webhook` : "";
 
     const payload = {
-      order_id: team_id.toString(), // Use team_id as Cashfree order_id
+      order_id: `${team_id}_${Date.now()}`, // Append timestamp to allow retries if user cancels and clicks pay again
       order_amount: finalAmount,
       order_currency: "INR",
       customer_details: {

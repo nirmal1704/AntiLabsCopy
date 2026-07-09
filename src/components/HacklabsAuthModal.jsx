@@ -83,8 +83,10 @@ export default function HacklabsAuthModal() {
     }
     setLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
-      if (error) throw error;
+      const { data, error } = await supabase.functions.invoke("send-password-otp", {
+        body: { email: email.trim() }
+      });
+      if (error || data?.error) throw new Error(error?.message || data?.error || "FAILED TO SEND OTP");
       setSuccess(`OTP SENT TO ${email.toUpperCase()}`);
       setMode("reset_password");
     } catch (err) {

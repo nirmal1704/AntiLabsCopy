@@ -1,18 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import HacklabsNavbar from '../components/HacklabsNavbar';
 import SEO from '../components/SEO';
 import { useAuth } from '../context/AuthContext';
-import './Auth.css';
+import './HacklabsRegisterPage.css'; // Use Hacklabs styling instead of generic Auth.css
 
 export default function ForgotPasswordPage() {
     const [step, setStep] = useState(1);
     const [email, setEmail] = useState('');
     const [otp, setOtp] = useState('');
     const [newPassword, setNewPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
+    const [confirmPassword, setConfirmPassword] = useState('');
     
     const [loading, setLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
@@ -29,10 +28,10 @@ export default function ForgotPasswordPage() {
         }
     }, [errorMsg]);
 
-    // Redirect to home if already logged in
+    // Redirect to dashboard if already logged in
     useEffect(() => {
         if (user) {
-            navigate('/');
+            navigate('/hacklabs/dashboard');
         }
     }, [user, navigate]);
 
@@ -43,15 +42,17 @@ export default function ForgotPasswordPage() {
         setLoading(true);
 
         try {
-            const { error } = await supabase.auth.resetPasswordForEmail(email);
+            const { data, error } = await supabase.functions.invoke("send-password-otp", {
+                body: { email: email.trim() }
+            });
 
-            if (error) {
-                setErrorMsg(error.message || 'Failed to send OTP. Please try again.');
+            if (error || data?.error) {
+                setErrorMsg(error?.message || data?.error || 'Failed to send OTP. Please try again.');
                 setLoading(false);
                 return;
             }
 
-            setSuccessMsg('An OTP has been sent to your email.');
+            setSuccessMsg('Comm-Link established. An OTP has been sent to your email.');
             setStep(2);
         } catch (err) {
             console.error('Send OTP error:', err);
@@ -61,8 +62,14 @@ export default function ForgotPasswordPage() {
         }
     };
 
+    const passwordsMatch = newPassword === confirmPassword;
+
     const handleUpdatePassword = async (e) => {
         e.preventDefault();
+        if (!passwordsMatch) {
+            setErrorMsg('Passwords do not match.');
+            return;
+        }
         setErrorMsg('');
         setSuccessMsg('');
         setLoading(true);
@@ -100,11 +107,11 @@ export default function ForgotPasswordPage() {
 
             setSuccessMsg('Password updated successfully! Redirecting...');
             
-            // Sign out the user so they can log in with new credentials, or just let them stay logged in
+            // Sign out the user so they can log in with new credentials
             await supabase.auth.signOut();
 
             setTimeout(() => {
-                navigate('/login');
+                navigate('/');
             }, 2000);
             
         } catch (err) {
@@ -115,114 +122,132 @@ export default function ForgotPasswordPage() {
     };
 
     return (
-        <div className="auth-page">
-            <SEO title="Forgot Password" description="Reset your AntiLabs account password." canonicalUrl="/forgot-password" />
-            <Navbar />
-            <main className="auth-container">
-                <div className="auth-card">
-                    <div className="auth-header">
-                        <h1>Reset Password</h1>
-                        <p>{step === 1 ? 'Enter your email to receive an OTP' : 'Enter the OTP and your new password'}</p>
+        <div className="register-page">
+            <SEO title="Reset Password" description="Reset your HackLabs account password." canonicalUrl="/forgot-password" />
+            <HacklabsNavbar />
+            <div className="register-container">
+                
+                {errorMsg && (
+                    <div className="register-error" ref={errorRef}>
+                        {errorMsg}
                     </div>
+                )}
+                
+                {successMsg && (
+                    <div className="register-error" style={{ borderColor: '#22c55e', color: '#22c55e', backgroundColor: 'rgba(34, 197, 94, 0.1)' }}>
+                        {successMsg}
+                    </div>
+                )}
 
-                    {errorMsg && (
-                        <div ref={errorRef} style={{ backgroundColor: '#fee2e2', color: '#b91c1c', padding: '12px', borderRadius: '8px', marginBottom: '20px', textAlign: 'center', fontWeight: '500', fontSize: '0.95rem' }}>
-                            {errorMsg}
-                        </div>
-                    )}
+                <div className="register-layout">
+                    <div className="register-form-section">
+                        
+                        {step === 1 ? (
+                            <>
+                                <h3 className="register-section-title">Initiate Password Reset</h3>
+                                <form id="send-otp-form" className="register-form" onSubmit={handleSendOtp}>
+                                    <div className="input-group">
+                                        <label>EMAIL ADDRESS</label>
+                                        <input
+                                            type="email"
+                                            id="email"
+                                            placeholder="you@example.com"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="register-resend-wrapper">
+                                        <button 
+                                            type="button" 
+                                            onClick={() => navigate("/hacklabs/register")}
+                                            className="register-resend-btn active"
+                                            style={{ color: "#0ea5e9", textDecoration: "underline", fontWeight: "bold" }}
+                                        >
+                                            Remembered it? Back to Register
+                                        </button>
+                                    </div>
+                                </form>
+                            </>
+                        ) : (
+                            <>
+                                <h3 className="register-section-title">Verify & Update Comm-Link</h3>
+                                <form id="reset-pwd-form" className="register-form" onSubmit={handleUpdatePassword}>
+                                    <div className="input-group">
+                                        <label>8-DIGIT OTP</label>
+                                        <input
+                                            type="text"
+                                            id="otp"
+                                            placeholder="00000000"
+                                            value={otp}
+                                            onChange={(e) => setOtp(e.target.value)}
+                                            required
+                                            maxLength={8}
+                                            className="register-otp-input"
+                                            autoComplete="one-time-code"
+                                        />
+                                    </div>
 
-                    {successMsg && (
-                        <div style={{ backgroundColor: '#dcfce7', color: '#166534', padding: '12px', borderRadius: '8px', marginBottom: '20px', textAlign: 'center', fontWeight: '500', fontSize: '0.95rem', border: '1px solid #bbf7d0' }}>
-                            {successMsg}
-                        </div>
-                    )}
-
-                    {step === 1 ? (
-                        <form className="auth-form" onSubmit={handleSendOtp}>
-                            <div className="auth-group">
-                                <label htmlFor="email">Email Address</label>
-                                <input
-                                    type="email"
-                                    id="email"
-                                    className="auth-input"
-                                    placeholder="you@example.com"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                />
-                            </div>
-
-                            <button type="submit" className="btn btn-primary auth-btn" disabled={loading}>
-                                {loading ? 'Sending OTP...' : 'Send OTP'}
-                            </button>
-                        </form>
-                    ) : (
-                        <form className="auth-form" onSubmit={handleUpdatePassword}>
-                            <div className="auth-group">
-                                <label htmlFor="otp">8-Digit OTP</label>
-                                <input
-                                    type="text"
-                                    id="otp"
-                                    className="auth-input"
-                                    placeholder="Enter OTP from email"
-                                    value={otp}
-                                    onChange={(e) => setOtp(e.target.value)}
-                                    required
-                                    maxLength={8}
-                                />
-                            </div>
-
-                            <div className="auth-group">
-                                <label htmlFor="newPassword">New Password</label>
-                                <div className="auth-password-wrapper">
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        id="newPassword"
-                                        className="auth-input"
-                                        placeholder="••••••••"
-                                        value={newPassword}
-                                        onChange={(e) => setNewPassword(e.target.value)}
-                                        required
-                                        minLength={6}
-                                    />
-                                    <button type="button" className="auth-password-toggle" onClick={() => setShowPassword(!showPassword)}>
-                                        {showPassword ? (
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                                                <line x1="1" y1="1" x2="23" y2="23"></line>
-                                            </svg>
-                                        ) : (
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                                <circle cx="12" cy="12" r="3"></circle>
-                                            </svg>
+                                    <div className="input-group">
+                                        <label>NEW PASSWORD</label>
+                                        <input
+                                            type="password"
+                                            id="newPassword"
+                                            placeholder="••••••••"
+                                            value={newPassword}
+                                            onChange={(e) => setNewPassword(e.target.value)}
+                                            required
+                                            minLength={6}
+                                            className={newPassword && newPassword.length < 6 ? "input-error" : ""}
+                                        />
+                                        {newPassword && newPassword.length < 6 && (
+                                            <span className="field-error">Password must be at least 6 characters</span>
                                         )}
-                                    </button>
-                                </div>
-                            </div>
+                                    </div>
 
-                            <button type="submit" className="btn btn-primary auth-btn" disabled={loading}>
-                                {loading ? 'Updating Password...' : 'Update Password'}
-                            </button>
-
-                            <div style={{ textAlign: 'center', marginTop: '15px' }}>
-                                <button 
-                                    type="button" 
-                                    onClick={() => { setStep(1); setOtp(''); setNewPassword(''); }}
-                                    style={{ background: 'none', border: 'none', color: '#0ea5e9', cursor: 'pointer', fontWeight: '500', textDecoration: 'underline' }}
-                                >
-                                    Resend OTP
-                                </button>
-                            </div>
-                        </form>
-                    )}
-
-                    <div className="auth-footer">
-                        Remember your password? <Link to="/login" className="auth-link">Sign In</Link>
+                                    <div className="input-group">
+                                        <label>CONFIRM PASSWORD</label>
+                                        <input
+                                            type="password"
+                                            id="confirmPassword"
+                                            placeholder="••••••••"
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            required
+                                            className={confirmPassword && !passwordsMatch ? "input-error" : ""}
+                                        />
+                                        {confirmPassword && !passwordsMatch && (
+                                            <span className="field-error">Passwords do not match</span>
+                                        )}
+                                    </div>
+                                    <div className="register-resend-wrapper">
+                                        <button 
+                                            type="button" 
+                                            onClick={() => { setStep(1); setOtp(''); setNewPassword(''); setConfirmPassword(''); }}
+                                            className="register-resend-btn active"
+                                            style={{ color: "#0ea5e9", textDecoration: "underline", fontWeight: "bold" }}
+                                        >
+                                            Didn't receive code? Resend OTP
+                                        </button>
+                                    </div>
+                                </form>
+                            </>
+                        )}
+                    </div>
+                    
+                    <div className="register-info-section">
+                        <h1 className="register-large-text">Reset Password</h1>
+                        <button 
+                            type="submit" 
+                            form={step === 1 ? "send-otp-form" : "reset-pwd-form"} 
+                            className="register-submit-btn" 
+                            disabled={loading || (step === 2 && (!passwordsMatch || newPassword.length < 6))}
+                        >
+                            {loading ? 'PROCESSING...' : (step === 1 ? 'Send OTP' : 'Update Password')}
+                        </button>
                     </div>
                 </div>
-            </main>
-            <Footer />
+            </div>
         </div>
     );
 }

@@ -42,6 +42,10 @@ export default function HacklabsRegisterPage() {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (emailExistsError) {
+      setEmailExistsError(false);
+      setError(null);
+    }
   };
 
   const passwordValid = formData.password.length >= 6;
@@ -71,29 +75,25 @@ export default function HacklabsRegisterPage() {
       if (rpcError) {
         console.warn("RPC error:", rpcError);
       } else if (emailExists) {
-        // Stop and show OTP page with forgot password
-        setShowOtp(true);
+        // Stop and show error directly on the register form
         setEmailExistsError(true);
         setError("This email address is already registered.");
         return; // exit function gracefully
       }
 
-      const { data, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: { full_name: formData.name },
-        },
+      const { data, error: authError } = await supabase.functions.invoke("send-verification-otp", {
+        body: {
+          email: formData.email,
+          password: formData.password,
+          full_name: formData.name,
+        }
       });
 
-      if (authError) throw authError;
+      if (authError || data?.error) throw new Error(authError?.message || data?.error || "Failed to send OTP");
 
-      if (data?.session) {
-        navigate("/hacklabs/dashboard");
-      } else {
-        setShowOtp(true);
-        setResendTimer(60);
-      }
+      // The edge function generates the OTP, we now show the OTP input page
+      setShowOtp(true);
+      setResendTimer(60);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -131,12 +131,15 @@ export default function HacklabsRegisterPage() {
     setError(null);
 
     try {
-      const { error } = await supabase.auth.resend({
-        type: "signup",
-        email: formData.email,
+      const { data, error } = await supabase.functions.invoke("send-verification-otp", {
+        body: {
+          email: formData.email,
+          password: formData.password,
+          full_name: formData.name,
+        }
       });
 
-      if (error) throw error;
+      if (error || data?.error) throw new Error(error?.message || data?.error || "Failed to resend OTP");
       setResendTimer(60);
     } catch (err) {
       setError(err.message);
@@ -149,7 +152,21 @@ export default function HacklabsRegisterPage() {
     <div className="register-page">
       <HacklabsNavbar />
       <div className="register-container">
-        {error && <div className="register-error">{error}</div>}
+        {error && (
+          <div className="register-error">
+            {error}
+            {emailExistsError && (
+              <div style={{ marginTop: "10px" }}>
+                <a 
+                  onClick={() => navigate("/forgot-password")} 
+                  style={{ color: "#0ea5e9", textDecoration: "underline", cursor: "pointer", fontWeight: "bold" }}
+                >
+                  Forgot Password? Reset Here
+                </a>
+              </div>
+            )}
+          </div>
+        )}
         <div className="register-layout">
           <div className="register-form-section">
             {!showOtp ? (
@@ -212,9 +229,7 @@ export default function HacklabsRegisterPage() {
               <>
                 <h3 className="register-section-title">Verify Comm-Link</h3>
                 <p className="register-otp-message">
-                  {emailExistsError 
-                    ? "This email is already registered."
-                    : `An 8-digit security code has been sent to ${formData.email}.`}
+                  An 8-digit security code has been sent to {formData.email}.
                 </p>
                 <form id="verify-otp-form" onSubmit={handleVerifyOtp} className="register-form">
                   <div className="input-group">
@@ -227,31 +242,19 @@ export default function HacklabsRegisterPage() {
                       placeholder="00000000"
                       maxLength="8"
                       className="register-otp-input"
-                      disabled={emailExistsError}
                     />
                   </div>
                   <div className="register-resend-wrapper">
-                    {emailExistsError ? (
-                      <button
-                        type="button"
-                        onClick={() => navigate("/forgot-password")}
-                        className="register-resend-btn active"
-                        style={{ color: "#0ea5e9", textDecoration: "underline", fontWeight: "bold" }}
-                      >
-                        Forgot Password? Reset Here
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={handleResendOtp}
-                        disabled={resendTimer > 0 || loading}
-                        className={`register-resend-btn ${resendTimer > 0 ? "disabled" : "active"}`}
-                      >
-                        {resendTimer > 0
-                          ? `Resend code available in ${resendTimer}s`
-                          : "Didn't receive code? Resend OTP"}
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={handleResendOtp}
+                      disabled={resendTimer > 0 || loading}
+                      className={`register-resend-btn ${resendTimer > 0 ? "disabled" : "active"}`}
+                    >
+                      {resendTimer > 0
+                        ? `Resend code available in ${resendTimer}s`
+                        : "Didn't receive code? Resend OTP"}
+                    </button>
                   </div>
                 </form>
               </>

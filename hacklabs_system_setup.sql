@@ -310,3 +310,13 @@ BEGIN
     WHERE t.unique_team_code = p_team_code;
 END;
  LANGUAGE plpgsql;
+
+-- RPC: Check Email Exists
+CREATE OR REPLACE FUNCTION public.check_email_exists(p_email text)
+RETURNS boolean AS \$\$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM auth.users WHERE LOWER(email) = LOWER(TRIM(p_email))
+  );
+END;
+\$\$ LANGUAGE plpgsql SECURITY DEFINER;

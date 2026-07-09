@@ -38,7 +38,10 @@ serve(async (req) => {
     console.log("Hacklabs Webhook received! Type:", data.type);
 
     if (data.type === "PAYMENT_SUCCESS_WEBHOOK") {
-      const teamId = data.data.order.order_id;
+      const orderIdString = data.data.order.order_id;
+      // Extract the teamId since we appended a timestamp (e.g. teamid_1730000000)
+      const teamId = orderIdString.split('_')[0];
+      
       console.log("Processing Team ID:", teamId);
       
       const supabaseUrl = Deno.env.get("SUPABASE_URL");
