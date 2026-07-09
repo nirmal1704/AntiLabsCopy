@@ -9,7 +9,6 @@ import { motion } from "framer-motion";
 import HacklabsAvatar from "./HacklabsAvatar";
 import "./HacklabsNavbar.css";
 
-
 export default function HacklabsNavbar() {
   const navigate = useNavigate();
   const { openLogin } = useAuthModal();
@@ -209,7 +208,7 @@ export default function HacklabsNavbar() {
                 setMobileMenuOpen(false);
               }}
             >
-              Register
+              REGISTER
             </button>
 
             <button

@@ -3,14 +3,18 @@
   color: #fff;
   font-family: "Zen Dots", sans-serif;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  width: 100%;
 }
 
 .avatar-page-loading {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 100vh;
   color: #fff;
   font-family: "Zen Dots", monospace;
   letter-spacing: 2px;
@@ -31,12 +35,13 @@
 
 .avatar-page-container {
   background: #000;
-  max-width: 800px;
   padding: clamp(80px, 10vw, 120px) clamp(1rem, 3vw, 2rem) 4rem;
-  position: absolute;
+  position: relative;
   display: flex;
   flex-direction: column;
-  margin-top: 2rem;
+  width: min(100%, 900px);
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .avatar-header {

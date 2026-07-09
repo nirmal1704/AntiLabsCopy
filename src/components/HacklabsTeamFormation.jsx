@@ -423,7 +423,7 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
 
             <div className="form-actions">
               <button type="submit" className="primary-btn">
-                {loading ? "Processing..." : "Pay ₹199 & Create Team"}
+                {loading ? "Processing..." : "Register Team"}
               </button>
 
               <button

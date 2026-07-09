@@ -4,8 +4,9 @@
   align-items: center;
   gap: 2rem;
   width: 100%;
-  max-width: 400px;
+  min-width: 100%;
   margin: 0 auto;
+  background: #0f172a;
 }
 
 .avatar-card-wrapper {
