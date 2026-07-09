@@ -26,7 +26,7 @@ export default function HacklabsAvatarPage() {
         .select("profile_photo")
         .eq("auth_id", session.user.id)
         .single();
-      
+
       if (!error && data) {
         setInitialConfig(data.profile_photo);
         setCurrentConfig(data.profile_photo);
@@ -55,7 +55,7 @@ export default function HacklabsAvatarPage() {
     return (
       <div className="avatar-page">
         <HacklabsNavbar />
-        <div className="avatar-page-loading">LOADING ID TERMINAL...</div>
+        <div className="avatar-page-loading">Fetching Avatars....</div>
       </div>
     );
   }
@@ -65,20 +65,27 @@ export default function HacklabsAvatarPage() {
       <HacklabsNavbar />
       <div className="avatar-page-container">
         <div className="avatar-header">
-          <h1>HACKER ID</h1>
-          <p>Configure your digital presence before entering the dashboard.</p>
+          <h1>Create Avatar</h1>
+          <p>Configure your Avatar before entering the dashboard.</p>
         </div>
 
-        <AvatarPicker 
-          initialConfig={initialConfig} 
-          onChange={setCurrentConfig} 
+        <AvatarPicker
+          initialConfig={initialConfig}
+          onChange={setCurrentConfig}
         />
 
         <div className="avatar-actions">
-          <button className="btn-secondary" onClick={() => navigate("/hacklabs/dashboard")}>
+          <button
+            className="btn-secondary"
+            onClick={() => navigate("/hacklabs/dashboard")}
+          >
             Skip For Now
           </button>
-          <button className="btn-primary" onClick={handleSave} disabled={saving}>
+          <button
+            className="btn-primary"
+            onClick={handleSave}
+            disabled={saving}
+          >
             {saving ? "SAVING..." : "Confirm & Enter"}
           </button>
         </div>

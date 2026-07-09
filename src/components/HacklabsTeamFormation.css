@@ -36,7 +36,16 @@
   margin-bottom: 40px;
   transition: 0.3s ease;
 }
-
+.Join-btn {
+  height: 65px;
+  padding: 10px;
+  margin-right: 20px;
+  font-family: "Zen Dots", sans-serif;
+  font-size: clamp(1.2rem, 3vw, 2rem);
+  cursor: pointer;
+  margin-bottom: 40px;
+  transition: 0.3s ease;
+}
 .primary-btn {
   background: #fff;
   color: #000;
@@ -264,6 +273,9 @@
     height: 80px;
     font-size: 1rem;
   }
+  .Join-btn {
+    margin-top: 20px;
+  }
 
   .join-form {
     flex-direction: column;
@@ -283,5 +295,11 @@
   .member-row {
     padding-left: 20px;
     min-height: 65px;
+  }
+  .bottom-back {
+    margin-top: 10px;
+  }
+  .join-form input {
+    font-size: 25px;
   }
 }
