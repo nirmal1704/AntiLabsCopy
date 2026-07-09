@@ -81,29 +81,10 @@ export default function HacklabsDashboard({
     }
   };
 
-  const handleInvite = async (e) => {
-    e.preventDefault();
-    if (!inviteCode) return;
-    setLoading(true);
-    setInviteError(null);
-
-    try {
-      const { error: rpcError } = await supabase.rpc("invite_user_by_code", {
-        target_user_code: inviteCode,
-        source_team_id: team.id,
-      });
-
-      if (rpcError) throw rpcError;
-
-      alert("Invite sent successfully!");
-      setShowModal(false);
-      setInviteCode("");
-      fetchRequests();
-    } catch (err) {
-      setInviteError(err.message);
-    } finally {
-      setLoading(false);
-    }
+  const copyTeamCode = () => {
+    navigator.clipboard.writeText(team?.unique_team_code || "");
+    alert("Team Code copied to clipboard!");
+    setShowModal(false);
   };
 
   const handleAcceptRequest = async (inviteId) => {
@@ -155,6 +136,7 @@ export default function HacklabsDashboard({
             customer_email: userEmail,
             customer_phone: participant.mobile_number,
             return_url: `${window.location.origin}/hacklabs/dashboard`,
+            is_dev: window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
           },
         },
       );
@@ -330,33 +312,25 @@ export default function HacklabsDashboard({
       {showModal && (
         <div className="hacklabs-modal-overlay">
           <div className="hacklabs-modal">
-            <h3>Invite Member</h3>
+            <h3>Invite Members</h3>
             <p>
-              Enter the Unique User Code of your friend to invite them to{" "}
-              {team.name}.
+              Share this code with your friends. They can enter it on the Team Formation page to send a join request.
             </p>
-            {inviteError && <div className="modal-error">{inviteError}</div>}
-            <form onSubmit={handleInvite}>
-              <input
-                type="text"
-                placeholder="HL-XXXXXX"
-                value={inviteCode}
-                onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                required
-              />
-              <div className="modal-actions">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="cancel-btn"
-                >
-                  Cancel
-                </button>
-                <button type="submit" disabled={loading} className="invite-btn">
-                  Send Invite
-                </button>
-              </div>
-            </form>
+            <div className="team-code-display" style={{ background: '#1a1a1a', padding: '15px', borderRadius: '8px', fontSize: '1.5rem', fontWeight: 'bold', margin: '20px 0', letterSpacing: '2px', textAlign: 'center', userSelect: 'all' }}>
+              {team?.unique_team_code}
+            </div>
+            <div className="modal-actions">
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                className="cancel-btn"
+              >
+                Close
+              </button>
+              <button type="button" onClick={copyTeamCode} className="invite-btn">
+                Copy Code
+              </button>
+            </div>
           </div>
         </div>
       )}

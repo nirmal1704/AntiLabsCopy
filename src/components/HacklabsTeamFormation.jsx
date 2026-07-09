@@ -190,6 +190,7 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
             customer_email: userEmail,
             customer_phone: participant.mobile_number,
             return_url: `${window.location.origin}/hacklabs/dashboard`,
+            is_dev: window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
           },
         });
 
@@ -277,21 +278,10 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
     setFetchingTeam(true);
 
     try {
-      const { data: teamData, error: teamError } = await supabase
-        .from("hacklabs_teams")
-        .select(
-          `
-    id,
-    name,
-    unique_team_code,
-    captain_id,
-    captain:hacklabs_personal_details!hacklabs_teams_captain_id_fkey(
-      full_name
-    )
-  `,
-        )
-        .eq("unique_team_code", joinCode.trim())
-        .single();
+      const { data: teamData, error: teamError } = await supabase.rpc(
+        "preview_team_by_code",
+        { p_team_code: joinCode.trim() }
+      ).single();
 
       if (teamError || !teamData) {
         throw new Error("Team not found. Please check the code.");
@@ -299,7 +289,8 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
 
       setSearchedTeam({
         ...teamData,
-        captain_name: teamData.captain?.full_name,
+        captain_name: teamData.captain_name,
+        member_names: teamData.member_names || [],
       });
     } catch (err) {
       setSearchedTeam(null);
@@ -308,6 +299,37 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
       setFetchingTeam(false);
     }
   };
+
+  const handleSendJoinRequest = async () => {
+    if (!searchedTeam) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const { error: inviteError } = await supabase
+        .from("hacklabs_invitations")
+        .insert({
+          team_id: searchedTeam.id,
+          participant_auth_id: participant.auth_id,
+          type: "request",
+          status: "pending",
+        });
+
+      if (inviteError) {
+        if (inviteError.code === "23505") throw new Error("You have already sent a request to this team.");
+        throw inviteError;
+      }
+
+      alert("Request sent successfully! Wait for the captain to accept.");
+      setSearchedTeam(null);
+      setJoinCode("");
+      setView("home");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleAcceptInvite = async (inviteId, teamNameCode) => {
     setLoading(true);
     try {
@@ -393,9 +415,13 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
               )}
             </div>
 
+            <div className="fee-explanation">
+              <p>Team Registration requires a one-time fee of ₹199.</p>
+            </div>
+            
             <div className="form-actions">
               <button type="submit" className="primary-btn">
-                {loading ? "Creating..." : "Create"}
+                {loading ? "Processing..." : "Pay ₹199 & Create Team"}
               </button>
 
               <button
@@ -463,12 +489,18 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
 
                 <div className="member-row">
                   <strong>Captain :</strong>{" "}
-                  {searchedTeam.captain_name || "Loading..."}
+                  {searchedTeam.captain_name || "Hidden (Privacy settings)"}
                 </div>
 
-                <div className="member-row">Empty Slot</div>
-                <div className="member-row">Empty Slot</div>
-                <div className="member-row">Empty Slot</div>
+                {searchedTeam.member_names?.map((memberName, idx) => (
+                  <div key={idx} className="member-row">
+                    <strong>Member {idx + 1} :</strong> {memberName}
+                  </div>
+                ))}
+
+                {Array.from({ length: 3 - (searchedTeam.member_names?.length || 0) }).map((_, idx) => (
+                  <div key={`empty-${idx}`} className="member-row">Empty Slot</div>
+                ))}
               </div>
 
               <button

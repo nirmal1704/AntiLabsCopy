@@ -17,9 +17,6 @@ import CookieBanner from "./components/CookieBanner";
 import { AuthModalProvider } from "./context/AuthModalContext";
 
 // Lazy loaded pages
-const HacklabsComingSoon = lazy(
-  () => import("./components/HacklabsComingSoon"),
-);
 const ServicesPage = lazy(() => import("./pages/ServicesPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const HacklabsPage = lazy(() => import("./pages/HacklabsPage"));
@@ -119,10 +116,6 @@ export default function App() {
                 <Route
                   path="/hacklabs/dashboard"
                   element={<HacklabsDashboardPage />}
-                />
-                <Route
-                  path="/hacklabs/coming"
-                  element={<HacklabsComingSoon />}
                 />
                 <Route
                   path="/hacklabs/register"

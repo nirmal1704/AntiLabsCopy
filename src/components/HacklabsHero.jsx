@@ -7,16 +7,8 @@ export default function HacklabsHero() {
   const navigate = useNavigate();
   const { openLogin } = useAuthModal();
 
-  const handleJoinClick = async () => {
-    // const {
-    //   data: { session },
-    // } = await supabase.auth.getSession();
-    // if (session) {
-    //   navigate("/hacklabs/coming");
-    // } else {
-    //   openLogin();
-    // }
-    navigate("/hacklabs/coming");
+  const handleRegisterClick = () => {
+    navigate("/hacklabs/dashboard");
   };
 
   return (
@@ -30,7 +22,7 @@ export default function HacklabsHero() {
           <span className="light">Get Hired.</span>
         </div>
         <div className="hero-right">
-          <div className="ticket-btn-wrapper" onClick={handleJoinClick}>
+          <div className="ticket-btn-wrapper" onClick={handleRegisterClick}>
             <button className="ticket-btn">
               <span className="corner top-left"></span>
               <span className="corner top-right"></span>

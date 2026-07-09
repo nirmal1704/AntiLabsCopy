@@ -2,6 +2,7 @@
 -- This script safely drops existing tables and creates the entire schema, policies, and functions.
 
 -- 0. Reset Existing Tables and Views
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 DROP VIEW IF EXISTS public.hacklabs_judge_view CASCADE;
 DROP TABLE IF EXISTS public.hacklabs_invitations CASCADE;
 DROP TABLE IF EXISTS public.hacklabs_academic_info CASCADE;
@@ -254,6 +255,19 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION public.update_user_password(new_password text)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  -- Requires pgcrypto extension
+  UPDATE auth.users
+  SET encrypted_password = crypt(new_password, gen_salt('bf'))
+  WHERE id = auth.uid();
+END;
+$$;
+
 -- 9. Row Level Security (RLS) Policies
 
 -- Personal Details
@@ -314,52 +328,31 @@ CREATE POLICY "Users can insert own requests or captain invites" ON public.hackl
     (type = 'invite' AND EXISTS (SELECT 1 FROM public.hacklabs_teams WHERE id = team_id AND captain_id = auth.uid()))
   );
 
--- 8. Support Queries Table
-CREATE TABLE IF NOT EXISTS public.hacklabs_queries (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  name text NOT NULL,
-  email text NOT NULL,
-  subject text NOT NULL,
-  description text NOT NULL,
-  status text NOT NULL DEFAULT 'open'::text,
-  created_at timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT hacklabs_queries_pkey PRIMARY KEY (id)
-);
-
-ALTER TABLE public.hacklabs_queries ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Anyone can insert queries" ON public.hacklabs_queries FOR INSERT WITH CHECK (true);
-CREATE POLICY "Only judges can view queries" ON public.hacklabs_queries FOR SELECT USING (public.is_hacklabs_judge());
-CREATE POLICY "Only judges can update queries" ON public.hacklabs_queries FOR UPDATE USING (public.is_hacklabs_judge());
-CREATE POLICY "Only judges can delete queries" ON public.hacklabs_queries FOR DELETE USING (public.is_hacklabs_judge());
-
--- 9. Hacklabs Application Drafts Table
-CREATE TABLE IF NOT EXISTS public.hacklabs_application_drafts (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL,
-  form_data jsonb NOT NULL DEFAULT '{}'::jsonb,
-  updated_at timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT hacklabs_application_drafts_pkey PRIMARY KEY (id),
-  CONSTRAINT hacklabs_application_drafts_user_id_key UNIQUE (user_id),
-  CONSTRAINT hacklabs_application_drafts_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
-);
-
-ALTER TABLE public.hacklabs_application_drafts ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can insert own drafts" ON public.hacklabs_application_drafts FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can update own drafts" ON public.hacklabs_application_drafts FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY "Users can view own drafts" ON public.hacklabs_application_drafts FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Judges can view all drafts" ON public.hacklabs_application_drafts FOR SELECT USING (public.is_hacklabs_judge());
-
--- RPC for Judges to view application drafts securely
-CREATE OR REPLACE FUNCTION public.get_hacklabs_drafts()
-RETURNS SETOF public.hacklabs_application_drafts
-LANGUAGE plpgsql
+-- RPC: Preview Team by Code (Bypass RLS for preview)
+CREATE OR REPLACE FUNCTION public.preview_team_by_code(p_team_code text)
+RETURNS TABLE (
+    id uuid,
+    name text,
+    unique_team_code text,
+    captain_name text,
+    member_names text[]
+)
 SECURITY DEFINER
-AS $$
+AS 
 BEGIN
-  IF NOT public.is_hacklabs_judge() THEN
-    RAISE EXCEPTION 'Access Denied: You are not an authorized judge.';
-  END IF;
-
-  RETURN QUERY SELECT * FROM public.hacklabs_application_drafts;
+    RETURN QUERY
+    SELECT 
+        t.id,
+        t.name,
+        t.unique_team_code,
+        c.full_name AS captain_name,
+        ARRAY(
+            SELECT p.full_name 
+            FROM hacklabs_personal_details p 
+            WHERE p.team_id = t.id AND p.auth_id != t.captain_id
+        ) AS member_names
+    FROM hacklabs_teams t
+    LEFT JOIN hacklabs_personal_details c ON t.captain_id = c.auth_id
+    WHERE t.unique_team_code = p_team_code;
 END;
-$$;
+ LANGUAGE plpgsql;
