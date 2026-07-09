@@ -12,6 +12,8 @@ export default function HacklabsJudgeDashboard() {
   const [selectedMemberId, setSelectedMemberId] = useState(null);
   
   const [activeTab, setActiveTab] = useState("participants");
+  const [logsFilter, setLogsFilter] = useState("all");
+  const [participantsFilter, setParticipantsFilter] = useState("all");
 
   useEffect(() => {
     fetchData();
@@ -67,14 +69,34 @@ export default function HacklabsJudgeDashboard() {
     }
   };
 
+  const handleDeleteQuery = async (queryId) => {
+    if (!window.confirm("Are you sure you want to delete this query? It cannot be undone.")) return;
+    try {
+      const { error } = await supabase.from('hacklabs_queries').delete().eq('id', queryId);
+      if (error) throw error;
+      setQueriesData(prev => prev.filter(q => q.id !== queryId));
+      setExpandedId(null);
+    } catch (err) {
+      console.error("Error deleting query:", err);
+      alert("Failed to delete query.");
+    }
+  };
+
   const filteredData = data.filter(item => {
     const term = search.toLowerCase();
-    return (
+    const matchesSearch = (
       (item.full_name && item.full_name.toLowerCase().includes(term)) ||
       (item.unique_user_code && item.unique_user_code.toLowerCase().includes(term)) ||
       (item.team_name && item.team_name.toLowerCase().includes(term)) ||
       (item.unique_team_code && item.unique_team_code.toLowerCase().includes(term))
     );
+    
+    if (!matchesSearch) return false;
+    
+    if (participantsFilter === 'team') return !!item.team_name;
+    if (participantsFilter === 'noteam') return !item.team_name;
+    
+    return true;
   });
 
   const allLogsMap = new Map();
@@ -82,7 +104,7 @@ export default function HacklabsJudgeDashboard() {
   draftsData.forEach(draft => {
     let formData = draft.form_data;
     if (typeof formData === 'string') {
-      try { formData = JSON.parse(formData); } catch (e) { formData = {}; }
+      try { formData = JSON.parse(formData); } catch { formData = {}; }
     }
     formData = formData || {};
     
@@ -93,7 +115,7 @@ export default function HacklabsJudgeDashboard() {
       name: formData.full_name || "N/A",
       email: formData.email || "N/A",
       phone: formData.mobile_number || "N/A",
-      status: "DRAFT (Incomplete)",
+      status: formData.current_step ? `STEP ${formData.current_step} (Incomplete)` : "DRAFT (Incomplete)",
       updated_at: draft.updated_at ? new Date(draft.updated_at).toLocaleDateString() : "N/A",
       specs: {
         ...formData,
@@ -121,7 +143,12 @@ export default function HacklabsJudgeDashboard() {
 
   const filteredLogs = allLogsData.filter(log => {
     const term = search.toLowerCase();
-    return log.name.toLowerCase().includes(term) || log.email.toLowerCase().includes(term);
+    const matchesSearch = log.name.toLowerCase().includes(term) || log.email.toLowerCase().includes(term);
+    
+    if (!matchesSearch) return false;
+    if (logsFilter === 'submitted') return log.type === 'Submitted';
+    if (logsFilter === 'unsubmitted') return log.type === 'Draft';
+    return true;
   });
 
   // Grouped logic for teams
@@ -131,6 +158,7 @@ export default function HacklabsJudgeDashboard() {
     
     const groupKey = `team_${item.team_name}`;
     
+    const groupKey = `team_${item.team_name}`;
     if (!groupedDataMap.has(groupKey)) {
       groupedDataMap.set(groupKey, {
         id: groupKey,
@@ -145,7 +173,7 @@ export default function HacklabsJudgeDashboard() {
   });
   const groupedData = Array.from(groupedDataMap.values());
 
-  const paidTeamsData = groupedData.filter(g => g.payment_status === 'paid' && g.team_name !== 'Lone Wolves');
+  const paidTeamsData = groupedData.filter(g => g.payment_status === 'paid');
 
   const renderSpecs = (item) => (
     <div className="details-grid">
@@ -158,13 +186,14 @@ export default function HacklabsJudgeDashboard() {
       </div>
       <div className="details-card">
         <h4>Technical Specs</h4>
-        <p><strong>GitHub:</strong> {item.github_link ? <a href={item.github_link} target="_blank" rel="noreferrer">{item.github_link}</a> : "N/A"}</p>
-        <p><strong>LinkedIn:</strong> {item.linkedin ? <a href={item.linkedin} target="_blank" rel="noreferrer">{item.linkedin}</a> : "N/A"}</p>
-        <p><strong>Portfolio:</strong> {item.portfolio ? <a href={item.portfolio} target="_blank" rel="noreferrer">{item.portfolio}</a> : "N/A"}</p>
-        <p><strong>Resume:</strong> {item.resume_link ? <a href={item.resume_link} target="_blank" rel="noreferrer">View File</a> : "N/A"}</p>
+        <p className="link-field"><strong>GitHub:</strong> {item.github_link ? <a href={item.github_link} target="_blank" rel="noreferrer">{item.github_link}</a> : "N/A"}</p>
+        <p className="link-field"><strong>LinkedIn:</strong> {item.linkedin ? <a href={item.linkedin} target="_blank" rel="noreferrer">{item.linkedin}</a> : "N/A"}</p>
+        <p className="link-field"><strong>Portfolio:</strong> {item.portfolio ? <a href={item.portfolio} target="_blank" rel="noreferrer">{item.portfolio}</a> : "N/A"}</p>
+        <p className="link-field"><strong>Resume:</strong> {item.resume_link ? <a href={item.resume_link} target="_blank" rel="noreferrer">View File</a> : "N/A"}</p>
       </div>
       <div className="details-card">
         <h4>Personal Bio</h4>
+        <p><strong>Email:</strong> {item.email || "N/A"}</p>
         <p><strong>Phone:</strong> {item.mobile_number || "N/A"}</p>
         <p><strong>DOB:</strong> {item.dob || "N/A"}</p>
         <p><strong>Gender:</strong> {item.gender || "N/A"}</p>
@@ -202,14 +231,39 @@ export default function HacklabsJudgeDashboard() {
           </div>
 
           <div className="judge-controls">
-            <div className="search-wrapper">
+            <div className="search-wrapper" style={{ display: 'flex', gap: '1rem', width: '100%', maxWidth: '600px' }}>
               <input 
                 type="text" 
                 placeholder="Search..." 
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="judge-search"
+                style={{ flex: 1 }}
               />
+              {activeTab === 'dropouts' && (
+                <select 
+                  value={logsFilter} 
+                  onChange={(e) => setLogsFilter(e.target.value)}
+                  className="judge-search"
+                  style={{ width: 'auto', minWidth: '150px', backgroundColor: '#111' }}
+                >
+                  <option value="all">All Applications</option>
+                  <option value="submitted">Submitted</option>
+                  <option value="unsubmitted">Incomplete</option>
+                </select>
+              )}
+              {activeTab === 'participants' && (
+                <select 
+                  value={participantsFilter} 
+                  onChange={(e) => setParticipantsFilter(e.target.value)}
+                  className="judge-search"
+                  style={{ width: 'auto', minWidth: '150px', backgroundColor: '#111' }}
+                >
+                  <option value="all">All Participants</option>
+                  <option value="team">In a Team</option>
+                  <option value="noteam">No Team</option>
+                </select>
+              )}
             </div>
             <div className="stats">
               <span>Total: {activeTab === 'participants' ? filteredData.length : activeTab === 'teams' ? groupedData.length : activeTab === 'paid' ? paidTeamsData.length : activeTab === 'queries' ? queriesData.length : filteredLogs.length}</span>

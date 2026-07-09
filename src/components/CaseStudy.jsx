@@ -95,7 +95,7 @@ export default function CaseStudy() {
                     </p>
 
                     <div className="cs__metrics">
-                        {metrics.map((m, i) => (
+                        {metrics.map((m) => (
                             <div key={m.label} className="cs__metric">
                                 <span className="cs__metric-value">{m.value}</span>
                                 <span className="cs__metric-label">{m.label}</span>

@@ -37,9 +37,9 @@ const CircuitGrid = () => (
 );
 
 export default function Hero() {
-    const step1 = useScrollReveal({ threshold: 0.01 }); // eyebrow + h1
-    const step2 = useScrollReveal({ threshold: 0.01 }); // sub + CTAs
-    const step3 = useScrollReveal({ threshold: 0.01 }); // stats
+    const { ref: step1Ref, visible: step1Visible } = useScrollReveal({ threshold: 0.01 }); // eyebrow + h1
+    const { ref: step2Ref, visible: step2Visible } = useScrollReveal({ threshold: 0.01 }); // sub + CTAs
+    const { ref: step3Ref, visible: step3Visible } = useScrollReveal({ threshold: 0.01 }); // stats
 
     return (
         <section id="home" className="hero">
@@ -51,7 +51,7 @@ export default function Hero() {
             <div className="hero__content container">
                 <div className="hero__text">
                     {/* Step 1 — eyebrow + headline */}
-                    <div ref={step1.ref} className={`hero__reveal ${step1.visible ? 'hero__reveal--in' : ''}`}>
+                    <div ref={step1Ref} className={`hero__reveal ${step1Visible ? 'hero__reveal--in' : ''}`}>
                         <span className="section-eyebrow hero__eyebrow">Next-Gen IT Solutions</span>
                         <h1 className="hero__h1">
                             AntiLabs - Building the Future<br />
@@ -60,7 +60,7 @@ export default function Hero() {
                     </div>
 
                     {/* Step 2 — subtext + CTAs */}
-                    <div ref={step2.ref} className={`hero__reveal hero__reveal--delay1 ${step2.visible ? 'hero__reveal--in' : ''}`}>
+                    <div ref={step2Ref} className={`hero__reveal hero__reveal--delay1 ${step2Visible ? 'hero__reveal--in' : ''}`}>
                         <p className="hero__sub">
                             Enterprise cybersecurity, cloud architecture, and custom software — built to scale with your ambitions.
                         </p>
@@ -75,7 +75,7 @@ export default function Hero() {
                     </div>
 
                     {/* Step 3 — stats */}
-                    <div ref={step3.ref} className={`hero__reveal hero__reveal--delay2 ${step3.visible ? 'hero__reveal--in' : ''}`}>
+                    <div ref={step3Ref} className={`hero__reveal hero__reveal--delay2 ${step3Visible ? 'hero__reveal--in' : ''}`}>
                         <div className="hero__stats">
                             {stats.map((s, i) => (
                                 <React.Fragment key={s.label}>

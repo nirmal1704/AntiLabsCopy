@@ -10,6 +10,19 @@
   z-index: 10;
 }
 
+.query-section-heading {
+  color: white;
+  font-family: "Zen Dots", sans-serif;
+  text-align: center;
+  font-size: 48px;
+  font-weight: 400;
+  margin-bottom: 35px;
+}
+
+.hacklabs-query-section .query-wrapper {
+  max-width: 800px;
+}
+
 .hacklabs-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -55,9 +68,9 @@
 }
 
 .query-subtitle {
-  font-family: "Zen Dots", sans-serif;
-  margin-top: 0.8rem;
-  color: #fff;
+  color: #a3a3a3;
+  font-size: 1.1rem;
+  margin-top: 0.5rem;
   font-family: monospace;
   font-size: 0.9rem;
   line-height: 1.7;
@@ -135,6 +148,18 @@
   background: #111;
   border-color: #fff;
   box-shadow: 0 0 12px rgba(255, 255, 255, 0.08);
+}
+
+.hacklabs-textarea {
+  resize: none;
+}
+
+.hacklabs-input::placeholder,
+.hacklabs-textarea::placeholder {
+  color: #555555;
+  font-family: 'Zen Dots', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
 }
 
 /* ========================= */
@@ -309,5 +334,8 @@
   .hacklabs-input::placeholder,
   .hacklabs-textarea::placeholder {
     font-size: 0.62rem;
+  }
+  .query-section-heading {
+    font-size: 26px;
   }
 }

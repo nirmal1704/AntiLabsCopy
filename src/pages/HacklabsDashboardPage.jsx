@@ -15,55 +15,55 @@ function HacklabsDashboardPage() {
   const { openLogin } = useAuthModal();
 
   useEffect(() => {
-    checkAuthAndFetchData();
-  }, []);
+    const checkAuthAndFetchData = async () => {
+      try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !session) {
+          navigate("/hacklabs");
+          openLogin();
+          return;
+        }
 
-  const checkAuthAndFetchData = async () => {
-    try {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError || !session) {
-        navigate("/hacklabs");
-        openLogin();
-        return;
-      }
+        const { data: isJudge } = await supabase.rpc('is_hacklabs_judge');
+        if (isJudge) {
+          navigate("/hacklabs/judge-dashboard");
+          return;
+        }
 
-      const { data: isJudge } = await supabase.rpc('is_hacklabs_judge');
-      if (isJudge) {
-        navigate("/hacklabs/judge-dashboard");
-        return;
-      }
-
-      const { data: partData, error: partError } = await supabase
-        .from("hacklabs_personal_details")
-        .select("*")
-        .eq("auth_id", session.user.id)
-        .single();
-
-      if (partError) {
-        console.error("Participant not found, routing to onboarding...", partError);
-        navigate("/hacklabs/onboarding");
-        return;
-      }
-
-      setParticipant(partData);
-
-      if (partData.team_id) {
-        const { data: teamData, error: teamError } = await supabase
-          .from("hacklabs_teams")
+        const { data: partData, error: partError } = await supabase
+          .from("hacklabs_personal_details")
           .select("*")
-          .eq("id", partData.team_id)
+          .eq("auth_id", session.user.id)
           .single();
 
-        if (!teamError && teamData) {
-          setTeam(teamData);
+        if (partError) {
+          console.error("Participant not found, routing to onboarding...", partError);
+          navigate("/hacklabs/onboarding");
+          return;
         }
+
+        setParticipant(partData);
+
+        if (partData.team_id) {
+          const { data: teamData, error: teamError } = await supabase
+            .from("hacklabs_teams")
+            .select("*")
+            .eq("id", partData.team_id)
+            .single();
+
+          if (!teamError && teamData) {
+            setTeam(teamData);
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    checkAuthAndFetchData();
+  }, [navigate, openLogin]);
 
   const handleTeamUpdated = async (updatedTeam) => {
     if (updatedTeam) {

@@ -43,11 +43,11 @@ export default function HacklabsLanding({ robotArrived, contentVisible }) {
       window.removeEventListener("resize", updateRobotPosition);
     };
   }, []);
-  const moveRobotToCorner = () => {
+  const _moveRobotToCorner = () => {
     setRobotMode("floating");
   };
 
-  const moveRobotToHero = () => {
+  const _moveRobotToHero = () => {
     setRobotMode("hero");
   };
   const timelineEvents = [

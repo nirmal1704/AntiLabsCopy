@@ -240,7 +240,6 @@ export default function RegisterPage() {
           ])
           .select("user_id")
           .single();
-
         if (!insertError && insertedData) {
           profile = insertedData;
         } else {

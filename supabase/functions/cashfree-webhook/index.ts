@@ -15,27 +15,41 @@ serve(async (req) => {
   try {
     const signature = req.headers.get("x-webhook-signature");
     const timestamp = req.headers.get("x-webhook-timestamp");
-    const rawBody = await req.text();
-    const data = JSON.parse(rawBody);
+    
+    if (!signature || !timestamp) {
+      throw new Error("Missing required x-webhook-signature or x-webhook-timestamp headers.");
+    }
 
-    const secret = Deno.env.get("CASHFREE_TEST_SECRET_KEY");
+    const rawBody = await req.text();
+    let data;
+    try {
+      data = JSON.parse(rawBody);
+    } catch {
+      throw new Error("Invalid JSON body received.");
+    }
+
+    const secret = Deno.env.get("CASHFREE_SECRET_KEY") || Deno.env.get("CASHFREE_TEST_SECRET_KEY");
     if (!secret) {
-        throw new Error("Missing CASHFREE_TEST_SECRET_KEY in environment");
+        throw new Error("Missing CASHFREE_SECRET_KEY or CASHFREE_TEST_SECRET_KEY in environment variables.");
     }
 
     const payload = `${timestamp}${rawBody}`;
-    
     const expectedSignature = crypto.createHmac("sha256", secret.trim()).update(payload).digest("base64");
 
     if (signature !== expectedSignature) {
-      throw new Error("Invalid signature");
+      console.error("Signature mismatch. Expected:", expectedSignature, "Received:", signature);
+      throw new Error("Invalid signature verification.");
     }
 
-    console.log("Webhook received! Type:", data.type);
+    console.log("Webhook verified successfully! Event type:", data.type);
 
     if (data.type === "PAYMENT_SUCCESS_WEBHOOK") {
-      const orderId = data.data.order.order_id;
-      console.log("Processing Order ID:", orderId);
+      const orderId = data.data?.order?.order_id;
+      if (!orderId) {
+        throw new Error("Missing order_id in success webhook payload.");
+      }
+
+      console.log("Processing successful payment for Order ID:", orderId);
       
       const supabaseUrl = Deno.env.get("SUPABASE_URL");
       const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -46,30 +60,35 @@ serve(async (req) => {
 
       const supabase = createClient(supabaseUrl, serviceKey);
 
+      const numericOrderId = parseInt(orderId, 10);
+      if (isNaN(numericOrderId)) {
+        throw new Error(`Order ID ${orderId} is not a valid integer transaction ID.`);
+      }
+
       const { data: tx, error: txError } = await supabase
         .from("transactions")
         .select("*")
-        .eq("transaction_id", orderId)
+        .eq("transaction_id", numericOrderId)
         .single();
 
       if (txError) {
           console.error("DB Error fetching transaction:", txError);
-          throw new Error(`Database error: ${txError.message}`);
+          throw new Error(`Database transaction fetch error: ${txError.message}`);
       }
       if (!tx) {
-          throw new Error(`Transaction ${orderId} not found in database`);
+          throw new Error(`Transaction #${numericOrderId} not found in database`);
       }
 
-      console.log("Transaction found. Current status:", tx.payment_status);
+      console.log(`Transaction found. Current status: ${tx.payment_status}`);
 
       if (tx.payment_status !== "paid") {
         const { error: updateError } = await supabase
           .from("transactions")
           .update({ payment_status: "paid" })
-          .eq("transaction_id", orderId);
+          .eq("transaction_id", numericOrderId);
           
         if (updateError) {
-            console.error("Failed to update transaction:", updateError);
+            console.error("Failed to update transaction status:", updateError);
             throw new Error("Failed to update transaction status");
         }
         
@@ -77,11 +96,11 @@ serve(async (req) => {
 
         const { error: rpcError } = await supabase.rpc(
           "assign_batch_and_roll_number",
-          { p_transaction_id: parseInt(orderId) }
+          { p_transaction_id: numericOrderId }
         );
 
         if (rpcError) {
-          console.error("RPC Failed, running fallback insert. Error:", rpcError);
+          console.error("RPC failed, running fallback insert. Error:", rpcError);
           const { data: existingReg } = await supabase
             .from("training_registrations")
             .select("registration_id")
@@ -89,6 +108,7 @@ serve(async (req) => {
             .maybeSingle();
 
           if (!existingReg) {
+            console.log("No existing registration found. Creating fallback registration record...");
             const { error: insertError } = await supabase
               .from("training_registrations")
               .insert([{
@@ -109,9 +129,19 @@ serve(async (req) => {
                 fees_amount: tx.fees_amount,
                 payment_status: "paid",
               }]);
-              if (insertError) console.error("Fallback insert failed:", insertError);
+              if (insertError) {
+                console.error("Fallback insert failed:", insertError);
+              } else {
+                console.log("Fallback registration created successfully.");
+              }
+          } else {
+            console.log("Registration already exists for email:", tx.email);
           }
+        } else {
+          console.log("RPC assign_batch_and_roll_number completed successfully.");
         }
+      } else {
+        console.log(`Transaction #${numericOrderId} was already marked as paid.`);
       }
     }
 
@@ -127,3 +157,4 @@ serve(async (req) => {
     });
   }
 });
+

@@ -12,7 +12,13 @@ serve(async (req) => {
   }
 
   try {
-    const body = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      throw new Error("Malformed JSON or empty request body.");
+    }
+
     const { 
       action, 
       order_id, 
@@ -25,15 +31,9 @@ serve(async (req) => {
       position,
       role_id,
       user_id,
-      promo_code
+      promo_code,
+      team_id
     } = body;
-
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
-    const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-
-    if (!supabaseUrl || !supabaseServiceRoleKey) {
-      throw new Error("Supabase credentials are not configured in edge function environment.");
-    }
 
     const appId = Deno.env.get("CASHFREE_APP_ID");
     const secretKey = Deno.env.get("CASHFREE_SECRET_KEY");
@@ -42,7 +42,75 @@ serve(async (req) => {
       throw new Error("Missing Cashfree API keys in environment variables.");
     }
 
-    // ── Verification Mode ──────────────────────────────────
+    // ── 1. HACKLABS CHECKOUT FLOW ───────────────────────
+    if (team_id) {
+      // Hacklabs registration amount
+      const orderAmount = 203.70;
+
+      const cashfreeEnv = Deno.env.get("CASHFREE_ENV") || "sandbox";
+      const apiUrl = Deno.env.get("CASHFREE_API_URL") || 
+        (cashfreeEnv === "production" 
+          ? "https://api.cashfree.com/pg/orders" 
+          : "https://sandbox.cashfree.com/pg/orders");
+
+      console.log(`Creating Cashfree order for Team #${team_id} using environment: ${cashfreeEnv}`);
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "x-client-id": appId,
+          "x-client-secret": secretKey,
+          "x-api-version": "2023-08-01",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          order_amount: orderAmount,
+          order_currency: "INR",
+          customer_details: {
+            customer_id: team_id.toString(),
+            customer_name: customer_name || "Hacklabs Participant",
+            customer_email: customer_email || "participant@hacklabs.com",
+            customer_phone: customer_phone || "9999999999"
+          },
+          order_meta: {
+            return_url: "http://localhost:5173/hacklabs/dashboard",
+            payment_methods: ""
+          },
+          order_tags: {
+            team_id: team_id.toString(),
+            customer_name: customer_name || "Unknown",
+            customer_email: customer_email || "Unknown"
+          }
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Cashfree API Error Response:", data);
+        throw new Error(data.message || "Failed to create Cashfree order");
+      }
+
+      return new Response(JSON.stringify({
+        order_id: data.order_id,
+        payment_session_id: data.payment_session_id,
+        amount: data.order_amount,
+        currency: data.order_currency
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    // ── 2. GENERAL COURSE CHECKOUT & VERIFICATION FLOW ──
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
+    const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+
+    if (!supabaseUrl || !supabaseServiceRoleKey) {
+      throw new Error("Supabase credentials are not configured in edge function environment.");
+    }
+
+    // Verification Mode
     if (action === 'verify') {
       const verifyEndpoint = is_dev 
         ? `https://sandbox.cashfree.com/pg/orders/${order_id}`
@@ -162,7 +230,7 @@ serve(async (req) => {
       });
     }
 
-    // ── Price Calculation (Server-Side) ───────────────────
+    // Price Calculation (Server-Side)
     if (!role_id) {
       throw new Error("role_id is required");
     }
@@ -216,7 +284,7 @@ serve(async (req) => {
         }
     }
 
-    // ── Transaction Insertion (Server-Side REST API) ──────
+    // Transaction Insertion (Server-Side REST API)
     const txRes = await fetch(`${supabaseUrl}/rest/v1/transactions`, {
       method: "POST",
       headers: {
@@ -260,13 +328,13 @@ serve(async (req) => {
     const applicationId = tx.transaction_id;
     const finalReturnUrl = return_url ? return_url.replace("{tx_id}", String(applicationId)) : "";
 
-    // ── Order Creation Mode ────────────────────────────────
+    // Order Creation Mode
     const endpoint = is_dev 
       ? "https://sandbox.cashfree.com/pg/orders" 
       : "https://api.cashfree.com/pg/orders";
 
     const payload = {
-      order_id: applicationId.toString(), // Match Cashfree order_id with transaction_id as string
+      order_id: applicationId.toString(),
       order_amount: finalAmount,
       order_currency: "INR",
       customer_details: {
@@ -282,7 +350,7 @@ serve(async (req) => {
     };
 
     // Create the order using Cashfree API
-    const response = await fetch(apiUrl, {
+    const response = await fetch(endpoint, {
       method: "POST",
       headers: {
         "x-client-id": appId,
@@ -290,37 +358,17 @@ serve(async (req) => {
         "x-api-version": "2023-08-01",
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        order_amount: orderAmount,
-        order_currency: "INR",
-        customer_details: {
-          customer_id: team_id || `cust_${Date.now()}`,
-          customer_name: customer_name || "Hacklabs Participant",
-          customer_email: customer_email || "participant@hacklabs.com",
-          customer_phone: customer_phone || "9999999999" // Cashfree requires a valid 10-digit phone number
-        },
-        order_meta: {
-          return_url: "http://localhost:5173/hacklabs/dashboard", // Update dynamically if needed, but not strictly required for headless checkout modal
-          payment_methods: ""
-        },
-        order_tags: {
-          team_id: team_id || "unknown",
-          customer_name: customer_name,
-          customer_email: customer_email
-        }
-      }),
+      body: JSON.stringify(payload),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("Cashfree API Error:", data);
+      console.error("Cashfree API Error Response:", data);
       throw new Error(data.message || "Failed to create Cashfree order");
     }
 
-    // Returns the payment_session_id which frontend will use to open the Cashfree Checkout Modal
     return new Response(JSON.stringify({
-      order_id: data.order_id,
       payment_session_id: data.payment_session_id,
       order_id: data.order_id,
       application_id: applicationId,
@@ -329,7 +377,8 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
-  } catch (error) {
+  } catch (error: any) {
+    console.error("Cashfree edge function error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 400,

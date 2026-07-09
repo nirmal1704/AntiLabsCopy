@@ -35,11 +35,6 @@ export default function HacklabsOnboardingPage() {
     resume_link: "",
   });
 
-  const [teamForm, setTeamForm] = useState({
-    name: "",
-    joinCode: "",
-  });
-
   useEffect(() => {
     const savedStep = localStorage.getItem("hacklabs_onboarding_step");
     if (savedStep) setStep(parseInt(savedStep, 10));
@@ -103,12 +98,28 @@ export default function HacklabsOnboardingPage() {
     });
   }, [navigate]);
 
-  const handleNext = (e) => {
+  const handleNext = async (e) => {
     e.preventDefault();
 
     if (step === 1 && !validateStep1()) return;
 
     if (step === 2 && !validateStep2()) return;
+
+    if (user) {
+      const formData = {
+        ...personal,
+        ...academic,
+        ...technical,
+        current_step: step + 1
+      };
+      await supabase
+        .from('hacklabs_application_drafts')
+        .upsert({
+          user_id: user.id,
+          form_data: formData,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' });
+    }
 
     setStep((s) => s + 1);
 
@@ -203,6 +214,7 @@ export default function HacklabsOnboardingPage() {
             personal.full_name ||
             user.user_metadata?.full_name ||
             "Unknown Identity",
+          email: user.email,
           mobile_number: personal.mobile_number,
           dob: personal.dob,
           gender: personal.gender,
@@ -231,6 +243,8 @@ export default function HacklabsOnboardingPage() {
       localStorage.removeItem("hacklabs_onboarding_personal");
       localStorage.removeItem("hacklabs_onboarding_academic");
       localStorage.removeItem("hacklabs_onboarding_technical");
+      
+      await supabase.from("hacklabs_application_drafts").delete().eq("user_id", user.id);
 
       navigate("/hacklabs/id-card");
     } catch (err) {

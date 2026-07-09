@@ -118,6 +118,17 @@
   font-weight: bold;
 }
 
+.modal-captain-badge {
+  background: #0ea5e9;
+  color: #000;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: bold;
+  height: fit-content;
+}
+
 /* ADD MEMBER */
 
 .add-btn {

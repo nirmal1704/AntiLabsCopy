@@ -12,28 +12,61 @@ serve(async (req) => {
     }
 
     try {
-        const { quiz_id, section_id, answers } = await req.json()
+        let body;
+        try {
+            body = await req.json()
+        } catch {
+            return new Response(
+                JSON.stringify({ error: 'Malformed JSON or empty request body.' }), 
+                { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+
+        const { quiz_id, section_id, answers } = body
+
+        if (!quiz_id) {
+            return new Response(
+                JSON.stringify({ error: 'quiz_id is required' }), 
+                { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+
+        if (!answers || !Array.isArray(answers)) {
+            return new Response(
+                JSON.stringify({ error: 'answers must be an array' }), 
+                { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
 
         const authHeader = req.headers.get('Authorization')
         if (!authHeader) {
             return new Response(JSON.stringify({ error: 'Missing authorization header' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
         }
 
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')
+        const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')
+        const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+
+        if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
+            return new Response(
+                JSON.stringify({ error: 'Supabase credentials are not configured in environment variables.' }), 
+                { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+
         const supabase = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+            supabaseUrl,
+            supabaseAnonKey,
             { global: { headers: { Authorization: authHeader } } }
         )
 
         const { data: { user }, error: authError } = await supabase.auth.getUser()
         if (authError || !user) {
-            return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+            console.error("Auth validation failed:", authError);
+            return new Response(JSON.stringify({ error: 'Unauthorized user access' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
         }
 
-        const supabaseAdmin = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-        )
+        const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
 
         const { data: quizData, error: quizError } = await supabaseAdmin
             .from('quizzes')
@@ -42,7 +75,12 @@ serve(async (req) => {
             .single()
 
         if (quizError || !quizData) {
-            return new Response(JSON.stringify({ error: 'Quiz not found' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+            console.error("Failed to fetch quiz details:", quizError);
+            return new Response(JSON.stringify({ error: 'Quiz details not found' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        }
+
+        if (!Array.isArray(quizData.questions)) {
+            return new Response(JSON.stringify({ error: 'Quiz questions are not configured as an array' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
         }
 
         let score = 0;
@@ -54,7 +92,7 @@ serve(async (req) => {
             }
         });
 
-        const percentage = (score / totalQuestions) * 100;
+        const percentage = totalQuestions > 0 ? (score / totalQuestions) * 100 : 0;
         const passed = percentage >= 80;
 
         const { data: userData, error: userError } = await supabaseAdmin
@@ -64,7 +102,8 @@ serve(async (req) => {
             .single()
 
         if (userError || !userData) {
-            return new Response(JSON.stringify({ error: 'User profile not found' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+            console.error("Failed to query user profile:", userError);
+            return new Response(JSON.stringify({ error: 'User profile mapping not found' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
         }
 
         const { error: insertError } = await supabaseAdmin
@@ -72,7 +111,7 @@ serve(async (req) => {
             .insert([{
                 user_id: userData.user_id,
                 quiz_id: quiz_id,
-                section_id: section_id,
+                section_id: section_id || null,
                 score: score,
                 total_questions: totalQuestions,
                 percentage: parseFloat(percentage.toFixed(2)),
@@ -81,12 +120,14 @@ serve(async (req) => {
 
         if (insertError) {
             if (insertError.code === '23505') {
+                 console.log(`Duplicate submission ignored for quiz_id ${quiz_id}, user_id ${userData.user_id}. Returning success results directly.`);
                  return new Response(
                     JSON.stringify({ success: true, score, totalQuestions, percentage, passed }),
                     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
                 )
             }
-            return new Response(JSON.stringify({ error: 'Failed to save submission' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+            console.error("Submission insertion failed:", insertError);
+            return new Response(JSON.stringify({ error: 'Failed to record quiz submission' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
         }
 
         return new Response(
@@ -95,6 +136,8 @@ serve(async (req) => {
         )
 
     } catch (err: any) {
+        console.error("grade-quiz edge function error:", err.message);
         return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 })
+

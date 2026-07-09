@@ -30,7 +30,7 @@ const GithubIcon = () => (
 );
 
 export default function AboutPage() {
-    const hero = useScrollReveal({ threshold: 0.01 });
+    const { ref: heroRef, visible: heroVisible } = useScrollReveal({ threshold: 0.01 });
 
     const breadcrumbs = [
         { name: "Home", url: "/" },
@@ -52,8 +52,8 @@ export default function AboutPage() {
                 <section className="ap__hero">
                     <div className="ap__hero-bg" />
                     <div
-                        ref={hero.ref}
-                        className={`ap__hero-content container ${hero.visible ? 'ap__hero-content--in' : ''}`}
+                        ref={heroRef}
+                        className={`ap__hero-content container ${heroVisible ? 'ap__hero-content--in' : ''}`}
                     >
                         <span className="section-eyebrow">About AntiLabs</span>
                         <h1 className="ap__hero-h1">

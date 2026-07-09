@@ -28,7 +28,7 @@
   font-family: "Zen Dots", sans-serif;
   color: #fff;
   text-align: center;
-  font-size: clamp(36px, 5vw, 72px);
+  font-size: 48px;
   font-weight: 400;
   margin-bottom: 30px;
 }
@@ -216,7 +216,7 @@
 
 @media (max-width: 768px) {
   .prize-heading {
-    font-size: 34px;
+    font-size: 26px;
   }
 
   .rank-circle {

@@ -100,6 +100,7 @@ export default function HacklabsQueryForm() {
     if (!validate()) return;
 
     setLoading(true);
+    setMessage("");
 
     try {
       const { error } = await supabase.from("hacklabs_queries").insert([
@@ -131,6 +132,7 @@ export default function HacklabsQueryForm() {
 
   return (
     <section className="hacklabs-query-section" id="queries">
+      <h1 className="query-section-heading">//Support Query</h1>
       <div className="hacklabs-container">
         <motion.div
           className="query-wrapper"

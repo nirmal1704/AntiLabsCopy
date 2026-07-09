@@ -3,11 +3,12 @@ import { useRef } from "react";
 import { FiChevronDown, FiLogOut, FiHome } from "react-icons/fi";
 import { FiMenu, FiX } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import { useAuthModal } from "../context/AuthModalContext";
 import { supabase } from "../supabase";
+import { motion } from "framer-motion";
 import HacklabsAvatar from "./HacklabsAvatar";
 import "./HacklabsNavbar.css";
+
 
 export default function HacklabsNavbar() {
   const navigate = useNavigate();

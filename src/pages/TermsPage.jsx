@@ -445,7 +445,18 @@ function PolicySection({ heading, content, index }) {
 
 /* ── Main page ───────────────────────────────────────────── */
 export default function TermsPage() {
-    const [active, setActive] = useState('terms');
+    const [active, setActive] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const tab = params.get('tab');
+            const path = window.location.pathname.replace('/', '');
+            const byPath = policies.find(p => p.id === path);
+            const byTab = policies.find(p => p.id === tab);
+            if (byTab) return byTab.id;
+            if (byPath) return byPath.id;
+        }
+        return 'terms';
+    });
     const policy = policies.find(p => p.id === active);
     const mainRef = useRef(null);
 
@@ -454,17 +465,6 @@ export default function TermsPage() {
         if (mainRef.current) mainRef.current.scrollTop = 0;
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, [active]);
-
-    // read ?tab= param OR path from URL
-    useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        const tab = params.get('tab');
-        const path = window.location.pathname.replace('/', '');
-        const byPath = policies.find(p => p.id === path);
-        const byTab = policies.find(p => p.id === tab);
-        if (byTab) setActive(byTab.id);
-        else if (byPath) setActive(byPath.id);
-    }, []);
 
     return (
         <>

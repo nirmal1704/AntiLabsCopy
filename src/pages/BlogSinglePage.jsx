@@ -31,6 +31,7 @@ export default function BlogSinglePage() {
         // Scroll to top on slug change so reader starts from the beginning
         window.scrollTo(0, 0);
         fetchBlogBySlug();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [slug]);
 
     useEffect(() => {
