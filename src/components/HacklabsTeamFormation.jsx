@@ -194,12 +194,48 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
           },
         });
 
-      if (orderError || !orderData || !orderData.payment_session_id) {
-        throw new Error(
-          orderError?.message ||
-            orderData?.error ||
-            "Failed to initialize payment gateway.",
-        );
+      // Extract real error message from edge function response
+      if (orderError) {
+        let errMsg = "Failed to connect to payment gateway.";
+        try {
+          const errData = await orderError.context?.json?.();
+          if (errData?.error) errMsg = errData.error;
+        } catch (_) {
+          errMsg = orderError.message || errMsg;
+        }
+        throw new Error(errMsg);
+      }
+
+      if (!orderData || !orderData.payment_session_id) {
+        throw new Error(orderData?.error || "Payment gateway did not return a session.");
+      }
+
+      // ── MOCK MODE: Cashfree keys not yet configured ──
+      if (orderData.mock) {
+        setLoading(true);
+        try {
+          const { error: teamUpdateError } = await supabase
+            .from("hacklabs_teams")
+            .update({
+              payment_status: "paid",
+              cashfree_order_id: orderData.order_id,
+            })
+            .eq("id", teamData.id);
+          if (teamUpdateError) throw teamUpdateError;
+
+          const { error: partUpdateError } = await supabase
+            .from("hacklabs_personal_details")
+            .update({ team_id: teamData.id })
+            .eq("auth_id", participant.auth_id);
+          if (partUpdateError) throw partUpdateError;
+
+          onTeamUpdated({ ...teamData, payment_status: "paid" });
+        } catch (updateErr) {
+          setError("Database update failed: " + updateErr.message);
+        } finally {
+          setLoading(false);
+        }
+        return;
       }
 
       // 4. Dynamically load Cashfree JS SDK

@@ -141,7 +141,35 @@ export default function HacklabsDashboard({
         },
       );
 
-      if (error) throw error;
+      // Extract real error message from edge function response
+      if (error) {
+        let errMsg = "Failed to connect to payment gateway.";
+        try {
+          const errData = await error.context?.json?.();
+          if (errData?.error) errMsg = errData.error;
+        } catch (_) {
+          errMsg = error.message || errMsg;
+        }
+        throw new Error(errMsg);
+      }
+
+      if (!data || !data.payment_session_id) {
+        throw new Error(data?.error || "Payment gateway did not return a session.");
+      }
+
+      // ── MOCK MODE: Cashfree keys not yet configured ──
+      if (data.mock) {
+        await supabase
+          .from("hacklabs_teams")
+          .update({
+            payment_status: "paid",
+            cashfree_order_id: data.order_id,
+          })
+          .eq("id", team.id);
+        onTeamUpdated({ ...team, payment_status: "paid" });
+        setLoading(false);
+        return;
+      }
 
       if (!window.Cashfree) {
         const script = document.createElement("script");
@@ -181,7 +209,7 @@ export default function HacklabsDashboard({
       });
     } catch (err) {
       console.error(err);
-      alert("Payment failed. Please try again.");
+      alert("Payment failed: " + err.message);
     } finally {
       setLoading(false);
     }

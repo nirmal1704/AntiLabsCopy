@@ -37,21 +37,31 @@ serve(async (req) => {
 
     const appId = Deno.env.get("CASHFREE_APP_ID");
     const secretKey = Deno.env.get("CASHFREE_SECRET_KEY");
-
-    if (!appId || !secretKey) {
-      throw new Error("Missing Cashfree API keys in environment variables.");
-    }
+    const cashfreeEnv = Deno.env.get("CASHFREE_ENV") || "sandbox";
 
     // ── 1. HACKLABS CHECKOUT FLOW ───────────────────────
     if (team_id) {
-      // Hacklabs registration amount
-      const orderAmount = 203.70;
+      const orderAmount = 199.00;
 
-      const cashfreeEnv = Deno.env.get("CASHFREE_ENV") || "sandbox";
-      const apiUrl = Deno.env.get("CASHFREE_API_URL") || 
-        (cashfreeEnv === "production" 
-          ? "https://api.cashfree.com/pg/orders" 
-          : "https://sandbox.cashfree.com/pg/orders");
+      // ── SANDBOX TEST MODE (when Cashfree keys not yet configured) ──
+      if (!appId || !secretKey) {
+        console.warn("⚠️  CASHFREE_APP_ID / CASHFREE_SECRET_KEY not set. Running in MOCK mode for testing.");
+        return new Response(JSON.stringify({
+          order_id: `mock_hack_${team_id}_${Date.now()}`,
+          payment_session_id: "mock_session_for_ui_testing_only",
+          amount: orderAmount,
+          currency: "INR",
+          mock: true,
+          warning: "CASHFREE keys not configured — this is a mock payment session for UI testing only."
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+
+      const apiUrl = cashfreeEnv === "production"
+        ? "https://api.cashfree.com/pg/orders"
+        : "https://sandbox.cashfree.com/pg/orders";
 
       console.log(`Creating Cashfree order for Team #${team_id} using environment: ${cashfreeEnv}`);
 
@@ -102,6 +112,12 @@ serve(async (req) => {
         status: 200,
       });
     }
+
+    // ── 2. GENERAL COURSE CHECKOUT & VERIFICATION FLOW ──
+    if (!appId || !secretKey) {
+      throw new Error("Missing Cashfree API keys. Please set CASHFREE_APP_ID and CASHFREE_SECRET_KEY in Supabase Edge Function secrets.");
+    }
+
 
     // ── 2. GENERAL COURSE CHECKOUT & VERIFICATION FLOW ──
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
