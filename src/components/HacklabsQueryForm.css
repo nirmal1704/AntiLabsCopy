@@ -14,9 +14,12 @@
   color: white;
   font-family: "Zen Dots", sans-serif;
   text-align: center;
-  font-size: 48px;
+  font-size: 80px;
   font-weight: 400;
   margin-bottom: 35px;
+}
+.query-section-heading h1 {
+  font-family: "Zen Dots", sans-serif;
 }
 
 .hacklabs-query-section .query-wrapper {
@@ -58,6 +61,7 @@
 .query-header {
   text-align: center;
   margin-bottom: 2.8rem;
+  font-family: "Zen Dots", sans-serif;
 }
 
 .query-header h2 {
@@ -157,7 +161,7 @@
 .hacklabs-input::placeholder,
 .hacklabs-textarea::placeholder {
   color: #555555;
-  font-family: 'Zen Dots', sans-serif;
+  font-family: "Zen Dots", sans-serif;
   font-size: 0.75rem;
   letter-spacing: 1px;
 }

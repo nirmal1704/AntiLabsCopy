@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../supabase";
 import "./HacklabsTeamFormation.css";
+import { Link } from "react-router-dom";
 
 export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
   const [teamName, setTeamName] = useState("");
@@ -209,7 +210,9 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
       }
 
       if (!orderData || !orderData.payment_session_id) {
-        throw new Error(orderData?.error || "Payment gateway did not return a session.");
+        throw new Error(
+          orderData?.error || "Payment gateway did not return a session.",
+        );
       }
 
       // ── MOCK MODE: Cashfree keys not yet configured ──
@@ -393,7 +396,14 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
   };
   return (
     <div className="team-formation-container">
-      {error && <div className="formation-error">{error.toUpperCase()}</div>}
+      {error && (
+        <div className="formation-error">
+          {error.toUpperCase()}{" "}
+          <Link to="/hacklabs/#query-section" className="formation-error-link">
+            You can also raise a query
+          </Link>
+        </div>
+      )}
       {view === "home" && (
         <div className="team-home">
           <h1>Team</h1>

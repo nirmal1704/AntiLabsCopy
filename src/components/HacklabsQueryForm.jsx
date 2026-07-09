@@ -116,7 +116,9 @@ export default function HacklabsQueryForm() {
       if (error) throw error;
 
       setLoading(false);
-      setMessage("QUERY SUBMITTED SUCCESSFULLY. OUR TEAM WILL CONTACT YOU SOON.");
+      setMessage(
+        "QUERY SUBMITTED SUCCESSFULLY. OUR TEAM WILL CONTACT YOU SOON.",
+      );
       setFormData({ name: "", email: "", subject: "", description: "" });
       setErrors({ name: "", email: "", subject: "", description: "" });
 
@@ -132,7 +134,6 @@ export default function HacklabsQueryForm() {
 
   return (
     <section className="hacklabs-query-section" id="queries">
-      <h1 className="query-section-heading">//Support Query</h1>
       <div className="hacklabs-container">
         <motion.div
           className="query-wrapper"
