@@ -48,7 +48,7 @@ const TimerCircle = ({ value, label }) => {
 export default function HacklabsTimer({ Coming }) {
   const calculateTimeLeft = () => {
     // 7 August 2026, 12:00 PM IST
-    const targetDate = new Date(2026, 6, 11, 0, 0, 0);
+    const targetDate = new Date(2026, 7, 7, 12, 0, 0);
     const now = new Date();
 
     const difference = targetDate - now;

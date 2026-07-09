@@ -208,7 +208,7 @@ export default function HacklabsNavbar() {
                 setMobileMenuOpen(false);
               }}
             >
-              Register
+              REGISTER
             </button>
 
             <button

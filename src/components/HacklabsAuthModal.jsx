@@ -43,10 +43,12 @@ export default function HacklabsAuthModal() {
   const validateLogin = () => {
     const newErrors = {};
     if (!email.trim()) newErrors.email = "EMAIL ADDRESS IS REQUIRED";
-    else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email)) newErrors.email = "ENTER A VALID EMAIL ADDRESS";
-    
+    else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email))
+      newErrors.email = "ENTER A VALID EMAIL ADDRESS";
+
     if (!password.trim()) newErrors.password = "PASSWORD IS REQUIRED";
-    else if (password.length < 6) newErrors.password = "PASSWORD MUST BE AT LEAST 6 CHARACTERS";
+    else if (password.length < 6)
+      newErrors.password = "PASSWORD MUST BE AT LEAST 6 CHARACTERS";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -83,10 +85,14 @@ export default function HacklabsAuthModal() {
     }
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("send-password-otp", {
-        body: { email: email.trim() }
-      });
-      if (error || data?.error) throw new Error(error?.message || data?.error || "FAILED TO SEND OTP");
+      const { data, error } = await supabase.functions.invoke(
+        "send-password-otp",
+        {
+          body: { email: email.trim() },
+        },
+      );
+      if (error || data?.error)
+        throw new Error(error?.message || data?.error || "FAILED TO SEND OTP");
       setSuccess(`OTP SENT TO ${email.toUpperCase()}`);
       setMode("reset_password");
     } catch (err) {
@@ -102,17 +108,19 @@ export default function HacklabsAuthModal() {
     setSuccess("");
     const newErrors = {};
     if (!otp.trim()) newErrors.otp = "OTP IS REQUIRED";
-    if (newPassword.length < 6) newErrors.newPassword = "PASSWORD MUST BE AT LEAST 6 CHARACTERS";
+    if (newPassword.length < 6)
+      newErrors.newPassword = "PASSWORD MUST BE AT LEAST 6 CHARACTERS";
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
     setLoading(true);
     try {
-      const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
-        email: email.trim(),
-        token: otp,
-        type: "recovery",
-      });
+      const { data: verifyData, error: verifyError } =
+        await supabase.auth.verifyOtp({
+          email: email.trim(),
+          token: otp,
+          type: "recovery",
+        });
 
       if (verifyError || !verifyData.session) {
         throw new Error(verifyError?.message || "INVALID OR EXPIRED OTP");
@@ -120,19 +128,18 @@ export default function HacklabsAuthModal() {
 
       // Secure RPC update
       const { error: rpcError } = await supabase.rpc("update_user_password", {
-        new_password: newPassword
+        new_password: newPassword,
       });
 
       if (rpcError) throw rpcError;
 
       setSuccess("PASSWORD UPDATED SUCCESSFULLY!");
-      
+
       // Auto sign in or redirect
       setTimeout(() => {
         closeModal();
         navigate("/hacklabs/dashboard");
       }, 1500);
-      
     } catch (err) {
       setError(err.message || "FAILED TO RESET PASSWORD");
     } finally {
@@ -148,7 +155,9 @@ export default function HacklabsAuthModal() {
   return (
     <div className="auth-modal-overlay" onClick={closeModal}>
       <div className="auth-modal-box" onClick={(e) => e.stopPropagation()}>
-        <button className="close-btn" onClick={closeModal}>✕</button>
+        <button className="close-btn" onClick={closeModal}>
+          ✕
+        </button>
         <div className="auth-modal-header">
           <h2 className="auth-title">
             {mode === "login" && "LOGIN"}
@@ -163,7 +172,19 @@ export default function HacklabsAuthModal() {
         </div>
 
         {error && <div className="auth-error">{error.toUpperCase()}</div>}
-        {success && <div className="auth-error" style={{ backgroundColor: "#064e3b", color: "#34d399", border: "1px solid #059669", marginTop: "1rem" }}>{success.toUpperCase()}</div>}
+        {success && (
+          <div
+            className="auth-error"
+            style={{
+              backgroundColor: "#064e3b",
+              color: "#34d399",
+              border: "1px solid #059669",
+              marginTop: "1rem",
+            }}
+          >
+            {success.toUpperCase()}
+          </div>
+        )}
 
         {mode === "login" && (
           <form onSubmit={handleLogin} className="auth-form">
@@ -180,15 +201,26 @@ export default function HacklabsAuthModal() {
                   setError("");
                 }}
               />
-              {errors.email && <span className="field-error">{errors.email}</span>}
+              {errors.email && (
+                <span className="field-error">{errors.email}</span>
+              )}
             </div>
             <div className="input-group">
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <label>PASSWORD</label>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setMode("forgot_password")}
-                  style={{ background: "none", border: "none", color: "#0ea5e9", fontSize: "0.75rem", cursor: "pointer", fontWeight: "600", padding: 0 }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#fff",
+                    fontSize: "0.75rem",
+                    cursor: "pointer",
+                    fontWeight: "600",
+                    fontFamily: "Zen Dots, sans-serif",
+                    paddingLeft: "10px",
+                  }}
                 >
                   FORGOT PASSWORD?
                 </button>
@@ -204,9 +236,15 @@ export default function HacklabsAuthModal() {
                   setError("");
                 }}
               />
-              {errors.password && <span className="field-error">{errors.password}</span>}
+              {errors.password && (
+                <span className="field-error">{errors.password}</span>
+              )}
             </div>
-            <button type="submit" className="auth-submit-btn" disabled={loading}>
+            <button
+              type="submit"
+              className="auth-submit-btn"
+              disabled={loading}
+            >
               {loading ? "AUTHENTICATING..." : "LOGIN"}
             </button>
           </form>
@@ -227,16 +265,29 @@ export default function HacklabsAuthModal() {
                   setError("");
                 }}
               />
-              {errors.email && <span className="field-error">{errors.email}</span>}
+              {errors.email && (
+                <span className="field-error">{errors.email}</span>
+              )}
             </div>
-            <button type="submit" className="auth-submit-btn" disabled={loading}>
+            <button
+              type="submit"
+              className="auth-submit-btn"
+              disabled={loading}
+            >
               {loading ? "SENDING OTP..." : "SEND OTP"}
             </button>
             <div style={{ textAlign: "center", marginTop: "1rem" }}>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => setMode("login")}
-                style={{ background: "none", border: "none", color: "#0ea5e9", fontSize: "0.8rem", cursor: "pointer", fontWeight: "600" }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#0ea5e9",
+                  fontSize: "0.8rem",
+                  cursor: "pointer",
+                  fontWeight: "600",
+                }}
               >
                 BACK TO LOGIN
               </button>
@@ -275,16 +326,29 @@ export default function HacklabsAuthModal() {
                   setError("");
                 }}
               />
-              {errors.newPassword && <span className="field-error">{errors.newPassword}</span>}
+              {errors.newPassword && (
+                <span className="field-error">{errors.newPassword}</span>
+              )}
             </div>
-            <button type="submit" className="auth-submit-btn" disabled={loading}>
+            <button
+              type="submit"
+              className="auth-submit-btn"
+              disabled={loading}
+            >
               {loading ? "UPDATING..." : "UPDATE PASSWORD"}
             </button>
             <div style={{ textAlign: "center", marginTop: "1rem" }}>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => setMode("forgot_password")}
-                style={{ background: "none", border: "none", color: "#0ea5e9", fontSize: "0.8rem", cursor: "pointer", fontWeight: "600" }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#0ea5e9",
+                  fontSize: "0.8rem",
+                  cursor: "pointer",
+                  fontWeight: "600",
+                }}
               >
                 RESEND OTP
               </button>
@@ -295,7 +359,11 @@ export default function HacklabsAuthModal() {
         {mode === "login" && (
           <div className="auth-footer">
             <p>DON'T HAVE AN ACCOUNT?</p>
-            <button type="button" className="register-link-btn" onClick={goToRegister}>
+            <button
+              type="button"
+              className="register-link-btn"
+              onClick={goToRegister}
+            >
               REGISTER NOW
             </button>
           </div>

@@ -4,24 +4,36 @@
   color: #fff;
   font-family: "Zen Dots", sans-serif;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .avatar-page-loading {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 100vh;
   color: #fff;
   font-family: "Zen Dots", monospace;
   letter-spacing: 2px;
   animation: pulse 1.5s infinite;
+  width: 100%;
+  text-align: center;
 }
 
 @keyframes pulse {
-  0% { opacity: 0.5; }
-  50% { opacity: 1; }
-  100% { opacity: 0.5; }
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.5;
+  }
 }
 
 .avatar-page-container {
@@ -31,6 +43,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 }
 
 .avatar-header {
@@ -45,6 +58,7 @@
   letter-spacing: 3px;
   font-weight: 400;
   margin-bottom: 1rem;
+  line-height: 1.1;
 }
 
 .avatar-header p {
@@ -60,11 +74,79 @@
   margin-top: 4rem;
   padding-top: 2rem;
   border-top: 1px solid rgba(255, 255, 255, 0.15);
+  flex-wrap: wrap;
+}
+
+.avatar-actions .btn-primary,
+.avatar-actions .btn-secondary {
+  min-width: 220px;
+}
+
+.avatar-actions .btn-primary,
+.avatar-actions .btn-secondary {
+  width: auto;
 }
 
 @media (max-width: 768px) {
+  .avatar-page-container {
+    padding: 100px 1.25rem 2.5rem;
+  }
+
+  .avatar-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .avatar-header h1 {
+    font-size: clamp(1.8rem, 8vw, 2.8rem);
+    letter-spacing: 2px;
+  }
+
+  .avatar-header p {
+    font-size: 0.92rem;
+    line-height: 1.5;
+  }
+
   .avatar-actions {
     flex-direction: column-reverse;
     gap: 1rem;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+  }
+
+  .avatar-actions .btn-primary,
+  .avatar-actions .btn-secondary {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .avatar-page-container {
+    padding: 88px 1rem 2rem;
+  }
+
+  .avatar-header {
+    margin-bottom: 1.25rem;
+  }
+
+  .avatar-header h1 {
+    font-size: clamp(1.5rem, 8vw, 2.2rem);
+    letter-spacing: 1px;
+  }
+
+  .avatar-header p {
+    font-size: 0.82rem;
+  }
+
+  .avatar-actions {
+    margin-top: 2rem;
+    gap: 0.75rem;
+  }
+
+  .avatar-actions .btn-primary,
+  .avatar-actions .btn-secondary {
+    padding: 14px 18px;
+    font-size: 0.85rem;
   }
 }

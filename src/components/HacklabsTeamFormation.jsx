@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "../supabase";
 import "./HacklabsTeamFormation.css";
 
@@ -9,6 +10,7 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
   const [fetchingTeam, setFetchingTeam] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState("");
   const [errors, setErrors] = useState({
     teamName: "",
     joinCode: "",
@@ -188,7 +190,9 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
             customer_name: participant.full_name,
             customer_email: userEmail,
             customer_phone: participant.mobile_number,
-            is_dev: window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+            is_dev:
+              window.location.hostname === "localhost" ||
+              window.location.hostname === "127.0.0.1",
           },
         });
 
@@ -270,16 +274,16 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
     e.preventDefault();
 
     setError(null);
+    setSuccessMessage("");
 
     if (!validateJoinCode()) return;
 
     setFetchingTeam(true);
 
     try {
-      const { data: teamData, error: teamError } = await supabase.rpc(
-        "preview_team_by_code",
-        { p_team_code: joinCode.trim() }
-      ).single();
+      const { data: teamData, error: teamError } = await supabase
+        .rpc("preview_team_by_code", { p_team_code: joinCode.trim() })
+        .single();
 
       if (teamError || !teamData) {
         throw new Error("Team not found. Please check the code.");
@@ -313,14 +317,16 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
         });
 
       if (inviteError) {
-        if (inviteError.code === "23505") throw new Error("You have already sent a request to this team.");
+        if (inviteError.code === "23505")
+          throw new Error("You have already sent a request to this team.");
         throw inviteError;
       }
 
-      alert("Request sent successfully! Wait for the captain to accept.");
+      setSuccessMessage(
+        "Request sent successfully. Wait for the captain to accept.",
+      );
       setSearchedTeam(null);
       setJoinCode("");
-      setView("home");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -353,7 +359,17 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
   };
   return (
     <div className="team-formation-container">
-      {error && <div className="formation-error">{error.toUpperCase()}</div>}
+      {error && (
+        <div className="formation-error">
+          {error.toUpperCase()}{" "}
+          <Link to="/hacklabs/#query-section" className="formation-error-link">
+            You can also raise a query
+          </Link>
+        </div>
+      )}{" "}
+      {successMessage && (
+        <div className="formation-success">{successMessage}</div>
+      )}
       {view === "home" && (
         <div className="team-home">
           <h1>Team</h1>
@@ -383,7 +399,6 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
           )}
         </div>
       )}
-
       {view === "create" && (
         <div className="team-screen">
           <h1>Create Team</h1>
@@ -416,10 +431,10 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
             <div className="fee-explanation">
               <p>Team Registration requires a one-time fee of ₹199.</p>
             </div>
-            
+
             <div className="form-actions">
               <button type="submit" className="primary-btn">
-                {loading ? "Processing..." : "Pay ₹199 & Create Team"}
+                {loading ? "Processing..." : "Register Team"}
               </button>
 
               <button
@@ -433,7 +448,6 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
           </form>
         </div>
       )}
-
       {view === "join" && (
         <div className="team-screen">
           <h1>Join Team</h1>
@@ -463,7 +477,7 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
               )}
             </div>
 
-            <button type="submit">{loading ? "..." : "Join"}</button>
+            <button type="submit">{loading ? "..." : "Fetch Team"}</button>
           </form>
 
           {fetchingTeam && (
@@ -496,13 +510,17 @@ export default function HacklabsTeamFormation({ participant, onTeamUpdated }) {
                   </div>
                 ))}
 
-                {Array.from({ length: 3 - (searchedTeam.member_names?.length || 0) }).map((_, idx) => (
-                  <div key={`empty-${idx}`} className="member-row">Empty Slot</div>
+                {Array.from({
+                  length: 3 - (searchedTeam.member_names?.length || 0),
+                }).map((_, idx) => (
+                  <div key={`empty-${idx}`} className="member-row">
+                    Empty Slot
+                  </div>
                 ))}
               </div>
 
               <button
-                className="primary-btn"
+                className="Join-btn primary-btn"
                 onClick={handleSendJoinRequest}
                 disabled={loading}
               >
