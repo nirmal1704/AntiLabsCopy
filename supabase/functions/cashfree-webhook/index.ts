@@ -60,88 +60,141 @@ serve(async (req) => {
 
       const supabase = createClient(supabaseUrl, serviceKey);
 
-      const numericOrderId = parseInt(orderId, 10);
-      if (isNaN(numericOrderId)) {
-        throw new Error(`Order ID ${orderId} is not a valid integer transaction ID.`);
-      }
+      if (typeof orderId === 'string' && orderId.startsWith("hack_")) {
+        const teamId = orderId.substring(5);
+        console.log(`Processing Hacklabs payment for Team ID: ${teamId}`);
 
-      const { data: tx, error: txError } = await supabase
-        .from("transactions")
-        .select("*")
-        .eq("transaction_id", numericOrderId)
-        .single();
+        // Fetch team record
+        const { data: team, error: teamError } = await supabase
+          .from("hacklabs_teams")
+          .select("*")
+          .eq("id", teamId)
+          .single();
 
-      if (txError) {
-          console.error("DB Error fetching transaction:", txError);
-          throw new Error(`Database transaction fetch error: ${txError.message}`);
-      }
-      if (!tx) {
-          throw new Error(`Transaction #${numericOrderId} not found in database`);
-      }
-
-      console.log(`Transaction found. Current status: ${tx.payment_status}`);
-
-      if (tx.payment_status !== "paid") {
-        const { error: updateError } = await supabase
-          .from("transactions")
-          .update({ payment_status: "paid" })
-          .eq("transaction_id", numericOrderId);
-          
-        if (updateError) {
-            console.error("Failed to update transaction status:", updateError);
-            throw new Error("Failed to update transaction status");
+        if (teamError) {
+          console.error("DB Error fetching team:", teamError);
+          throw new Error(`Database team fetch error: ${teamError.message}`);
         }
-        
-        console.log("Transaction marked as paid!");
+        if (!team) {
+          throw new Error(`Team #${teamId} not found in database`);
+        }
 
-        const { error: rpcError } = await supabase.rpc(
-          "assign_batch_and_roll_number",
-          { p_transaction_id: numericOrderId }
-        );
+        console.log(`Team found. Current payment status: ${team.payment_status}`);
 
-        if (rpcError) {
-          console.error("RPC failed, running fallback insert. Error:", rpcError);
-          const { data: existingReg } = await supabase
-            .from("training_registrations")
-            .select("registration_id")
-            .eq("email", tx.email)
-            .maybeSingle();
+        if (team.payment_status !== "paid") {
+          // Update team status
+          const { error: updateTeamError } = await supabase
+            .from("hacklabs_teams")
+            .update({
+              payment_status: "paid",
+              cashfree_order_id: orderId
+            })
+            .eq("id", teamId);
 
-          if (!existingReg) {
-            console.log("No existing registration found. Creating fallback registration record...");
-            const { error: insertError } = await supabase
-              .from("training_registrations")
-              .insert([{
-                user_id: tx.user_id,
-                role_id: tx.role_id,
-                position: tx.position,
-                full_name: tx.full_name,
-                university_name: tx.university_name,
-                college_name: tx.college_name,
-                current_year: tx.current_year,
-                degree_pursuing: tx.degree_pursuing,
-                branch: tx.branch,
-                graduation_year: tx.graduation_year,
-                mobile_number: tx.mobile_number,
-                email: tx.email,
-                college_proof_url: tx.college_proof_url,
-                resume_url: tx.resume_url,
-                fees_amount: tx.fees_amount,
-                payment_status: "paid",
-              }]);
-              if (insertError) {
-                console.error("Fallback insert failed:", insertError);
-              } else {
-                console.log("Fallback registration created successfully.");
-              }
-          } else {
-            console.log("Registration already exists for email:", tx.email);
+          if (updateTeamError) {
+            console.error("Failed to update team status:", updateTeamError);
+            throw new Error("Failed to update team status");
           }
+
+          // Update captain's details to join this team
+          const { error: updateCaptainError } = await supabase
+            .from("hacklabs_personal_details")
+            .update({ team_id: teamId })
+            .eq("auth_id", team.captain_id);
+
+          if (updateCaptainError) {
+            console.error("Failed to associate captain with team:", updateCaptainError);
+            throw new Error("Failed to associate captain with team");
+          }
+
+          console.log("Team marked as paid and captain associated successfully!");
         } else {
-          console.log("RPC assign_batch_and_roll_number completed successfully.");
+          console.log(`Team #${teamId} was already marked as paid.`);
         }
       } else {
-        console.log(`Transaction #${numericOrderId} was already marked as paid.`);
+        const numericOrderId = parseInt(orderId, 10);
+        if (isNaN(numericOrderId)) {
+          throw new Error(`Order ID ${orderId} is not a valid integer transaction ID.`);
+        }
+
+        const { data: tx, error: txError } = await supabase
+          .from("transactions")
+          .select("*")
+          .eq("transaction_id", numericOrderId)
+          .single();
+
+        if (txError) {
+            console.error("DB Error fetching transaction:", txError);
+            throw new Error(`Database transaction fetch error: ${txError.message}`);
+        }
+        if (!tx) {
+            throw new Error(`Transaction #${numericOrderId} not found in database`);
+        }
+
+        console.log(`Transaction found. Current status: ${tx.payment_status}`);
+
+        if (tx.payment_status !== "paid") {
+          const { error: updateError } = await supabase
+            .from("transactions")
+            .update({ payment_status: "paid" })
+            .eq("transaction_id", numericOrderId);
+            
+          if (updateError) {
+              console.error("Failed to update transaction status:", updateError);
+              throw new Error("Failed to update transaction status");
+          }
+          
+          console.log("Transaction marked as paid!");
+
+          const { error: rpcError } = await supabase.rpc(
+            "assign_batch_and_roll_number",
+            { p_transaction_id: numericOrderId }
+          );
+
+          if (rpcError) {
+            console.error("RPC failed, running fallback insert. Error:", rpcError);
+            const { data: existingReg } = await supabase
+              .from("training_registrations")
+              .select("registration_id")
+              .eq("email", tx.email)
+              .maybeSingle();
+
+            if (!existingReg) {
+              console.log("No existing registration found. Creating fallback registration record...");
+              const { error: insertError } = await supabase
+                .from("training_registrations")
+                .insert([{
+                  user_id: tx.user_id,
+                  role_id: tx.role_id,
+                  position: tx.position,
+                  full_name: tx.full_name,
+                  university_name: tx.university_name,
+                  college_name: tx.college_name,
+                  current_year: tx.current_year,
+                  degree_pursuing: tx.degree_pursuing,
+                  branch: tx.branch,
+                  graduation_year: tx.graduation_year,
+                  mobile_number: tx.mobile_number,
+                  email: tx.email,
+                  college_proof_url: tx.college_proof_url,
+                  resume_url: tx.resume_url,
+                  fees_amount: tx.fees_amount,
+                  payment_status: "paid",
+                }]);
+                if (insertError) {
+                  console.error("Fallback insert failed:", insertError);
+                } else {
+                  console.log("Fallback registration created successfully.");
+                }
+            } else {
+              console.log("Registration already exists for email:", tx.email);
+            }
+          } else {
+            console.log("RPC assign_batch_and_roll_number completed successfully.");
+          }
+        } else {
+          console.log(`Transaction #${numericOrderId} was already marked as paid.`);
+        }
       }
     }
 

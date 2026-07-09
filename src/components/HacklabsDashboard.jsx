@@ -154,6 +154,7 @@ export default function HacklabsDashboard({
             customer_name: participant.full_name,
             customer_email: userEmail,
             customer_phone: participant.mobile_number,
+            return_url: `${window.location.origin}/hacklabs/dashboard`,
           },
         },
       );

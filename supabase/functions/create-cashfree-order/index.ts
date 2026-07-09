@@ -64,6 +64,7 @@ serve(async (req) => {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
+          order_id: `hack_${team_id}`,
           order_amount: orderAmount,
           order_currency: "INR",
           customer_details: {
@@ -73,7 +74,7 @@ serve(async (req) => {
             customer_phone: customer_phone || "9999999999"
           },
           order_meta: {
-            return_url: "http://localhost:5173/hacklabs/dashboard",
+            return_url: return_url ? `${return_url}?order_id={order_id}` : "http://localhost:5173/hacklabs/dashboard?order_id={order_id}",
             payment_methods: ""
           },
           order_tags: {
@@ -128,6 +129,59 @@ serve(async (req) => {
       
       const orderData = await verifyRes.json();
       let transactionData = null;
+
+      // Handle Hacklabs Payment Verification
+      if (typeof order_id === 'string' && order_id.startsWith('hack_')) {
+        const teamId = order_id.substring(5);
+        if (orderData.order_status === 'PAID') {
+          // Fetch team from DB
+          const teamRes = await fetch(`${supabaseUrl}/rest/v1/hacklabs_teams?id=eq.${teamId}`, {
+            method: "GET",
+            headers: {
+              "apikey": supabaseServiceRoleKey,
+              "Authorization": `Bearer ${supabaseServiceRoleKey}`
+            }
+          });
+          if (teamRes.ok) {
+            const teamList = await teamRes.json();
+            const team = teamList[0];
+            if (team && team.payment_status !== 'paid') {
+              // Update payment status of the team
+              const updateTeamRes = await fetch(`${supabaseUrl}/rest/v1/hacklabs_teams?id=eq.${teamId}`, {
+                method: "PATCH",
+                headers: {
+                  "apikey": supabaseServiceRoleKey,
+                  "Authorization": `Bearer ${supabaseServiceRoleKey}`,
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                  payment_status: "paid",
+                  cashfree_order_id: order_id
+                })
+              });
+              if (!updateTeamRes.ok) {
+                console.error("Failed to update team status in verify:", await updateTeamRes.text());
+              }
+
+              // Update team captain's profile
+              const updateCaptainRes = await fetch(`${supabaseUrl}/rest/v1/hacklabs_personal_details?auth_id=eq.${team.captain_id}`, {
+                method: "PATCH",
+                headers: {
+                  "apikey": supabaseServiceRoleKey,
+                  "Authorization": `Bearer ${supabaseServiceRoleKey}`,
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                  team_id: teamId
+                })
+              });
+              if (!updateCaptainRes.ok) {
+                console.error("Failed to update captain details in verify:", await updateCaptainRes.text());
+              }
+            }
+          }
+        }
+      }
 
       if (transaction_id) {
         // Fetch transaction using service_role via direct REST API call bypassing RLS
