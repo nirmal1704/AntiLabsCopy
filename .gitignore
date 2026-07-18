@@ -14,6 +14,15 @@ dist-ssr
 
 # env
 .env 
+.env.local
+
+# Supabase temp/local files
+supabase/.temp/
+
+# Test/debug output files
+out.txt
+out2.txt
+email_preview.html
 
 # Editor directories and files
 .vscode/*
